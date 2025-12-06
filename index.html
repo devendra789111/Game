@@ -1,455 +1,476 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Education - PRO Command Center</title>
+    <title>RAS Elite Mock V3.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Teko:wght@500;600&display=swap');
+
         :root {
-            --primary: #00f3ff;
-            --secondary: #7000ff;
-            --success: #00ff88;
-            --danger: #ff0055;
-            --bg-dark: #0a0a12;
-            --glass: rgba(20, 20, 35, 0.85);
+            --primary: #3b82f6;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: #e2e8f0; }
+        .heading-font { font-family: 'Teko', sans-serif; letter-spacing: 1px; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .subject-card { transition: all 0.2s; border: 1px solid #334155; }
+        .subject-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3); }
+        .subject-card.selected { background: rgba(59, 130, 246, 0.2); border-color: var(--primary); }
+
+        .option-btn { transition: all 0.2s; }
+        .option-btn:hover:not(:disabled) { background-color: #334155; }
         
-        body { background-color: var(--bg-dark); color: white; overflow: hidden; display: flex; }
-
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: rgba(0,0,0,0.9);
-            border-right: 1px solid var(--primary);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .brand {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            color: var(--primary);
-            text-shadow: 0 0 10px var(--primary);
-            margin-bottom: 30px;
-        }
-
-        .nav-item {
-            padding: 15px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: var(--primary);
-            color: black;
-            box-shadow: 0 0 15px var(--primary);
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            position: relative;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
-        }
-
-        /* Dashboard Widgets */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            position: relative;
-        }
-
-        .card h3 { color: #aaa; font-size: 0.9rem; margin-bottom: 10px; }
-        .card .value { font-size: 2rem; font-weight: bold; font-family: 'Orbitron'; }
-
-        /* Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: rgba(0, 243, 255, 0.1); color: var(--primary); padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        tr:hover { background: rgba(255,255,255,0.05); }
-
-        /* Action Buttons */
-        .btn-icon {
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            margin-right: 5px;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-wa { background: #25D366; color: white; }
-        .btn-call { background: var(--primary); color: black; }
-        .btn-del { background: var(--danger); color: white; }
-        .btn-icon:hover { transform: scale(1.1); box-shadow: 0 0 10px white; }
-
-        /* Input Forms */
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #444;
-            color: white;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        input:focus { border-color: var(--primary); outline: none; }
-
-        .btn-main {
-            background: var(--secondary);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        /* Result Matcher Specifics */
-        .matcher-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .match-result-box {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid var(--success);
-            padding: 10px;
-            height: 300px;
-            overflow-y: auto;
-        }
-
-        /* Sections Toggle */
-        .section { display: none; animation: fadeIn 0.3s; }
-        .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
+        /* Result Colors */
+        .res-correct { background-color: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; }
+        .res-wrong { background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        .res-missed { border: 1px solid #eab308; opacity: 0.7; }
     </style>
 </head>
-<body>
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <div class="sidebar">
-        <div class="brand"><i class="fas fa-atom"></i> Q-Edu HUB</div>
-        <div class="nav-item active" onclick="showSection('dashboard')">
-            <i class="fas fa-tachometer-alt"></i> Dashboard
+    <nav class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-blue-500/30">R</div>
+            <div>
+                <h1 class="heading-font text-2xl text-white leading-none">RAS ELITE</h1>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest">Mock Engine V3.0</p>
+            </div>
         </div>
-        <div class="nav-item" onclick="showSection('calling')">
-            <i class="fas fa-headset"></i> Telecalling List
-        </div>
-        <div class="nav-item" onclick="showSection('matcher')">
-            <i class="fas fa-magic"></i> Auto Result Matcher
-        </div>
-        <div class="nav-item" onclick="showSection('add-data')">
-            <i class="fas fa-user-plus"></i> Add New Data
-        </div>
-    </div>
+        <button onclick="openImportModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded border border-slate-700 transition">
+            <i class="fas fa-plus-circle mr-1"></i> Import Qs
+        </button>
+    </nav>
 
-    <div class="main-content">
+    <main class="flex-1 relative overflow-hidden flex flex-col items-center justify-center p-4">
         
-        <div id="dashboard" class="section active">
-            <h2 style="margin-bottom: 20px; color: var(--primary);">TELECALLER PERFORMANCE</h2>
-            <div class="grid-container">
-                <div class="card">
-                    <h3>Total Students</h3>
-                    <div class="value" id="dispTotal">0</div>
-                </div>
-                <div class="card">
-                    <h3>Calls Made Today</h3>
-                    <div class="value" id="dispCalls">0</div>
-                </div>
-                <div class="card">
-                    <h3>Selections Found</h3>
-                    <div class="value" style="color: var(--success);" id="dispSelections">0</div>
-                </div>
-            </div>
+        <div id="view-dashboard" class="w-full max-w-4xl fade-in flex flex-col h-full overflow-y-auto">
             
-            <div class="card" style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                <canvas id="performanceChart"></canvas>
+            <div class="text-center mb-8 mt-4">
+                <h2 class="text-3xl font-bold text-white mb-2">Configure Your Test</h2>
+                <p class="text-slate-400 text-sm">Select a subject and difficulty to generate a unique paper.</p>
             </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <div onclick="selectSubject('All')" class="subject-card selected cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-All">
+                    <i class="fas fa-layer-group text-2xl text-purple-400"></i>
+                    <span class="font-semibold text-sm">Mix (All)</span>
+                </div>
+                <div onclick="selectSubject('History')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-History">
+                    <i class="fas fa-landmark text-2xl text-orange-400"></i>
+                    <span class="font-semibold text-sm">History</span>
+                </div>
+                <div onclick="selectSubject('Geography')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-Geography">
+                    <i class="fas fa-globe-asia text-2xl text-green-400"></i>
+                    <span class="font-semibold text-sm">Geography</span>
+                </div>
+                <div onclick="selectSubject('Polity')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-Polity">
+                    <i class="fas fa-balance-scale text-2xl text-blue-400"></i>
+                    <span class="font-semibold text-sm">Polity</span>
+                </div>
+                <div onclick="selectSubject('Art & Culture')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-Art">
+                    <i class="fas fa-paint-brush text-2xl text-pink-400"></i>
+                    <span class="font-semibold text-sm">Art & Culture</span>
+                </div>
+                <div class="bg-slate-900/50 border border-slate-700 border-dashed p-4 rounded-xl flex flex-col items-center justify-center">
+                    <span class="text-2xl font-bold text-white" id="total-q-display">0</span>
+                    <span class="text-[10px] text-slate-500 uppercase">Total Questions in Bank</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 mb-8">
+                <div class="flex justify-between text-sm text-slate-300 mb-2">
+                    <span>Number of Questions</span>
+                    <span id="slider-val" class="font-bold text-blue-400">10</span>
+                </div>
+                <input type="range" id="q-slider" min="5" max="50" value="10" step="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('slider-val').innerText = this.value">
+            </div>
+
+            <button onclick="startSession()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2">
+                <span>START MOCK TEST</span> <i class="fas fa-arrow-right"></i>
+            </button>
         </div>
 
-        <div id="calling" class="section">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h2 style="color: var(--primary);">ACTIVE CALLING LIST</h2>
-                <input type="text" id="searchBar" placeholder="Search by Name/City..." onkeyup="renderList()" style="width: 300px;">
-            </div>
+        <div id="view-quiz" class="hidden w-full max-w-3xl flex flex-col h-full">
             
-            <div class="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Mobile</th>
-                            <th>Exam Target</th>
-                            <th>Status</th>
-                            <th>Actions (One-Click)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teleTableBody">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="matcher" class="section">
-            <h2 style="color: var(--success); margin-bottom: 20px;">AI RESULT MATCHER</h2>
-            <p style="color: #aaa; margin-bottom: 10px;">Paste the Roll Numbers from the Govt PDF Result below. We will find your students automatically.</p>
-            
-            <div class="matcher-area">
-                <div class="card">
-                    <h3>Paste Result Text / Roll Numbers Here:</h3>
-                    <textarea id="pasteArea" style="height: 250px; background: #000;" placeholder="Paste text containing roll numbers like 20145, 20146..."></textarea>
-                    <button class="btn-main" onclick="matchResults()" style="width: 100%; margin-top: 10px;">
-                        <i class="fas fa-search"></i> SCAN & MATCH
-                    </button>
+            <div class="flex justify-between items-center mb-6 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="text-slate-400">Question</span>
+                    <span class="font-bold text-white"><span id="curr-q-num">1</span>/<span id="total-sess-q">10</span></span>
                 </div>
+                <div class="font-mono font-bold text-blue-300 bg-slate-900 px-3 py-1 rounded border border-blue-500/20">
+                    <i class="far fa-clock mr-2"></i><span id="timer">00:00</span>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-2">
+                <span id="q-tag" class="inline-block px-2 py-1 bg-slate-700 text-[10px] uppercase font-bold text-slate-300 rounded mb-3">HISTORY</span>
                 
-                <div class="card">
-                    <h3>Matched Students (Passed)</h3>
-                    <div id="matchOutput" class="match-result-box">
-                        <div style="text-align: center; color: #555; margin-top: 50px;">Waiting for scan...</div>
+                <h3 id="q-text" class="text-xl md:text-2xl font-medium text-white mb-4 leading-relaxed">
+                    Loading Question...
+                </h3>
+
+                <div id="q-statements" class="hidden bg-slate-800/60 p-4 rounded border-l-4 border-yellow-600 mb-6 space-y-1 text-slate-300 text-sm"></div>
+
+                <div id="q-options" class="grid gap-3 mb-8">
                     </div>
-                    <button class="btn-main" onclick="exportMatches()" style="background: var(--success); width: 100%; margin-top: 10px;">
-                        <i class="fas fa-file-excel"></i> Export Selected List
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center">
+                <button onclick="endSession()" class="text-red-400 text-sm hover:text-red-300 font-medium">End Test</button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition disabled:opacity-50" disabled>
+                    Next <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="view-result" class="hidden w-full max-w-2xl text-center fade-in h-full overflow-y-auto">
+            <div class="mt-10 mb-8">
+                <div class="w-32 h-32 mx-auto rounded-full border-8 border-slate-700 flex items-center justify-center relative">
+                    <div class="text-center">
+                        <span class="block text-4xl font-bold text-white" id="score-val">0</span>
+                        <span class="text-[10px] text-slate-400 uppercase">Score</span>
+                    </div>
+                    <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="339.292" stroke-dashoffset="100" id="score-ring" class="transition-all duration-1000"></circle>
+                    </svg>
+                </div>
+            </div>
+
+            <h2 class="text-3xl font-bold text-white mb-2">Test Completed</h2>
+            <p class="text-slate-400 mb-8">Here is your performance summary</p>
+
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="bg-slate-800 p-3 rounded-lg">
+                    <div class="text-green-400 text-xl font-bold" id="res-correct">0</div>
+                    <div class="text-xs text-slate-500 uppercase">Correct</div>
+                </div>
+                <div class="bg-slate-800 p-3 rounded-lg">
+                    <div class="text-red-400 text-xl font-bold" id="res-wrong">0</div>
+                    <div class="text-xs text-slate-500 uppercase">Wrong</div>
+                </div>
+                <div class="bg-slate-800 p-3 rounded-lg">
+                    <div class="text-blue-400 text-xl font-bold" id="res-accuracy">0%</div>
+                    <div class="text-xs text-slate-500 uppercase">Accuracy</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="showReview()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold border border-slate-600">
+                    <i class="fas fa-eye mr-2"></i> Review Solutions & Explanations
+                </button>
+                <div class="flex gap-3">
+                    <button onclick="startSession()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold">
+                        <i class="fas fa-redo mr-2"></i> Re-Attempt
+                    </button>
+                    <button onclick="goHome()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold">
+                        <i class="fas fa-home mr-2"></i> New Test
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="add-data" class="section">
-            <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">ADD NEW ENTRY</h2>
-                <form id="addForm">
-                    <label>Student Name</label>
-                    <input type="text" id="inpName" required>
-                    
-                    <label>Mobile Number (for WhatsApp)</label>
-                    <input type="number" id="inpMobile" required>
-                    
-                    <label>Roll Number</label>
-                    <input type="text" id="inpRoll" required>
-                    
-                    <label>Target Exam</label>
-                    <select id="inpExam">
-                        <option>RAS</option>
-                        <option>VDO</option>
-                        <option>Patwar</option>
-                        <option>LDC</option>
-                        <option>CET</option>
-                    </select>
-                    
-                    <label>City</label>
-                    <input type="text" id="inpCity">
-                    
-                    <button type="submit" class="btn-main" style="width: 100%; margin-top: 15px;">Save to Database</button>
-                </form>
+        <div id="view-review" class="hidden w-full max-w-3xl h-full flex flex-col fade-in">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-800">
+                <h2 class="text-xl font-bold text-white">Solutions</h2>
+                <button onclick="goHome()" class="text-sm text-blue-400 hover:underline">Close</button>
             </div>
+            <div id="review-container" class="flex-1 overflow-y-auto pr-2 space-y-6">
+                </div>
         </div>
 
+    </main>
+
+    <div id="import-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 w-full max-w-lg rounded-xl shadow-2xl border border-slate-700 p-6">
+            <h3 class="font-bold text-white mb-4">Import Questions (JSON)</h3>
+            <textarea id="json-input" class="w-full h-40 bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-green-400 focus:outline-none focus:border-blue-500 mb-4" placeholder='[{"id":1, "subject":"History", "question":"...", "options":[...], "correct":0, "explanation":"..."}]'></textarea>
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('import-modal').classList.add('hidden')" class="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancel</button>
+                <button onclick="saveCustomData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold">Import</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- 1. DATA STORAGE & STATE ---
-        let students = JSON.parse(localStorage.getItem('qeProData')) || [
-            { name: "Rahul Sharma", mobile: "9876543210", roll: "1001", exam: "RAS", city: "Jaipur", status: "Pending" },
-            { name: "Priya Singh", mobile: "9123456789", roll: "1002", exam: "VDO", city: "Jodhpur", status: "Called" }
+        // --- DATA ---
+        // (Sample Data - In real app, this list is longer)
+        const stockData = [
+            { id: 1, subject: "History", question: "बिजौलिया किसान आंदोलन (1897-1941) के दौरान 'उपरमाल पंच बोर्ड' की स्थापना किसने की?", options: ["साधु सीताराम दास", "विजय सिंह पथिक", "माणिक्य लाल वर्मा", "मोतीलाल तेजावत"], correct: 1, explanation: "विजय सिंह पथिक ने 1917 में हरियाली अमावस्या के दिन 'उपरमाल पंच बोर्ड' की स्थापना की थी। मन्ना पटेल को इसका सरपंच बनाया गया था।" },
+            { id: 2, subject: "Geography", type: "assertion", question: "कथन (A): अरावली पर्वतमाला राजस्थान में मरुस्थल के पूर्व की ओर प्रसार को रोकती है।\nकारण (R): अरावली पर्वतमाला की स्थिति दक्षिण-पश्चिम से उत्तर-पूर्व की ओर है।", options: ["A और R दोनों सत्य हैं, R सही व्याख्या है", "दोनों सत्य, व्याख्या नहीं", "A सत्य R असत्य", "A असत्य R सत्य"], correct: 1, explanation: "दोनों बातें सही हैं। लेकिन अरावली मरुस्थल को इसलिए रोकती है क्योंकि वह बीच में खड़ी है, दिशा (Alignment) मानसून को प्रभावित करती है, मरुस्थलीकरण रोकने का मुख्य कारण उसकी ऊँचाई और अवस्थिति है।" },
+            { id: 3, subject: "Polity", question: "राजस्थान लोक सेवा आयोग (RPSC) अपना वार्षिक प्रतिवेदन (Annual Report) किसे प्रस्तुत करता है?", options: ["मुख्यमंत्री", "राष्ट्रपति", "राज्यपाल", "विधानसभा अध्यक्ष"], correct: 2, explanation: "संविधान के अनुच्छेद 323 के तहत RPSC अपनी वार्षिक रिपोर्ट 'राज्यपाल' को सौंपता है, जो इसे विधानसभा पटल पर रखवाते हैं।" },
+            { id: 4, subject: "Art & Culture", question: "निम्नलिखित में से कौन सा वाद्य यंत्र 'तत' (Tat - String) वाद्य यंत्र नहीं है?", options: ["रावणहत्था", "जंतर", "अलगोजा", "कमायचा"], correct: 2, explanation: "अलगोजा एक 'सुषिर' (Wind) वाद्य यंत्र है (फूँक मारकर बजाया जाने वाला)। बाकी तीनों तारों वाले (तत) यंत्र हैं। अलगोजा राजस्थान का राज्य वाद्य यंत्र भी है।" },
+            { id: 5, subject: "History", question: "1857 की क्रांति के समय कोटा का पॉलिटिकल एजेंट कौन था?", options: ["मेजर बर्टन", "मॉरिसन", "मैकमोसन", "ईडन"], correct: 0, explanation: "कोटा में मेजर बर्टन था, जिसकी हत्या करके क्रांतिकारियों ने उसका सिर पूरे शहर में घुमाया था।" },
+            { id: 6, subject: "Geography", question: "कोपेन के 'Aw' जलवायु प्रदेश में कौन से जिले आते हैं?", options: ["जैसलमेर, बीकानेर", "बांसवाड़ा, डूंगरपुर", "जयपुर, अलवर", "नागौर, सीकर"], correct: 1, explanation: "Aw = उष्ण कटिबंधीय आर्द्र जलवायु, जो राजस्थान के दक्षिणी भाग (डूंगरपुर, बांसवाड़ा, झालावाड़) में पाई जाती है।" },
+            { id: 7, subject: "Polity", question: "राजस्थान में अब तक कितनी बार राष्ट्रपति शासन (President's Rule) लगा है?", options: ["2 बार", "3 बार", "4 बार", "5 बार"], correct: 2, explanation: "अब तक 4 बार: 1967, 1977, 1980, और 1992 में।" },
+            { id: 8, subject: "History", type: "match", question: "सुमेलित कीजिए (किले और निर्माता):", statements: ["A. जैसलमेर - 1. राव जैसल", "B. बीकानेर - 2. राव बीका (जूनागढ़ रायसिंह)", "C. जोधपुर - 3. राव जोधा", "D. अजमेर - 4. अजयराज"], options: ["All Matched", "None Matched", "Only A & B", "Only C & D"], correct: 0, explanation: "सभी विकल्प उनके संस्थापक/निर्माता के सामने सही लिखे हैं।" },
+             { id: 9, subject: "Art & Culture", question: "प्रसिद्ध 'थेवा कला' (Thewa Art) का संबंध किस जिले से है?", options: ["प्रतापगढ़", "जयपुर", "बीकानेर", "बाड़मेर"], correct: 0, explanation: "थेवा कला (कांच पर सोने का काम) प्रतापगढ़ के राजसोनी परिवार की प्रसिद्ध है।" },
+            { id: 10, subject: "Geography", question: "लूनी नदी के प्रवाह क्षेत्र को जालौर में क्या कहा जाता है?", options: ["नाली", "तोरावटी", "नेहड़ (रेल)", "बीहड़"], correct: 2, explanation: "जालौर में लूनी के प्रवाह क्षेत्र को 'नेहड़' या 'रेल' कहा जाता है। 'नाली' घग्घर नदी का पाठ है।" },
+            { id: 11, subject: "History", question: "मत्स्य संघ का उद्घाटन किसने किया था?", options: ["जवाहर लाल नेहरू", "एन.वी. गाडगिल", "वल्लभ भाई पटेल", "शोभाराम कुमावत"], correct: 1, explanation: "नरहरि विष्णु गाडगिल (N.V. Gadgil) ने 18 मार्च 1948 को उद्घाटन किया था।" },
+            { id: 12, subject: "Polity", question: "राजस्थान विधानसभा की सदस्य संख्या 160 से बढ़ाकर 200 किस वर्ष की गई?", options: ["1952", "1967", "1977", "1980"], correct: 2, explanation: "छठी विधानसभा (1977) में परिसीमन के बाद सदस्य संख्या 200 कर दी गई।" },
         ];
 
-        let matchedStudents = [];
-        let callsToday = 0;
+        // --- STATE VARIABLES ---
+        let allQuestions = [];
+        let sessionQuestions = [];
+        let userAnswers = {}; // Stores { questionIndex: selectedOptionIdx }
+        let currentIdx = 0;
+        let selectedSubject = "All";
+        let timerInterval;
+        let timeElapsed = 0;
 
-        // --- 2. NAVIGATION ---
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        // --- INIT ---
+        function init() {
+            // Load custom
+            const stored = localStorage.getItem('ras_v3_custom');
+            const custom = stored ? JSON.parse(stored) : [];
+            allQuestions = [...stockData, ...custom];
             
-            // Highlight nav item
-            const navMap = {'dashboard':0, 'calling':1, 'matcher':2, 'add-data':3};
-            document.querySelectorAll('.nav-item')[navMap[id]].classList.add('active');
+            document.getElementById('total-q-display').innerText = allQuestions.length;
             
-            if(id === 'dashboard') updateDashboard();
-            if(id === 'calling') renderList();
+            // Slider Max Cap
+            const slider = document.getElementById('q-slider');
+            slider.max = Math.min(50, allQuestions.length);
         }
 
-        // --- 3. DASHBOARD CHARTS ---
-        let chartInstance = null;
-        function updateDashboard() {
-            document.getElementById('dispTotal').innerText = students.length;
-            document.getElementById('dispCalls').innerText = callsToday;
-            document.getElementById('dispSelections').innerText = matchedStudents.length;
-
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Pending', 'Called', 'Selected'],
-                    datasets: [{
-                        data: [students.length - callsToday, callsToday, matchedStudents.length],
-                        backgroundColor: ['#333', '#00f3ff', '#00ff88'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: 'white' } },
-                        title: { display: true, text: 'Daily Call Efficiency', color: 'white' }
-                    }
-                }
-            });
+        // --- DASHBOARD LOGIC ---
+        function selectSubject(sub) {
+            selectedSubject = sub;
+            // Visual feedback
+            document.querySelectorAll('.subject-card').forEach(el => el.classList.remove('selected', 'bg-slate-700'));
+            const activeCard = document.getElementById('sub-' + (sub === 'Art & Culture' ? 'Art' : sub));
+            if(activeCard) activeCard.classList.add('selected');
         }
 
-        // --- 4. TELECALLING LOGIC ---
-        function renderList() {
-            const tbody = document.getElementById('teleTableBody');
-            tbody.innerHTML = '';
-            const search = document.getElementById('searchBar').value.toLowerCase();
+        function startSession() {
+            // 1. Filter Questions
+            let filtered = selectedSubject === 'All' 
+                ? allQuestions 
+                : allQuestions.filter(q => q.subject === selectedSubject);
 
-            students.forEach((s, index) => {
-                if(s.name.toLowerCase().includes(search) || s.city.toLowerCase().includes(search)) {
-                    const row = `
-                        <tr>
-                            <td><strong>${s.name}</strong><br><small style="color:#888">${s.city}</small></td>
-                            <td>${s.mobile}</td>
-                            <td><span style="color:var(--primary)">${s.exam}</span></td>
-                            <td>${s.status}</td>
-                            <td>
-                                <button class="btn-icon btn-call" onclick="makeCall('${s.mobile}', ${index})" title="Call">
-                                    <i class="fas fa-phone"></i>
-                                </button>
-                                <button class="btn-icon btn-wa" onclick="sendWhatsapp('${s.mobile}', '${s.name}')" title="WhatsApp">
-                                    <i class="fab fa-whatsapp"></i>
-                                </button>
-                                <button class="btn-icon btn-del" onclick="deleteStudent(${index})" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                }
-            });
+            if(filtered.length === 0) { alert("No questions found for this subject!"); return; }
+
+            // 2. Shuffle & Slice
+            const count = parseInt(document.getElementById('q-slider').value);
+            // Fisher-Yates Shuffle
+            for (let i = filtered.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+            }
+            sessionQuestions = filtered.slice(0, Math.min(count, filtered.length));
+
+            // 3. Reset State
+            currentIdx = 0;
+            userAnswers = {};
+            timeElapsed = 0;
+
+            // 4. Switch View
+            switchView('view-quiz');
+            document.getElementById('total-sess-q').innerText = sessionQuestions.length;
+            
+            // 5. Start
+            startTimer();
+            loadQuestion();
         }
 
-        function makeCall(number, index) {
-            window.location.href = `tel:${number}`;
-            students[index].status = "Called";
-            callsToday++;
-            localStorage.setItem('qeProData', JSON.stringify(students));
-            renderList();
-        }
+        // --- QUIZ LOGIC ---
+        function loadQuestion() {
+            const q = sessionQuestions[currentIdx];
+            
+            // Update Text
+            document.getElementById('curr-q-num').innerText = currentIdx + 1;
+            document.getElementById('q-tag').innerText = q.subject;
+            document.getElementById('q-text').innerText = q.question;
 
-        function sendWhatsapp(number, name) {
-            // Smart Message Template
-            const msg = `Hello ${name}, Quality Education Institute se baat kar rahe hain regarding your exam preparation.`;
-            const url = `https://wa.me/91${number}?text=${encodeURIComponent(msg)}`;
-            window.open(url, '_blank');
-        }
-
-        // --- 5. RESULT MATCHER (The Magic Feature) ---
-        function matchResults() {
-            const rawText = document.getElementById('pasteArea').value;
-            if(!rawText) return alert("Please paste result text first!");
-
-            matchedStudents = [];
-            const outputDiv = document.getElementById('matchOutput');
-            outputDiv.innerHTML = "";
-
-            // Simple logic: Check if stored roll number exists in pasted text
-            students.forEach(student => {
-                // Ensure precise match (avoid partial matches)
-                const regex = new RegExp(`\\b${student.roll}\\b`);
-                if(regex.test(rawText) || rawText.includes(student.roll)) {
-                    matchedStudents.push(student);
-                    
-                    const div = document.createElement('div');
-                    div.style.padding = "10px";
-                    div.style.borderBottom = "1px solid #333";
-                    div.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success)"></i> 
-                                     <strong>${student.name}</strong> (Roll: ${student.roll}) - ${student.exam}`;
-                    outputDiv.appendChild(div);
-                }
-            });
-
-            if(matchedStudents.length === 0) {
-                outputDiv.innerHTML = "<div style='color:var(--danger)'>No matches found.</div>";
+            // Update Statements
+            const stmtBox = document.getElementById('q-statements');
+            if(q.statements) {
+                stmtBox.innerHTML = q.statements.map(s => `<p>• ${s}</p>`).join('');
+      stmtBox.classList.remove('hidden');
             } else {
-                alert(`Success! Found ${matchedStudents.length} selected students.`);
-                updateDashboard();
+                stmtBox.classList.add('hidden');
+            }
+
+            // Generate Options
+            const optsBox = document.getElementById('q-options');
+            optsBox.innerHTML = '';
+            document.getElementById('next-btn').disabled = true;
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-left p-4 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-medium relative";
+                btn.innerHTML = `<span class="font-bold text-blue-500 mr-2">${String.fromCharCode(65+idx)}.</span> ${opt}`;
+                btn.onclick = () => selectOption(idx, btn);
+                
+                // If re-visiting and already answered (future feature), highlight it
+                if(userAnswers[currentIdx] === idx) {
+                    btn.classList.add('bg-blue-900', 'border-blue-500');
+                }
+                
+                optsBox.appendChild(btn);
+            });
+        }
+
+        function selectOption(optIdx, btn) {
+            // Save Answer
+            userAnswers[currentIdx] = optIdx;
+            
+            // UI Update
+            document.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.remove('bg-blue-900', 'border-blue-500');
+                b.classList.add('bg-slate-800');
+            });
+            btn.classList.remove('bg-slate-800');
+            btn.classList.add('bg-blue-900', 'border-blue-500');
+            
+            // Enable Next
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if(currentIdx < sessionQuestions.length - 1) {
+                currentIdx++;
+                loadQuestion();
+            } else {
+                endSession();
             }
         }
 
-        function exportMatches() {
-            if(matchedStudents.length === 0) return alert("No matches to export.");
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(matchedStudents);
-            XLSX.utils.book_append_sheet(wb, ws, "Selected_Students");
-            XLSX.writeFile(wb, "Final_Selections.xlsx");
+        function endSession() {
+            clearInterval(timerInterval);
+            calculateResults();
+            switchView('view-result');
         }
 
-        // --- 6. ADD DATA ---
-        document.getElementById('addForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newStudent = {
-                name: document.getElementById('inpName').value,
-                mobile: document.getElementById('inpMobile').value,
-                roll: document.getElementById('inpRoll').value,
-                exam: document.getElementById('inpExam').value,
-                city: document.getElementById('inpCity').value,
-                status: "Pending"
-            };
-            students.push(newStudent);
-            localStorage.setItem('qeProData', JSON.stringify(students));
-            alert("Student Added!");
-            document.getElementById('addForm').reset();
-            showSection('calling');
-        });
+        function calculateResults() {
+            let score = 0;
+            let correct = 0;
+            let wrong = 0;
 
-        function deleteStudent(index) {
-            if(confirm("Delete this student?")) {
-                students.splice(index, 1);
-                localStorage.setItem('qeProData', JSON.stringify(students));
-                renderList();
-                updateDashboard();
-            }
+            sessionQuestions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                if(userAns === undefined) return; // Skipped
+
+                if(userAns === q.correct) {
+                    score += 1; // +1 Marks
+                    correct++;
+                } else {
+                    score -= 0.33; // Negative Marks
+                    wrong++;
+                }
+            });
+
+            // Prevent negative total
+            if(score < 0) score = 0;
+
+            // Display
+            document.getElementById('score-val').innerText = score.toFixed(2);
+            document.getElementById('res-correct').innerText = correct;
+            document.getElementById('res-wrong').innerText = wrong;
+            
+            const total = sessionQuestions.length;
+            const accuracy = Math.round((correct / total) * 100);
+            document.getElementById('res-accuracy').innerText = accuracy + "%";
+
+            // Animate Ring
+            const ring = document.getElementById('score-ring');
+            const circumference = 339.292;
+            const offset = circumference - ((accuracy / 100) * circumference);
+            setTimeout(() => ring.style.strokeDashoffset = offset, 100);
         }
 
-        // Init
-        updateDashboard();
+        // --- REVIEW MODE ---
+        function showReview() {
+            switchView('view-review');
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            sessionQuestions.forEach((q, idx) => {
+                const userChoice = userAnswers[idx];
+                const isCorrect = userChoice === q.correct;
+                const isSkipped = userChoice === undefined;
+
+                let statusClass = isSkipped ? "border-slate-700" : (isCorrect ? "border-green-500/50 bg-green-900/10" : "border-red-500/50 bg-red-900/10");
+                let statusIcon = isSkipped ? "" : (isCorrect ? '<i class="fas fa-check text-green-500 float-right"></i>' : '<i class="fas fa-times text-red-500 float-right"></i>');
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-xl border ${statusClass} bg-slate-800/50`;
+                
+                let optionsHtml = q.options.map((opt, oIdx) => {
+                    let optClass = "text-slate-400";
+                    if(oIdx === q.correct) optClass = "text-green-400 font-bold"; // Always show correct
+                    else if(oIdx === userChoice && !isCorrect) optClass = "text-red-400 line-through"; // Show user wrong choice
+                    return `<div class="text-sm ${optClass}">${String.fromCharCode(65+oIdx)}. ${opt}</div>`;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="mb-2 text-sm text-slate-500">Q${idx+1} • ${q.subject} ${statusIcon}</div>
+                    <div class="font-medium text-white mb-3">${q.question}</div>
+                    <div class="space-y-1 mb-4 pl-2 border-l-2 border-slate-700">${optionsHtml}</div>
+                    <div class="bg-slate-900/50 p-3 rounded text-xs text-blue-200">
+                        <span class="font-bold text-blue-400">Explanation:</span> ${q.explanation}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- UTILS ---
+        function switchView(viewId) {
+            ['view-dashboard', 'view-quiz', 'view-result', 'view-review'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function goHome() {
+            switchView('view-dashboard');
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timer').innerText = "00:00";
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                const m = Math.floor(timeElapsed / 60).toString().padStart(2, '0');
+                const s = (timeElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // --- IMPORT LOGIC ---
+        function openImportModal() { document.getElementById('import-modal').classList.remove('hidden'); }
+        function saveCustomData() {
+            try {
+                const data = JSON.parse(document.getElementById('json-input').value);
+                if(!Array.isArray(data)) throw new Error("Not an array");
+                
+                const existing = localStorage.getItem('ras_v3_custom') || '[]';
+                const newSet = [...JSON.parse(existing), ...data];
+                localStorage.setItem('ras_v3_custom', JSON.stringify(newSet));
+                
+                alert("Import Successful!");
+                document.getElementById('import-modal').classList.add('hidden');
+                init();
+            } catch(e) { alert("Invalid JSON!"); }
+        }
+
+        // Boot
+        init();
 
     </script>
 </body>
