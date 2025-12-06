@@ -1,227 +1,212 @@
-<!-- Doctor Appointment Booking App with Admin Panel -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laxmi Medicose Kherli</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-</head>
-<body class="bg-gradient-to-r from-green-200 to-blue-300 min-h-screen flex flex-col">
-  <header class="bg-white shadow p-4 text-center text-2xl font-bold text-blue-600 flex justify-between items-center">
-    <div>
-      <div>Laxmi Medicose Kherli</div>
-      <div class="text-sm text-gray-500">Doctor Appointment Booking</div>
-    </div>
-    <span class="text-sm text-gray-500">Tokens: <span id="tokenCount">0</span></span>
-  </header>
-
-  <main class="flex-1 p-4">
-    <div class="flex justify-center space-x-4 mb-4">
-      <button onclick="showTab('bookingTab')" class="px-4 py-2 bg-blue-600 text-white rounded">Book Appointment</button>
-      <button onclick="showTab('viewTab')" class="px-4 py-2 bg-purple-600 text-white rounded">View My Appointment</button>
-      <button onclick="showTab('adminTab')" class="px-4 py-2 bg-red-600 text-white rounded">Admin</button>
-    </div>
-
-    <!-- Booking Form Tab -->
-    <div id="bookingTab" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Book an Appointment</h2>
-      <form id="appointmentForm" class="space-y-4">
-        <!-- form fields here (same as before) -->
-        <div>
-          <label class="block text-gray-600">Patient Name</label>
-          <input type="text" id="patientName" class="w-full p-2 border rounded" required>
-        </div>
-        <div>
-          <label class="block text-gray-600">Mobile Number</label>
-          <input type="tel" id="mobileNumber" class="w-full p-2 border rounded" required>
-        </div>
-        <div>
-          <label class="block text-gray-600">Select Doctor</label>
-          <select id="doctorName" class="w-full p-2 border rounded" required>
-            <option value="">Choose Doctor</option>
-            <option value="Dr. Deendayal Bairwa - Orthopaedic">Dr. Deendayal Bairwa - Orthopaedic</option>
-            <option value="Dr. Santosh Yadav - ENT Specialist">Dr. Santosh Yadav - ENT Specialist</option>
-            <option value="Dr. Dinesh Yadav - Opthalmologist">Dr. Dinesh Yadav - Opthalmologist</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-gray-600">Prepaid</label>
-          <select id="prepaidStatus" class="w-full p-2 border rounded">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-gray-600">Appointment Date</label>
-          <input type="date" id="appointmentDate" class="w-full p-2 border rounded" required>
-        </div>
-        <div>
-          <label class="block text-gray-600">Appointment Time</label>
-          <input type="time" id="appointmentTime" class="w-full p-2 border rounded" required>
-        </div>
-        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Book Appointment</button>
-      </form>
-    </div>
-
-    <!-- View Own Appointments Tab -->
-    <div id="viewTab" class="hidden max-w-3xl mx-auto space-y-4">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">My Appointment</h2>
-      <div id="appointmentsList"></div>
-    </div>
-
-    <!-- Admin Tab -->
-    <div id="adminTab" class="hidden max-w-3xl mx-auto space-y-4">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Admin Login</h2>
-      <div id="adminLogin">
-        <input type="text" id="adminUsername" placeholder="Username" class="w-full p-2 border rounded mb-2">
-        <input type="password" id="adminPassword" placeholder="Password" class="w-full p-2 border rounded mb-2">
-        <button onclick="loginAdmin()" class="w-full bg-red-500 hover:bg-red-600 text-white p-2 rounded">Login</button>
-      </div>
-      <div id="adminContent" class="hidden">
-        <h3 class="text-lg font-semibold text-gray-700 mb-4">All Appointments (Admin View)</h3>
-        <div id="adminAppointmentsList"></div>
-      </div>
-    </div>
-
-  </main>
-
-  <footer class="bg-white shadow p-4 text-center text-gray-600">
-    Built with Love
-  </footer>
-
-  <script>
-    let tokenCounter = parseInt(localStorage.getItem('tokenCounter')) || 1;
-
-    function updateTokenCount() {
-      const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-      const activeTokens = appointments.filter(appt => appt.status !== 'Cancelled').length;
-      document.getElementById('tokenCount').textContent = activeTokens;
-    }
-
-    function showTab(tabId) {
-      document.getElementById('bookingTab').classList.add('hidden');
-      document.getElementById('viewTab').classList.add('hidden');
-      document.getElementById('adminTab').classList.add('hidden');
-      document.getElementById(tabId).classList.remove('hidden');
-      if (tabId === 'viewTab') loadAppointments('appointmentsList', false);
-      if (tabId === 'adminTab') {
-        document.getElementById('adminLogin').classList.remove('hidden');
-        document.getElementById('adminContent').classList.add('hidden');
-      }
-    }
-
-    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const patientName = document.getElementById('patientName').value;
-      const mobileNumber = document.getElementById('mobileNumber').value;
-      const doctorName = document.getElementById('doctorName').value;
-      const appointmentDate = document.getElementById('appointmentDate').value;
-      const appointmentTime = document.getElementById('appointmentTime').value;
-      const prepaidStatus = document.getElementById('prepaidStatus').value;
-
-      const appointment = {
-        id: Date.now(),
-        token: tokenCounter++,
-        patientName,
-        mobileNumber,
-        doctorName,
-        appointmentDate,
-        appointmentTime,
-        prepaidStatus,
-        status: "Booked"
-      };
-
-      let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-      appointments.push(appointment);
-      localStorage.setItem('appointments', JSON.stringify(appointments));
-      localStorage.setItem('tokenCounter', tokenCounter);
-
-      alert("Appointment booked successfully!");
-      document.getElementById('appointmentForm').reset();
-      updateTokenCount();
-    });
-
-    function maskMobile(mobile) {
-      return mobile.slice(0, 5) + '*****';
-    }
-
-    function cancelAppointment(id) {
-      let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-      appointments = appointments.map(appt => {
-        if (appt.id === id) {
-          appt.status = 'Cancelled';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mind Reader Protocol</title>
+    <style>
+        /* Futuristic Dark Theme Styling */
+        body {
+            background-color: #0a0a0a; /* गहरा काला बैकग्राउंड */
+            color: #00ff9d; /* नियॉन हरा टेक्स्ट */
+            font-family: 'Courier New', Courier, monospace; /* हैकर जैसा फॉन्ट */
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
-        return appt;
-      });
-      localStorage.setItem('appointments', JSON.stringify(appointments));
-      loadAppointments('adminAppointmentsList', true);
-      updateTokenCount();
-      alert("Appointment cancelled successfully.");
-    }
 
-    function loadAppointments(listId, isAdmin) {
-      const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-      const appointmentsList = document.getElementById(listId);
-      appointmentsList.innerHTML = '';
+        h1 {
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px #00ff9d; /* टेक्स्ट में ग्लो इफेक्ट */
+            margin-bottom: 30px;
+        }
 
-      let filteredAppointments = [];
+        .container {
+            background: rgba(0, 255, 157, 0.05);
+            padding: 30px;
+            border: 1px solid #00ff9d;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+            max-width: 600px;
+            width: 100%;
+        }
 
-      if (isAdmin) {
-        filteredAppointments = appointments;
-      } else {
-        filteredAppointments = appointments.length ? [appointments[appointments.length-1]] : [];
-      }
+        .instructions {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: left;
+        }
 
-      if (filteredAppointments.length === 0) {
-        appointmentsList.innerHTML = '<p class="text-center text-gray-700">No appointments found!</p>';
-        return;
-      }
+        .highlight {
+            color: #ffffff;
+            font-weight: bold;
+            text-decoration: underline;
+        }
 
-      filteredAppointments.forEach((appt) => {
-        const div = document.createElement('div');
-        div.className = "bg-white p-4 rounded-xl shadow-md flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4";
+        /* नंबर और सिंबल का ग्रिड */
+        #symbolGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto; /* स्क्रॉल करने के लिए */
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px dashed #00ff9d;
+        }
 
-        div.innerHTML = `
-          <div class="text-3xl text-blue-500">
-            <i class="fas fa-user-md"></i>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-semibold text-gray-800">${appt.doctorName}</h3>
-            <p class="text-gray-600">Patient: ${appt.patientName}</p>
-            <p class="text-gray-600">Mobile: ${isAdmin ? appt.mobileNumber : maskMobile(appt.mobileNumber)}</p>
-            <p class="text-gray-600">Date: ${appt.appointmentDate}</p>
-            <p class="text-gray-600">Time: ${appt.appointmentTime}</p>
-            <p class="text-gray-600">Prepaid: ${appt.prepaidStatus}</p>
-            <p class="text-${appt.status === 'Cancelled' ? 'red' : 'green'}-600 font-bold mt-1">Status: ${appt.status}</p>
-            <p class="text-yellow-600 font-semibold">Token #: ${appt.token}</p>
-          </div>
-          ${isAdmin && appt.status !== 'Cancelled' ? `
-          <div>
-            <button onclick="cancelAppointment(${appt.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Cancel</button>
-          </div>` : ''}
-        `;
-        appointmentsList.appendChild(div);
-      });
+        .grid-item {
+            padding: 5px;
+            font-size: 1.1em;
+        }
 
-      updateTokenCount();
-    }
+        /* बटन की स्टाइलिंग */
+        .magic-button {
+            background-color: transparent;
+            color: #00ff9d;
+            border: 2px solid #00ff9d;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
 
-    function loginAdmin() {
-      const username = document.getElementById('adminUsername').value;
-      const password = document.getElementById('adminPassword').value;
-      if (username === 'admin' && password === 'admin123') {
-        document.getElementById('adminLogin').classList.add('hidden');
-        document.getElementById('adminContent').classList.remove('hidden');
-        loadAppointments('adminAppointmentsList', true);
-      } else {
-        alert('Invalid credentials!');
-      }
-    }
+        .magic-button:hover {
+            background-color: #00ff9d;
+            color: #0a0a0a;
+            box-shadow: 0 0 25px #00ff9d;
+        }
 
-    showTab('bookingTab');
-    updateTokenCount();
-  </script>
+        /* रिजल्ट दिखाने वाला सेक्शन */
+        #resultSection {
+            display: none; /* शुरुआत में छिपा रहेगा */
+            margin-top: 20px;
+        }
+
+        #calculatingText {
+            font-size: 1.5em;
+            animation: blink 1s infinite;
+        }
+
+        #finalSymbol {
+            font-size: 6em;
+            margin-top: 20px;
+            text-shadow: 0 0 30px #00ff9d;
+            animation: popIn 0.5s ease-out;
+        }
+
+        /* एनिमेशन */
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* स्क्रॉलबार को भी सुंदर बनाते हैं */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ff9d;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>> AI Mind Reader Protocol <</h1>
+
+    <div class="container" id="gameContainer">
+        <div class="instructions">
+            <p>1. कोई भी <span class="highlight">दो अंकों (2-digit)</span> की संख्या सोचें। (जैसे: 47)</p>
+            <p>2. दोनों अंकों को जोड़ें। (जैसे: 4 + 7 = 11)</p>
+            <p>3. मूल संख्या में से उस जोड़ को घटा दें। (जैसे: 47 - 11 = <span class="highlight">36</span>)</p>
+            <p>4. नीचे ग्रिड में अपने उत्तर (36) के सामने वाला सिंबल (Symbol) देखें और उसे याद रखें।</p>
+        </div>
+
+        <div id="symbolGrid"></div>
+
+        <button class="magic-button" onclick="revealMind()">> मेरे दिमाग को पढ़ो <</button>
+    </div>
+
+    <div id="resultSection" class="container">
+        <div id="calculatingText">AI गणना कर रहा है...</div>
+        <div id="finalSymbol"></div>
+        <br>
+        <button class="magic-button" onclick="location.reload()">> फिर से खेलें <</button>
+    </div>
+
+
+    <script>
+        // --- जावास्क्रिप्ट लॉजिक (जादू का कोड) ---
+
+        // 1. अजीब सिम्बल्स की एक लिस्ट
+        const symbols = ['Ω', 'Ψ', 'π', 'Σ', 'Ξ', 'Δ', 'Φ', '⚡', '❄', '☠', '☮', '☯', '♤', '♡', '♢', '♧', '♪', '♫', '⌘', '✂'];
+        
+        // 2. इस राउंड के लिए एक "गुप्त सिंबल" चुनें (जो 9 के गुणजों पर आएगा)
+        // Math.random() से लिस्ट में से कोई एक सिंबल चुना जाएगा।
+        const secretSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+        const gridContainer = document.getElementById('symbolGrid');
+
+        // 3. 0 से 99 तक का ग्रिड बनाना
+        for (let i = 0; i < 100; i++) {
+            let symbolForThisNumber;
+
+            // **मुख्य ट्रिक:** अगर संख्या 9 से पूरी तरह विभाजित होती है (i % 9 === 0)
+            if (i % 9 === 0) {
+                // तो उसे गुप्त सिंबल दें (9, 18, 27, 36... सब पर यही सिंबल होगा)
+                symbolForThisNumber = secretSymbol;
+            } else {
+                // नहीं तो, कोई भी रैंडम सिंबल दे दें ताकि ग्रिड असली लगे
+                symbolForThisNumber = symbols[Math.floor(Math.random() * symbols.length)];
+            }
+            
+            // ग्रिड में नंबर और सिंबल जोड़ना
+            const gridItem = document.createElement('div');
+            gridItem.className = 'grid-item';
+            gridItem.innerText = `${i} : ${symbolForThisNumber}`;
+            gridContainer.appendChild(gridItem);
+        }
+
+        // 4. जब बटन दबाया जाएगा तब क्या होगा
+        function revealMind() {
+            // गेम वाला हिस्सा छिपाएं
+            document.getElementById('gameContainer').style.display = 'none';
+            // रिजल्ट वाला हिस्सा दिखाएं
+            document.getElementById('resultSection').style.display = 'block';
+            
+            const calculatingText = document.getElementById('calculatingText');
+            const finalSymbolDiv = document.getElementById('finalSymbol');
+            finalSymbolDiv.style.display = 'none'; // सिंबल को थोड़ी देर छिपा कर रखें
+
+            // थोड़ा सस्पेंस बनाने के लिए 2 सेकंड का इंतज़ार (Timeout)
+            setTimeout(() => {
+                calculatingText.innerText = "आपके दिमाग में यह सिंबल है:";
+                calculatingText.style.animation = 'none'; // ब्लिंक करना बंद करें
+                
+                finalSymbolDiv.innerText = secretSymbol; // गुप्त सिंबल दिखाएं!
+                finalSymbolDiv.style.display = 'block';
+            }, 2500); // 2500ms = 2.5 सेकंड
+        }
+
+    </script>
+
 </body>
 </html>
