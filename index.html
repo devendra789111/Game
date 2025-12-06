@@ -1,212 +1,456 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Mind Reader Protocol</title>
+    <title>Quality Education - PRO Command Center</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
-        /* Futuristic Dark Theme Styling */
-        body {
-            background-color: #0a0a0a; /* गहरा काला बैकग्राउंड */
-            color: #00ff9d; /* नियॉन हरा टेक्स्ट */
-            font-family: 'Courier New', Courier, monospace; /* हैकर जैसा फॉन्ट */
-            text-align: center;
-            margin: 0;
+        :root {
+            --primary: #00f3ff;
+            --secondary: #7000ff;
+            --success: #00ff88;
+            --danger: #ff0055;
+            --bg-dark: #0a0a12;
+            --glass: rgba(20, 20, 35, 0.85);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        
+        body { background-color: var(--bg-dark); color: white; overflow: hidden; display: flex; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            border-right: 1px solid var(--primary);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            gap: 20px;
         }
 
-        h1 {
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px #00ff9d; /* टेक्स्ट में ग्लो इफेक्ट */
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
             margin-bottom: 30px;
         }
 
-        .container {
-            background: rgba(0, 255, 157, 0.05);
-            padding: 30px;
-            border: 1px solid #00ff9d;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
-            max-width: 600px;
-            width: 100%;
-        }
-
-        .instructions {
-            font-size: 1.2em;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            text-align: left;
-        }
-
-        .highlight {
-            color: #ffffff;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        /* नंबर और सिंबल का ग्रिड */
-        #symbolGrid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-            max-height: 300px;
-            overflow-y: auto; /* स्क्रॉल करने के लिए */
-            margin-bottom: 30px;
+        .nav-item {
             padding: 15px;
-            border: 1px dashed #00ff9d;
-        }
-
-        .grid-item {
-            padding: 5px;
-            font-size: 1.1em;
-        }
-
-        /* बटन की स्टाइलिंग */
-        .magic-button {
-            background-color: transparent;
-            color: #00ff9d;
-            border: 2px solid #00ff9d;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary);
+            color: black;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+        }
+
+        /* Dashboard Widgets */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .card h3 { color: #aaa; font-size: 0.9rem; margin-bottom: 10px; }
+        .card .value { font-size: 2rem; font-weight: bold; font-family: 'Orbitron'; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: rgba(0, 243, 255, 0.1); color: var(--primary); padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr:hover { background: rgba(255,255,255,0.05); }
+
+        /* Action Buttons */
+        .btn-icon {
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-wa { background: #25D366; color: white; }
+        .btn-call { background: var(--primary); color: black; }
+        .btn-del { background: var(--danger); color: white; }
+        .btn-icon:hover { transform: scale(1.1); box-shadow: 0 0 10px white; }
+
+        /* Input Forms */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-main {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 2px;
+        }
+        
+        /* Result Matcher Specifics */
+        .matcher-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .match-result-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success);
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
         }
 
-        .magic-button:hover {
-            background-color: #00ff9d;
-            color: #0a0a0a;
-            box-shadow: 0 0 25px #00ff9d;
-        }
-
-        /* रिजल्ट दिखाने वाला सेक्शन */
-        #resultSection {
-            display: none; /* शुरुआत में छिपा रहेगा */
-            margin-top: 20px;
-        }
-
-        #calculatingText {
-            font-size: 1.5em;
-            animation: blink 1s infinite;
-        }
-
-        #finalSymbol {
-            font-size: 6em;
-            margin-top: 20px;
-            text-shadow: 0 0 30px #00ff9d;
-            animation: popIn 0.5s ease-out;
-        }
-
-        /* एनिमेशन */
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            80% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* स्क्रॉलबार को भी सुंदर बनाते हैं */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #00ff9d;
-            border-radius: 4px;
-        }
+        /* Sections Toggle */
+        .section { display: none; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     </style>
 </head>
 <body>
 
-    <h1>> AI Mind Reader Protocol <</h1>
+    <div class="sidebar">
+        <div class="brand"><i class="fas fa-atom"></i> Q-Edu HUB</div>
+        <div class="nav-item active" onclick="showSection('dashboard')">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </div>
+        <div class="nav-item" onclick="showSection('calling')">
+            <i class="fas fa-headset"></i> Telecalling List
+        </div>
+        <div class="nav-item" onclick="showSection('matcher')">
+            <i class="fas fa-magic"></i> Auto Result Matcher
+        </div>
+        <div class="nav-item" onclick="showSection('add-data')">
+            <i class="fas fa-user-plus"></i> Add New Data
+        </div>
+    </div>
 
-    <div class="container" id="gameContainer">
-        <div class="instructions">
-            <p>1. कोई भी <span class="highlight">दो अंकों (2-digit)</span> की संख्या सोचें। (जैसे: 47)</p>
-            <p>2. दोनों अंकों को जोड़ें। (जैसे: 4 + 7 = 11)</p>
-            <p>3. मूल संख्या में से उस जोड़ को घटा दें। (जैसे: 47 - 11 = <span class="highlight">36</span>)</p>
-            <p>4. नीचे ग्रिड में अपने उत्तर (36) के सामने वाला सिंबल (Symbol) देखें और उसे याद रखें।</p>
+    <div class="main-content">
+        
+        <div id="dashboard" class="section active">
+            <h2 style="margin-bottom: 20px; color: var(--primary);">TELECALLER PERFORMANCE</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Total Students</h3>
+                    <div class="value" id="dispTotal">0</div>
+                </div>
+                <div class="card">
+                    <h3>Calls Made Today</h3>
+                    <div class="value" id="dispCalls">0</div>
+                </div>
+                <div class="card">
+                    <h3>Selections Found</h3>
+                    <div class="value" style="color: var(--success);" id="dispSelections">0</div>
+                </div>
+            </div>
+            
+            <div class="card" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                <canvas id="performanceChart"></canvas>
+            </div>
         </div>
 
-        <div id="symbolGrid"></div>
+        <div id="calling" class="section">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2 style="color: var(--primary);">ACTIVE CALLING LIST</h2>
+                <input type="text" id="searchBar" placeholder="Search by Name/City..." onkeyup="renderList()" style="width: 300px;">
+            </div>
+            
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Exam Target</th>
+                            <th>Status</th>
+                            <th>Actions (One-Click)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teleTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
 
-        <button class="magic-button" onclick="revealMind()">> मेरे दिमाग को पढ़ो <</button>
+        <div id="matcher" class="section">
+            <h2 style="color: var(--success); margin-bottom: 20px;">AI RESULT MATCHER</h2>
+            <p style="color: #aaa; margin-bottom: 10px;">Paste the Roll Numbers from the Govt PDF Result below. We will find your students automatically.</p>
+            
+            <div class="matcher-area">
+                <div class="card">
+                    <h3>Paste Result Text / Roll Numbers Here:</h3>
+                    <textarea id="pasteArea" style="height: 250px; background: #000;" placeholder="Paste text containing roll numbers like 20145, 20146..."></textarea>
+                    <button class="btn-main" onclick="matchResults()" style="width: 100%; margin-top: 10px;">
+                        <i class="fas fa-search"></i> SCAN & MATCH
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3>Matched Students (Passed)</h3>
+                    <div id="matchOutput" class="match-result-box">
+                        <div style="text-align: center; color: #555; margin-top: 50px;">Waiting for scan...</div>
+                    </div>
+                    <button class="btn-main" onclick="exportMatches()" style="background: var(--success); width: 100%; margin-top: 10px;">
+                        <i class="fas fa-file-excel"></i> Export Selected List
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="add-data" class="section">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <h2 style="color: var(--primary); margin-bottom: 20px;">ADD NEW ENTRY</h2>
+                <form id="addForm">
+                    <label>Student Name</label>
+                    <input type="text" id="inpName" required>
+                    
+                    <label>Mobile Number (for WhatsApp)</label>
+                    <input type="number" id="inpMobile" required>
+                    
+                    <label>Roll Number</label>
+                    <input type="text" id="inpRoll" required>
+                    
+                    <label>Target Exam</label>
+                    <select id="inpExam">
+                        <option>RAS</option>
+                        <option>VDO</option>
+                        <option>Patwar</option>
+                        <option>LDC</option>
+                        <option>CET</option>
+                    </select>
+                    
+                    <label>City</label>
+                    <input type="text" id="inpCity">
+                    
+                    <button type="submit" class="btn-main" style="width: 100%; margin-top: 15px;">Save to Database</button>
+                </form>
+            </div>
+        </div>
+
     </div>
-
-    <div id="resultSection" class="container">
-        <div id="calculatingText">AI गणना कर रहा है...</div>
-        <div id="finalSymbol"></div>
-        <br>
-        <button class="magic-button" onclick="location.reload()">> फिर से खेलें <</button>
-    </div>
-
 
     <script>
-        // --- जावास्क्रिप्ट लॉजिक (जादू का कोड) ---
+        // --- 1. DATA STORAGE & STATE ---
+        let students = JSON.parse(localStorage.getItem('qeProData')) || [
+            { name: "Rahul Sharma", mobile: "9876543210", roll: "1001", exam: "RAS", city: "Jaipur", status: "Pending" },
+            { name: "Priya Singh", mobile: "9123456789", roll: "1002", exam: "VDO", city: "Jodhpur", status: "Called" }
+        ];
 
-        // 1. अजीब सिम्बल्स की एक लिस्ट
-        const symbols = ['Ω', 'Ψ', 'π', 'Σ', 'Ξ', 'Δ', 'Φ', '⚡', '❄', '☠', '☮', '☯', '♤', '♡', '♢', '♧', '♪', '♫', '⌘', '✂'];
-        
-        // 2. इस राउंड के लिए एक "गुप्त सिंबल" चुनें (जो 9 के गुणजों पर आएगा)
-        // Math.random() से लिस्ट में से कोई एक सिंबल चुना जाएगा।
-        const secretSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+        let matchedStudents = [];
+        let callsToday = 0;
 
-        const gridContainer = document.getElementById('symbolGrid');
+        // --- 2. NAVIGATION ---
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // Highlight nav item
+            const navMap = {'dashboard':0, 'calling':1, 'matcher':2, 'add-data':3};
+            document.querySelectorAll('.nav-item')[navMap[id]].classList.add('active');
+            
+            if(id === 'dashboard') updateDashboard();
+            if(id === 'calling') renderList();
+        }
 
-        // 3. 0 से 99 तक का ग्रिड बनाना
-        for (let i = 0; i < 100; i++) {
-            let symbolForThisNumber;
+        // --- 3. DASHBOARD CHARTS ---
+        let chartInstance = null;
+        function updateDashboard() {
+            document.getElementById('dispTotal').innerText = students.length;
+            document.getElementById('dispCalls').innerText = callsToday;
+            document.getElementById('dispSelections').innerText = matchedStudents.length;
 
-            // **मुख्य ट्रिक:** अगर संख्या 9 से पूरी तरह विभाजित होती है (i % 9 === 0)
-            if (i % 9 === 0) {
-                // तो उसे गुप्त सिंबल दें (9, 18, 27, 36... सब पर यही सिंबल होगा)
-                symbolForThisNumber = secretSymbol;
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Called', 'Selected'],
+                    datasets: [{
+                        data: [students.length - callsToday, callsToday, matchedStudents.length],
+                        backgroundColor: ['#333', '#00f3ff', '#00ff88'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: 'white' } },
+                        title: { display: true, text: 'Daily Call Efficiency', color: 'white' }
+                    }
+                }
+            });
+        }
+
+        // --- 4. TELECALLING LOGIC ---
+        function renderList() {
+            const tbody = document.getElementById('teleTableBody');
+            tbody.innerHTML = '';
+            const search = document.getElementById('searchBar').value.toLowerCase();
+
+            students.forEach((s, index) => {
+                if(s.name.toLowerCase().includes(search) || s.city.toLowerCase().includes(search)) {
+                    const row = `
+                        <tr>
+                            <td><strong>${s.name}</strong><br><small style="color:#888">${s.city}</small></td>
+                            <td>${s.mobile}</td>
+                            <td><span style="color:var(--primary)">${s.exam}</span></td>
+                            <td>${s.status}</td>
+                            <td>
+                                <button class="btn-icon btn-call" onclick="makeCall('${s.mobile}', ${index})" title="Call">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="btn-icon btn-wa" onclick="sendWhatsapp('${s.mobile}', '${s.name}')" title="WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                                <button class="btn-icon btn-del" onclick="deleteStudent(${index})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+            });
+        }
+
+        function makeCall(number, index) {
+            window.location.href = `tel:${number}`;
+            students[index].status = "Called";
+            callsToday++;
+            localStorage.setItem('qeProData', JSON.stringify(students));
+            renderList();
+        }
+
+        function sendWhatsapp(number, name) {
+            // Smart Message Template
+            const msg = `Hello ${name}, Quality Education Institute se baat kar rahe hain regarding your exam preparation.`;
+            const url = `https://wa.me/91${number}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        // --- 5. RESULT MATCHER (The Magic Feature) ---
+        function matchResults() {
+            const rawText = document.getElementById('pasteArea').value;
+            if(!rawText) return alert("Please paste result text first!");
+
+            matchedStudents = [];
+            const outputDiv = document.getElementById('matchOutput');
+            outputDiv.innerHTML = "";
+
+            // Simple logic: Check if stored roll number exists in pasted text
+            students.forEach(student => {
+                // Ensure precise match (avoid partial matches)
+                const regex = new RegExp(`\\b${student.roll}\\b`);
+                if(regex.test(rawText) || rawText.includes(student.roll)) {
+                    matchedStudents.push(student);
+                    
+                    const div = document.createElement('div');
+                    div.style.padding = "10px";
+                    div.style.borderBottom = "1px solid #333";
+                    div.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success)"></i> 
+                                     <strong>${student.name}</strong> (Roll: ${student.roll}) - ${student.exam}`;
+                    outputDiv.appendChild(div);
+                }
+            });
+
+            if(matchedStudents.length === 0) {
+                outputDiv.innerHTML = "<div style='color:var(--danger)'>No matches found.</div>";
             } else {
-                // नहीं तो, कोई भी रैंडम सिंबल दे दें ताकि ग्रिड असली लगे
-                symbolForThisNumber = symbols[Math.floor(Math.random() * symbols.length)];
+                alert(`Success! Found ${matchedStudents.length} selected students.`);
+                updateDashboard();
             }
-            
-            // ग्रिड में नंबर और सिंबल जोड़ना
-            const gridItem = document.createElement('div');
-            gridItem.className = 'grid-item';
-            gridItem.innerText = `${i} : ${symbolForThisNumber}`;
-            gridContainer.appendChild(gridItem);
         }
 
-        // 4. जब बटन दबाया जाएगा तब क्या होगा
-        function revealMind() {
-            // गेम वाला हिस्सा छिपाएं
-            document.getElementById('gameContainer').style.display = 'none';
-            // रिजल्ट वाला हिस्सा दिखाएं
-            document.getElementById('resultSection').style.display = 'block';
-            
-            const calculatingText = document.getElementById('calculatingText');
-            const finalSymbolDiv = document.getElementById('finalSymbol');
-            finalSymbolDiv.style.display = 'none'; // सिंबल को थोड़ी देर छिपा कर रखें
-
-            // थोड़ा सस्पेंस बनाने के लिए 2 सेकंड का इंतज़ार (Timeout)
-            setTimeout(() => {
-                calculatingText.innerText = "आपके दिमाग में यह सिंबल है:";
-                calculatingText.style.animation = 'none'; // ब्लिंक करना बंद करें
-                
-                finalSymbolDiv.innerText = secretSymbol; // गुप्त सिंबल दिखाएं!
-                finalSymbolDiv.style.display = 'block';
-            }, 2500); // 2500ms = 2.5 सेकंड
+        function exportMatches() {
+            if(matchedStudents.length === 0) return alert("No matches to export.");
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(matchedStudents);
+            XLSX.utils.book_append_sheet(wb, ws, "Selected_Students");
+            XLSX.writeFile(wb, "Final_Selections.xlsx");
         }
+
+        // --- 6. ADD DATA ---
+        document.getElementById('addForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newStudent = {
+                name: document.getElementById('inpName').value,
+                mobile: document.getElementById('inpMobile').value,
+                roll: document.getElementById('inpRoll').value,
+                exam: document.getElementById('inpExam').value,
+                city: document.getElementById('inpCity').value,
+                status: "Pending"
+            };
+            students.push(newStudent);
+            localStorage.setItem('qeProData', JSON.stringify(students));
+            alert("Student Added!");
+            document.getElementById('addForm').reset();
+            showSection('calling');
+        });
+
+        function deleteStudent(index) {
+            if(confirm("Delete this student?")) {
+                students.splice(index, 1);
+                localStorage.setItem('qeProData', JSON.stringify(students));
+                renderList();
+                updateDashboard();
+            }
+        }
+
+        // Init
+        updateDashboard();
 
     </script>
-
 </body>
 </html>
