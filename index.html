@@ -1,477 +1,371 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAS Elite Mock V3.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Teko:wght@500;600&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAS Elite Mock V3.0</title>
 
-        :root {
-            --primary: #3b82f6;
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-        }
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: #e2e8f0; }
-        .heading-font { font-family: 'Teko', sans-serif; letter-spacing: 1px; }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Teko:wght@500;600&display=swap');
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+body{
+font-family:'Inter',sans-serif;
+background:radial-gradient(circle at top,#0f1b3d,#020617);
+color:#e2e8f0;
+}
+.heading-font{font-family:'Teko',sans-serif;letter-spacing:1px}
 
-        /* Animations */
-        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* Glass UI */
+.glass{
+background:rgba(30,41,59,.65);
+backdrop-filter:blur(10px);
+border:1px solid rgba(255,255,255,.06);
+}
 
-        .subject-card { transition: all 0.2s; border: 1px solid #334155; }
-        .subject-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3); }
-        .subject-card.selected { background: rgba(59, 130, 246, 0.2); border-color: var(--primary); }
+/* Subject Cards */
+.subject-card{
+transition:.25s;
+cursor:pointer;
+}
+.subject-card:hover{
+transform:translateY(-4px);
+box-shadow:0 10px 30px rgba(59,130,246,.35);
+}
+.subject-card.selected{
+background:rgba(59,130,246,.18);
+border-color:#3b82f6;
+}
 
-        .option-btn { transition: all 0.2s; }
-        .option-btn:hover:not(:disabled) { background-color: #334155; }
-        
-        /* Result Colors */
-        .res-correct { background-color: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; }
-        .res-wrong { background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
-        .res-missed { border: 1px solid #eab308; opacity: 0.7; }
-    </style>
+/* Options */
+.option-btn{
+background:#1e293b;
+border:1px solid rgba(255,255,255,.06);
+padding:12px;
+border-radius:10px;
+text-align:left;
+}
+.option-btn:hover{background:#334155}
+.correct{background:rgba(34,197,94,.18);border:1px solid #22c55e}
+.wrong{background:rgba(239,68,68,.18);border:1px solid #ef4444}
+
+/* Glow */
+@keyframes glowPulse{
+0%{box-shadow:0 0 10px rgba(59,130,246,.25)}
+50%{box-shadow:0 0 26px rgba(59,130,246,.55)}
+100%{box-shadow:0 0 10px rgba(59,130,246,.25)}
+}
+.subject-card.selected{animation:glowPulse 2s infinite}
+
+/* Scroll */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{
+background:linear-gradient(#3b82f6,#1e40af);
+border-radius:10px;
+}
+</style>
 </head>
+
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <nav class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center shrink-0 z-20">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-blue-500/30">R</div>
-            <div>
-                <h1 class="heading-font text-2xl text-white leading-none">RAS ELITE</h1>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest">Mock Engine V3.0</p>
-            </div>
-        </div>
-        <button onclick="openImportModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded border border-slate-700 transition">
-            <i class="fas fa-plus-circle mr-1"></i> Import Qs
-        </button>
-    </nav>
+<!-- NAV -->
+<nav class="glass p-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl">R</div>
+<div>
+<h1 class="heading-font text-2xl">RAS ELITE</h1>
+<p class="text-[10px] text-slate-400 uppercase">Mock Engine V3.0</p>
+</div>
+</div>
+<button onclick="openImportModal()" class="text-xs bg-slate-800 px-3 py-1.5 rounded border">
+<i class="fas fa-plus-circle mr-1"></i> Import Qs
+</button>
+</nav>
 
-    <main class="flex-1 relative overflow-hidden flex flex-col items-center justify-center p-4">
-        
-        <div id="view-dashboard" class="w-full max-w-4xl fade-in flex flex-col h-full overflow-y-auto">
-            
-            <div class="text-center mb-8 mt-4">
-                <h2 class="text-3xl font-bold text-white mb-2">Configure Your Test</h2>
-                <p class="text-slate-400 text-sm">Select a subject and difficulty to generate a unique paper.</p>
-            </div>
+<main class="flex-1 p-4 flex flex-col items-center overflow-hidden">
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                <div onclick="selectSubject('All')" class="subject-card selected cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-All">
-                    <i class="fas fa-layer-group text-2xl text-purple-400"></i>
-                    <span class="font-semibold text-sm">Mix (All)</span>
-                </div>
-                <div onclick="selectSubject('History')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-History">
-                    <i class="fas fa-landmark text-2xl text-orange-400"></i>
-                    <span class="font-semibold text-sm">History</span>
-                </div>
-                <div onclick="selectSubject('Geography')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-Geography">
-                    <i class="fas fa-globe-asia text-2xl text-green-400"></i>
-                    <span class="font-semibold text-sm">Geography</span>
-                </div>
-                <div onclick="selectSubject('Polity')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-Polity">
-                    <i class="fas fa-balance-scale text-2xl text-blue-400"></i>
-                    <span class="font-semibold text-sm">Polity</span>
-                </div>
-                <div onclick="selectSubject('Art & Culture')" class="subject-card cursor-pointer bg-slate-800 p-4 rounded-xl flex flex-col items-center gap-2" id="sub-Art">
-                    <i class="fas fa-paint-brush text-2xl text-pink-400"></i>
-                    <span class="font-semibold text-sm">Art & Culture</span>
-                </div>
-                <div class="bg-slate-900/50 border border-slate-700 border-dashed p-4 rounded-xl flex flex-col items-center justify-center">
-                    <span class="text-2xl font-bold text-white" id="total-q-display">0</span>
-                    <span class="text-[10px] text-slate-500 uppercase">Total Questions in Bank</span>
-                </div>
-            </div>
+<!-- DASHBOARD -->
+<div id="view-dashboard" class="w-full max-w-4xl overflow-y-auto">
+<h2 class="text-center text-3xl font-bold my-6">Configure Your Test</h2>
 
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 mb-8">
-                <div class="flex justify-between text-sm text-slate-300 mb-2">
-                    <span>Number of Questions</span>
-                    <span id="slider-val" class="font-bold text-blue-400">10</span>
-                </div>
-                <input type="range" id="q-slider" min="5" max="50" value="10" step="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('slider-val').innerText = this.value">
-            </div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 
-            <button onclick="startSession()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2">
-                <span>START MOCK TEST</span> <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
+<div class="subject-card selected glass p-4 text-center" onclick="selectSubject('All',this)">
+<i class="fas fa-layer-group text-purple-400 text-2xl"></i><div>Mix</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('History',this)">
+<i class="fas fa-landmark text-orange-400 text-2xl"></i><div>History</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('Geography',this)">
+<i class="fas fa-globe-asia text-green-400 text-2xl"></i><div>Geography</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('Polity',this)">
+<i class="fas fa-balance-scale text-blue-400 text-2xl"></i><div>Polity</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('Art & Culture',this)">
+<i class="fas fa-paint-brush text-pink-400 text-2xl"></i><div>Art & Culture</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('Science',this)">
+<i class="fas fa-atom text-cyan-400 text-2xl"></i><div>Science</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('Computer',this)">
+<i class="fas fa-desktop text-indigo-400 text-2xl"></i><div>Computer</div>
+</div>
+<div class="subject-card glass p-4 text-center" onclick="selectSubject('Current Affairs',this)">
+<i class="fas fa-newspaper text-yellow-400 text-2xl"></i><div>Current Affairs</div>
+</div>
 
-        <div id="view-quiz" class="hidden w-full max-w-3xl flex flex-col h-full">
-            
-            <div class="flex justify-between items-center mb-6 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                <div class="flex items-center gap-2 text-sm">
-                    <span class="text-slate-400">Question</span>
-                    <span class="font-bold text-white"><span id="curr-q-num">1</span>/<span id="total-sess-q">10</span></span>
-                </div>
-                <div class="font-mono font-bold text-blue-300 bg-slate-900 px-3 py-1 rounded border border-blue-500/20">
-                    <i class="far fa-clock mr-2"></i><span id="timer">00:00</span>
-                </div>
-            </div>
+</div>
 
-            <div class="flex-1 overflow-y-auto pr-2">
-                <span id="q-tag" class="inline-block px-2 py-1 bg-slate-700 text-[10px] uppercase font-bold text-slate-300 rounded mb-3">HISTORY</span>
-                
-                <h3 id="q-text" class="text-xl md:text-2xl font-medium text-white mb-4 leading-relaxed">
-                    Loading Question...
-                </h3>
+<div class="glass p-4 rounded mb-4">
+<div class="flex justify-between text-sm mb-2">
+<span>Number of Questions</span>
+<span id="q-count">5</span>
+</div>
+<input id="q-slider" type="range" min="1" max="20" value="5"
+oninput="document.getElementById('q-count').innerText=this.value"
+class="w-full">
+</div>
 
-                <div id="q-statements" class="hidden bg-slate-800/60 p-4 rounded border-l-4 border-yellow-600 mb-6 space-y-1 text-slate-300 text-sm"></div>
+<div class="glass p-4 rounded text-center mb-6">
+<div id="total-q-display" class="text-2xl font-bold">0</div>
+<div class="text-xs uppercase">Total Questions</div>
+</div>
 
-                <div id="q-options" class="grid gap-3 mb-8">
-                    </div>
-            </div>
+<button onclick="startSession()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl font-bold">
+START MOCK TEST
+</button>
+</div>
 
-            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center">
-                <button onclick="endSession()" class="text-red-400 text-sm hover:text-red-300 font-medium">End Test</button>
-                <button id="next-btn" onclick="nextQuestion()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition disabled:opacity-50" disabled>
-                    Next <i class="fas fa-chevron-right ml-1"></i>
-                </button>
-            </div>
-        </div>
+<!-- QUIZ -->
+<div id="view-quiz" class="hidden w-full max-w-3xl overflow-y-auto">
+<div class="flex justify-between mb-4">
+<div>Question <span id="curr-q-num"></span>/<span id="total-sess-q"></span></div>
+</div>
 
-        <div id="view-result" class="hidden w-full max-w-2xl text-center fade-in h-full overflow-y-auto">
-            <div class="mt-10 mb-8">
-                <div class="w-32 h-32 mx-auto rounded-full border-8 border-slate-700 flex items-center justify-center relative">
-                    <div class="text-center">
-                        <span class="block text-4xl font-bold text-white" id="score-val">0</span>
-                        <span class="text-[10px] text-slate-400 uppercase">Score</span>
-                    </div>
-                    <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="339.292" stroke-dashoffset="100" id="score-ring" class="transition-all duration-1000"></circle>
-                    </svg>
-                </div>
-            </div>
+<h3 id="q-text" class="text-xl mb-4"></h3>
+<div id="q-options" class="grid gap-3 mb-6"></div>
 
-            <h2 class="text-3xl font-bold text-white mb-2">Test Completed</h2>
-            <p class="text-slate-400 mb-8">Here is your performance summary</p>
+<div class="flex justify-between">
+<button onclick="showResult()" class="text-red-400">
+<i class="fas fa-times-circle mr-1"></i> End Test
+</button>
+<button id="next-btn" onclick="nextQuestion()" disabled class="bg-blue-600 px-6 py-2 rounded">
+Next
+</button>
+</div>
+</div>
 
-            <div class="grid grid-cols-3 gap-4 mb-8">
-                <div class="bg-slate-800 p-3 rounded-lg">
-                    <div class="text-green-400 text-xl font-bold" id="res-correct">0</div>
-                    <div class="text-xs text-slate-500 uppercase">Correct</div>
-                </div>
-                <div class="bg-slate-800 p-3 rounded-lg">
-                    <div class="text-red-400 text-xl font-bold" id="res-wrong">0</div>
-                    <div class="text-xs text-slate-500 uppercase">Wrong</div>
-                </div>
-                <div class="bg-slate-800 p-3 rounded-lg">
-                    <div class="text-blue-400 text-xl font-bold" id="res-accuracy">0%</div>
-                    <div class="text-xs text-slate-500 uppercase">Accuracy</div>
-                </div>
-            </div>
+<!-- RESULT -->
+<div id="view-result" class="hidden w-full max-w-xl text-center overflow-y-auto">
+<h2 class="text-3xl font-bold mb-4">Test Completed</h2>
 
-            <div class="flex flex-col gap-3">
-                <button onclick="showReview()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold border border-slate-600">
-                    <i class="fas fa-eye mr-2"></i> Review Solutions & Explanations
-                </button>
-                <div class="flex gap-3">
-                    <button onclick="startSession()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold">
-                        <i class="fas fa-redo mr-2"></i> Re-Attempt
-                    </button>
-                    <button onclick="goHome()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold">
-                        <i class="fas fa-home mr-2"></i> New Test
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="grid grid-cols-3 gap-4 mb-6">
+<div class="glass p-4 rounded">
+<div id="res-correct" class="text-green-400 text-xl">0</div>
+<div class="text-xs">Correct</div>
+</div>
+<div class="glass p-4 rounded">
+<div id="res-wrong" class="text-red-400 text-xl">0</div>
+<div class="text-xs">Wrong</div>
+</div>
+<div class="glass p-4 rounded">
+<div id="res-accuracy" class="text-blue-400 text-xl">0%</div>
+<div class="text-xs">Accuracy</div>
+</div>
+</div>
 
-        <div id="view-review" class="hidden w-full max-w-3xl h-full flex flex-col fade-in">
-            <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-800">
-                <h2 class="text-xl font-bold text-white">Solutions</h2>
-                <button onclick="goHome()" class="text-sm text-blue-400 hover:underline">Close</button>
-            </div>
-            <div id="review-container" class="flex-1 overflow-y-auto pr-2 space-y-6">
-                </div>
-        </div>
+<button onclick="showReview()" class="w-full bg-slate-700 py-3 rounded mb-3">
+<i class="fas fa-eye mr-1"></i> Review Solutions & Explanations
+</button>
 
-    </main>
+<div class="flex gap-3">
+<button onclick="resetToDashboard()" class="flex-1 bg-slate-800 py-3 rounded">
+Re-attempt
+</button>
+<button onclick="resetToDashboard()" class="flex-1 bg-blue-600 py-3 rounded font-bold">
+New Test
+</button>
+</div>
+</div>
 
-    <div id="import-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 w-full max-w-lg rounded-xl shadow-2xl border border-slate-700 p-6">
-            <h3 class="font-bold text-white mb-4">Import Questions (JSON)</h3>
-            <textarea id="json-input" class="w-full h-40 bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-green-400 focus:outline-none focus:border-blue-500 mb-4" placeholder='[{"id":1, "subject":"History", "question":"...", "options":[...], "correct":0, "explanation":"..."}]'></textarea>
-            <div class="flex justify-end gap-3">
-                <button onclick="document.getElementById('import-modal').classList.add('hidden')" class="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancel</button>
-                <button onclick="saveCustomData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold">Import</button>
-            </div>
-        </div>
-    </div>
+<!-- REVIEW -->
+<div id="view-review" class="hidden w-full max-w-3xl h-full overflow-y-auto">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-bold">Solutions</h2>
+<button onclick="closeReview()" class="text-blue-400">Close</button>
+</div>
+<div id="review-box" class="space-y-6"></div>
+</div>
 
-    <script>
-        // --- DATA ---
-        // (Sample Data - In real app, this list is longer)
-        const stockData = [
-            { id: 1, subject: "History", question: "बिजौलिया किसान आंदोलन (1897-1941) के दौरान 'उपरमाल पंच बोर्ड' की स्थापना किसने की?", options: ["साधु सीताराम दास", "विजय सिंह पथिक", "माणिक्य लाल वर्मा", "मोतीलाल तेजावत"], correct: 1, explanation: "विजय सिंह पथिक ने 1917 में हरियाली अमावस्या के दिन 'उपरमाल पंच बोर्ड' की स्थापना की थी। मन्ना पटेल को इसका सरपंच बनाया गया था।" },
-            { id: 2, subject: "Geography", type: "assertion", question: "कथन (A): अरावली पर्वतमाला राजस्थान में मरुस्थल के पूर्व की ओर प्रसार को रोकती है।\nकारण (R): अरावली पर्वतमाला की स्थिति दक्षिण-पश्चिम से उत्तर-पूर्व की ओर है।", options: ["A और R दोनों सत्य हैं, R सही व्याख्या है", "दोनों सत्य, व्याख्या नहीं", "A सत्य R असत्य", "A असत्य R सत्य"], correct: 1, explanation: "दोनों बातें सही हैं। लेकिन अरावली मरुस्थल को इसलिए रोकती है क्योंकि वह बीच में खड़ी है, दिशा (Alignment) मानसून को प्रभावित करती है, मरुस्थलीकरण रोकने का मुख्य कारण उसकी ऊँचाई और अवस्थिति है।" },
-            { id: 3, subject: "Polity", question: "राजस्थान लोक सेवा आयोग (RPSC) अपना वार्षिक प्रतिवेदन (Annual Report) किसे प्रस्तुत करता है?", options: ["मुख्यमंत्री", "राष्ट्रपति", "राज्यपाल", "विधानसभा अध्यक्ष"], correct: 2, explanation: "संविधान के अनुच्छेद 323 के तहत RPSC अपनी वार्षिक रिपोर्ट 'राज्यपाल' को सौंपता है, जो इसे विधानसभा पटल पर रखवाते हैं।" },
-            { id: 4, subject: "Art & Culture", question: "निम्नलिखित में से कौन सा वाद्य यंत्र 'तत' (Tat - String) वाद्य यंत्र नहीं है?", options: ["रावणहत्था", "जंतर", "अलगोजा", "कमायचा"], correct: 2, explanation: "अलगोजा एक 'सुषिर' (Wind) वाद्य यंत्र है (फूँक मारकर बजाया जाने वाला)। बाकी तीनों तारों वाले (तत) यंत्र हैं। अलगोजा राजस्थान का राज्य वाद्य यंत्र भी है।" },
-            { id: 5, subject: "History", question: "1857 की क्रांति के समय कोटा का पॉलिटिकल एजेंट कौन था?", options: ["मेजर बर्टन", "मॉरिसन", "मैकमोसन", "ईडन"], correct: 0, explanation: "कोटा में मेजर बर्टन था, जिसकी हत्या करके क्रांतिकारियों ने उसका सिर पूरे शहर में घुमाया था।" },
-            { id: 6, subject: "Geography", question: "कोपेन के 'Aw' जलवायु प्रदेश में कौन से जिले आते हैं?", options: ["जैसलमेर, बीकानेर", "बांसवाड़ा, डूंगरपुर", "जयपुर, अलवर", "नागौर, सीकर"], correct: 1, explanation: "Aw = उष्ण कटिबंधीय आर्द्र जलवायु, जो राजस्थान के दक्षिणी भाग (डूंगरपुर, बांसवाड़ा, झालावाड़) में पाई जाती है।" },
-            { id: 7, subject: "Polity", question: "राजस्थान में अब तक कितनी बार राष्ट्रपति शासन (President's Rule) लगा है?", options: ["2 बार", "3 बार", "4 बार", "5 बार"], correct: 2, explanation: "अब तक 4 बार: 1967, 1977, 1980, और 1992 में।" },
-            { id: 8, subject: "History", type: "match", question: "सुमेलित कीजिए (किले और निर्माता):", statements: ["A. जैसलमेर - 1. राव जैसल", "B. बीकानेर - 2. राव बीका (जूनागढ़ रायसिंह)", "C. जोधपुर - 3. राव जोधा", "D. अजमेर - 4. अजयराज"], options: ["All Matched", "None Matched", "Only A & B", "Only C & D"], correct: 0, explanation: "सभी विकल्प उनके संस्थापक/निर्माता के सामने सही लिखे हैं।" },
-             { id: 9, subject: "Art & Culture", question: "प्रसिद्ध 'थेवा कला' (Thewa Art) का संबंध किस जिले से है?", options: ["प्रतापगढ़", "जयपुर", "बीकानेर", "बाड़मेर"], correct: 0, explanation: "थेवा कला (कांच पर सोने का काम) प्रतापगढ़ के राजसोनी परिवार की प्रसिद्ध है।" },
-            { id: 10, subject: "Geography", question: "लूनी नदी के प्रवाह क्षेत्र को जालौर में क्या कहा जाता है?", options: ["नाली", "तोरावटी", "नेहड़ (रेल)", "बीहड़"], correct: 2, explanation: "जालौर में लूनी के प्रवाह क्षेत्र को 'नेहड़' या 'रेल' कहा जाता है। 'नाली' घग्घर नदी का पाठ है।" },
-            { id: 11, subject: "History", question: "मत्स्य संघ का उद्घाटन किसने किया था?", options: ["जवाहर लाल नेहरू", "एन.वी. गाडगिल", "वल्लभ भाई पटेल", "शोभाराम कुमावत"], correct: 1, explanation: "नरहरि विष्णु गाडगिल (N.V. Gadgil) ने 18 मार्च 1948 को उद्घाटन किया था।" },
-            { id: 12, subject: "Polity", question: "राजस्थान विधानसभा की सदस्य संख्या 160 से बढ़ाकर 200 किस वर्ष की गई?", options: ["1952", "1967", "1977", "1980"], correct: 2, explanation: "छठी विधानसभा (1977) में परिसीमन के बाद सदस्य संख्या 200 कर दी गई।" },
-        ];
+</main>
 
-        // --- STATE VARIABLES ---
-        let allQuestions = [];
-        let sessionQuestions = [];
-        let userAnswers = {}; // Stores { questionIndex: selectedOptionIdx }
-        let currentIdx = 0;
-        let selectedSubject = "All";
-        let timerInterval;
-        let timeElapsed = 0;
+<!-- IMPORT -->
+<div id="import-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center">
+<div class="glass p-6 rounded max-w-lg w-full">
+<h3 class="font-bold mb-2">Import Questions (JSON)</h3>
+<textarea id="json-input" class="w-full h-32 bg-slate-900 p-2 text-xs"></textarea>
+<button onclick="saveCustomData()" class="bg-blue-600 px-4 py-2 mt-3 rounded">Import</button>
+<button onclick="closeImport()" class="ml-3">Cancel</button>
+</div>
+</div>
 
-        // --- INIT ---
-        function init() {
-            // Load custom
-            const stored = localStorage.getItem('ras_v3_custom');
-            const custom = stored ? JSON.parse(stored) : [];
-            allQuestions = [...stockData, ...custom];
-            
-            document.getElementById('total-q-display').innerText = allQuestions.length;
-            
-            // Slider Max Cap
-            const slider = document.getElementById('q-slider');
-            slider.max = Math.min(50, allQuestions.length);
-        }
+<script>
+/* ================= DATA ================= */
+const BASE_QUESTIONS=[
+{subject:"History",question:"1857 में कोटा का पॉलिटिकल एजेंट कौन था?",options:["मेजर बर्टन","मैकमोसन","ईडन","मॉरिसन"],correct:0,explanation:"1857 में कोटा का पॉलिटिकल एजेंट मेजर बर्टन था।"},
+{subject:"Science",question:"रक्त में ऑक्सीजन का परिवहन कौन करता है?",options:["RBC","WBC","Platelet","Plasma"],correct:0,explanation:"RBC ऑक्सीजन का परिवहन करते हैं।"}
+];
 
-        // --- DASHBOARD LOGIC ---
-        function selectSubject(sub) {
-            selectedSubject = sub;
-            // Visual feedback
-            document.querySelectorAll('.subject-card').forEach(el => el.classList.remove('selected', 'bg-slate-700'));
-            const activeCard = document.getElementById('sub-' + (sub === 'Art & Culture' ? 'Art' : sub));
-            if(activeCard) activeCard.classList.add('selected');
-        }
+let stored = JSON.parse(localStorage.getItem("ras_questions")||"[]");
+let allQuestions=[...BASE_QUESTIONS,...stored];
 
-        function startSession() {
-            // 1. Filter Questions
-            let filtered = selectedSubject === 'All' 
-                ? allQuestions 
-                : allQuestions.filter(q => q.subject === selectedSubject);
+let selectedSubject="All",sessionQuestions=[],currentIdx=0;
 
-            if(filtered.length === 0) { alert("No questions found for this subject!"); return; }
+/* ================= INIT ================= */
+updateTotal();
 
-            // 2. Shuffle & Slice
-            const count = parseInt(document.getElementById('q-slider').value);
-            // Fisher-Yates Shuffle
-            for (let i = filtered.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
-            }
-            sessionQuestions = filtered.slice(0, Math.min(count, filtered.length));
+/* ================= CORE ================= */
+function updateTotal(){
+document.getElementById("total-q-display").innerText=allQuestions.length;
+document.getElementById("q-slider").max=allQuestions.length;
+}
 
-            // 3. Reset State
-            currentIdx = 0;
-            userAnswers = {};
-            timeElapsed = 0;
+function selectSubject(s,el){
+selectedSubject=s;
+document.querySelectorAll(".subject-card").forEach(c=>c.classList.remove("selected"));
+el.classList.add("selected");
+}
 
-            // 4. Switch View
-            switchView('view-quiz');
-            document.getElementById('total-sess-q').innerText = sessionQuestions.length;
-            
-            // 5. Start
-            startTimer();
-            loadQuestion();
-        }
+function startSession(){
+let pool = selectedSubject==="All"
+? [...allQuestions]
+: allQuestions.filter(q=>q.subject===selectedSubject);
 
-        // --- QUIZ LOGIC ---
-        function loadQuestion() {
-            const q = sessionQuestions[currentIdx];
-            
-            // Update Text
-            document.getElementById('curr-q-num').innerText = currentIdx + 1;
-            document.getElementById('q-tag').innerText = q.subject;
-            document.getElementById('q-text').innerText = q.question;
+const limit=parseInt(document.getElementById("q-slider").value);
+sessionQuestions=pool.slice(0,limit);
+currentIdx=0;
 
-            // Update Statements
-            const stmtBox = document.getElementById('q-statements');
-            if(q.statements) {
-                stmtBox.innerHTML = q.statements.map(s => `<p>• ${s}</p>`).join('');
-      stmtBox.classList.remove('hidden');
-            } else {
-                stmtBox.classList.add('hidden');
-            }
+switchView("view-dashboard","view-quiz");
+document.getElementById("total-sess-q").innerText=sessionQuestions.length;
+loadQuestion();
+}
 
-            // Generate Options
-            const optsBox = document.getElementById('q-options');
-            optsBox.innerHTML = '';
-            document.getElementById('next-btn').disabled = true;
+function loadQuestion(){
+const q=sessionQuestions[currentIdx];
+document.getElementById("curr-q-num").innerText=currentIdx+1;
+document.getElementById("q-text").innerText=q.question;
+const box=document.getElementById("q-options");
+box.innerHTML="";
+document.getElementById("next-btn").disabled=true;
 
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "option-btn w-full text-left p-4 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-medium relative";
-                btn.innerHTML = `<span class="font-bold text-blue-500 mr-2">${String.fromCharCode(65+idx)}.</span> ${opt}`;
-                btn.onclick = () => selectOption(idx, btn);
-                
-                // If re-visiting and already answered (future feature), highlight it
-                if(userAnswers[currentIdx] === idx) {
-                    btn.classList.add('bg-blue-900', 'border-blue-500');
-                }
-                
-                optsBox.appendChild(btn);
-            });
-        }
+q.options.forEach((o,i)=>{
+const b=document.createElement("button");
+b.className="option-btn";
+b.innerText=o;
+b.onclick=()=>{q.userSel=i;document.getElementById("next-btn").disabled=false;};
+box.appendChild(b);
+});
+}
 
-        function selectOption(optIdx, btn) {
-            // Save Answer
-            userAnswers[currentIdx] = optIdx;
-            
-            // UI Update
-            document.querySelectorAll('.option-btn').forEach(b => {
-                b.classList.remove('bg-blue-900', 'border-blue-500');
-                b.classList.add('bg-slate-800');
-            });
-            btn.classList.remove('bg-slate-800');
-            btn.classList.add('bg-blue-900', 'border-blue-500');
-            
-            // Enable Next
-            document.getElementById('next-btn').disabled = false;
-        }
+function nextQuestion(){
+currentIdx++;
+if(currentIdx>=sessionQuestions.length){showResult();return;}
+loadQuestion();
+}
 
-        function nextQuestion() {
-            if(currentIdx < sessionQuestions.length - 1) {
-                currentIdx++;
-                loadQuestion();
-            } else {
-                endSession();
-            }
-        }
+function showResult(){
+switchView("view-quiz","view-result");
 
-        function endSession() {
-            clearInterval(timerInterval);
-            calculateResults();
-            switchView('view-result');
-        }
+let c=0;
+sessionQuestions.forEach(q=>q.userSel===q.correct && c++);
+document.getElementById("res-correct").innerText=c;
+document.getElementById("res-wrong").innerText=sessionQuestions.length-c;
+document.getElementById("res-accuracy").innerText=Math.round(c/sessionQuestions.length*100)+"%";
+}
 
-        function calculateResults() {
-            let score = 0;
-            let correct = 0;
-            let wrong = 0;
+function showReview(){
+switchView("view-result","view-review");
 
-            sessionQuestions.forEach((q, idx) => {
-                const userAns = userAnswers[idx];
-                if(userAns === undefined) return; // Skipped
+const box=document.getElementById("review-box");
+box.innerHTML="";
+sessionQuestions.forEach((q,i)=>{
+let opts="";
+q.options.forEach((o,idx)=>{
+let cls="option-btn";
+if(idx===q.correct)cls+=" correct";
+if(idx===q.userSel && idx!==q.correct)cls+=" wrong";
+opts+=`<div class="${cls}">${o}</div>`;
+});
+box.innerHTML+=`
+<div class="glass p-4 rounded">
+<div class="text-sm text-slate-400 mb-1">Q${i+1}</div>
+<div class="mb-2">${q.question}</div>
+<div class="grid gap-2 mb-3">${opts}</div>
+<div class="text-sm bg-slate-900 p-3 rounded">💡 ${q.explanation||""}</div>
+</div>`;
+});
+}
 
-                if(userAns === q.correct) {
-                    score += 1; // +1 Marks
-                    correct++;
-                } else {
-                    score -= 0.33; // Negative Marks
-                    wrong++;
-                }
-            });
+function closeReview(){
+switchView("view-review","view-result");
+}
 
-            // Prevent negative total
-            if(score < 0) score = 0;
+/* ===== SMOOTH RESET (NO FLASH) ===== */
+function resetToDashboard(){
+switchView("view-result","view-dashboard");
+}
 
-            // Display
-            document.getElementById('score-val').innerText = score.toFixed(2);
-            document.getElementById('res-correct').innerText = correct;
-            document.getElementById('res-wrong').innerText = wrong;
-            
-            const total = sessionQuestions.length;
-            const accuracy = Math.round((correct / total) * 100);
-            document.getElementById('res-accuracy').innerText = accuracy + "%";
+/* ===== VIEW SWITCH HELPER ===== */
+function switchView(hideId,showId){
+document.getElementById(hideId).classList.add("hidden");
+document.getElementById(showId).classList.remove("hidden");
+}
 
-            // Animate Ring
-            const ring = document.getElementById('score-ring');
-            const circumference = 339.292;
-            const offset = circumference - ((accuracy / 100) * circumference);
-            setTimeout(() => ring.style.strokeDashoffset = offset, 100);
-        }
+/* ================= IMPORT ================= */
+function openImportModal(){document.getElementById("import-modal").classList.remove("hidden")}
+function closeImport(){document.getElementById("import-modal").classList.add("hidden")}
 
-        // --- REVIEW MODE ---
-        function showReview() {
-            switchView('view-review');
-            const container = document.getElementById('review-container');
-            container.innerHTML = '';
+function normalizeSubject(sub){
+if(!sub) return "All";
+sub=sub.trim().toLowerCase();
+const map={
+"history":"History",
+"geography":"Geography",
+"polity":"Polity",
+"art & culture":"Art & Culture",
+"art and culture":"Art & Culture",
+"science":"Science",
+"computer":"Computer",
+"current affairs":"Current Affairs"
+};
+return map[sub]||sub;
+}
 
-            sessionQuestions.forEach((q, idx) => {
-                const userChoice = userAnswers[idx];
-                const isCorrect = userChoice === q.correct;
-                const isSkipped = userChoice === undefined;
+function saveCustomData(){
+try{
+const data=JSON.parse(document.getElementById("json-input").value);
+let existing = JSON.parse(localStorage.getItem("ras_questions")||"[]");
 
-                let statusClass = isSkipped ? "border-slate-700" : (isCorrect ? "border-green-500/50 bg-green-900/10" : "border-red-500/50 bg-red-900/10");
-                let statusIcon = isSkipped ? "" : (isCorrect ? '<i class="fas fa-check text-green-500 float-right"></i>' : '<i class="fas fa-times text-red-500 float-right"></i>');
+data.forEach(q=>{
+q.subject=normalizeSubject(q.subject);
+const duplicate = [...BASE_QUESTIONS,...existing].some(
+x=>x.subject===q.subject && x.question===q.question
+);
+if(!duplicate) existing.push(q);
+});
 
-                const card = document.createElement('div');
-                card.className = `p-5 rounded-xl border ${statusClass} bg-slate-800/50`;
-                
-                let optionsHtml = q.options.map((opt, oIdx) => {
-                    let optClass = "text-slate-400";
-                    if(oIdx === q.correct) optClass = "text-green-400 font-bold"; // Always show correct
-                    else if(oIdx === userChoice && !isCorrect) optClass = "text-red-400 line-through"; // Show user wrong choice
-                    return `<div class="text-sm ${optClass}">${String.fromCharCode(65+oIdx)}. ${opt}</div>`;
-                }).join('');
+localStorage.setItem("ras_questions",JSON.stringify(existing));
+allQuestions=[...BASE_QUESTIONS,...existing];
+updateTotal();
+closeImport();
+document.getElementById("json-input").value="";
+alert("Questions Imported & Saved");
+}catch{alert("Invalid JSON")}
+}
+</script>
 
-                card.innerHTML = `
-                    <div class="mb-2 text-sm text-slate-500">Q${idx+1} • ${q.subject} ${statusIcon}</div>
-                    <div class="font-medium text-white mb-3">${q.question}</div>
-                    <div class="space-y-1 mb-4 pl-2 border-l-2 border-slate-700">${optionsHtml}</div>
-                    <div class="bg-slate-900/50 p-3 rounded text-xs text-blue-200">
-                        <span class="font-bold text-blue-400">Explanation:</span> ${q.explanation}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // --- UTILS ---
-        function switchView(viewId) {
-            ['view-dashboard', 'view-quiz', 'view-result', 'view-review'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(viewId).classList.remove('hidden');
-        }
-
-        function goHome() {
-            switchView('view-dashboard');
-        }
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            document.getElementById('timer').innerText = "00:00";
-            timerInterval = setInterval(() => {
-                timeElapsed++;
-                const m = Math.floor(timeElapsed / 60).toString().padStart(2, '0');
-                const s = (timeElapsed % 60).toString().padStart(2, '0');
-                document.getElementById('timer').innerText = `${m}:${s}`;
-            }, 1000);
-        }
-
-        // --- IMPORT LOGIC ---
-        function openImportModal() { document.getElementById('import-modal').classList.remove('hidden'); }
-        function saveCustomData() {
-            try {
-                const data = JSON.parse(document.getElementById('json-input').value);
-                if(!Array.isArray(data)) throw new Error("Not an array");
-                
-                const existing = localStorage.getItem('ras_v3_custom') || '[]';
-                const newSet = [...JSON.parse(existing), ...data];
-                localStorage.setItem('ras_v3_custom', JSON.stringify(newSet));
-                
-                alert("Import Successful!");
-                document.getElementById('import-modal').classList.add('hidden');
-                init();
-            } catch(e) { alert("Invalid JSON!"); }
-        }
-
-        // Boot
-        init();
-
-    </script>
 </body>
-</html>
+    </html>
