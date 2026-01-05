@@ -3,369 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAS Elite Mock V3.0</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<title>Student Complaint Ticket</title>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Teko:wght@500;600&display=swap');
-
 body{
-font-family:'Inter',sans-serif;
-background:radial-gradient(circle at top,#0f1b3d,#020617);
-color:#e2e8f0;
+    font-family:'Courier New', monospace;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:#fff;
+    padding:20px;
 }
-.heading-font{font-family:'Teko',sans-serif;letter-spacing:1px}
+.container{max-width:420px;margin:auto;}
+h2{text-align:center;margin-bottom:15px;}
 
-/* Glass UI */
-.glass{
-background:rgba(30,41,59,.65);
-backdrop-filter:blur(10px);
-border:1px solid rgba(255,255,255,.06);
+input,select,button{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border-radius:8px;
+    border:none;
+    font-size:15px;
 }
+button{
+    background:#00eaff;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover{background:#00c0cc;}
 
-/* Subject Cards */
-.subject-card{
-transition:.25s;
-cursor:pointer;
+.ticket{
+    margin-top:20px;
+    background:#f5f5f5;
+    color:#000;
+    border-radius:14px;
+    padding:16px;
+    position:relative;
+    box-shadow:0 0 20px rgba(0,0,0,.5);
+    display:none;
 }
-.subject-card:hover{
-transform:translateY(-4px);
-box-shadow:0 10px 30px rgba(59,130,246,.35);
+.ticket:before,.ticket:after{
+    content:'';
+    width:18px;
+    height:18px;
+    background:#0f2027;
+    border-radius:50%;
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
 }
-.subject-card.selected{
-background:rgba(59,130,246,.18);
-border-color:#3b82f6;
-}
+.ticket:before{left:-9px;}
+.ticket:after{right:-9px;}
 
-/* Options */
-.option-btn{
-background:#1e293b;
-border:1px solid rgba(255,255,255,.06);
-padding:12px;
-border-radius:10px;
-text-align:left;
+.ticket-header{
+    text-align:center;
+    border-bottom:2px dashed #999;
+    padding-bottom:8px;
 }
-.option-btn:hover{background:#334155}
-.correct{background:rgba(34,197,94,.18);border:1px solid #22c55e}
-.wrong{background:rgba(239,68,68,.18);border:1px solid #ef4444}
-
-/* Glow */
-@keyframes glowPulse{
-0%{box-shadow:0 0 10px rgba(59,130,246,.25)}
-50%{box-shadow:0 0 26px rgba(59,130,246,.55)}
-100%{box-shadow:0 0 10px rgba(59,130,246,.25)}
+.ticket-body{
+    font-size:14px;
+    line-height:1.6;
+    margin-top:10px;
 }
-.subject-card.selected{animation:glowPulse 2s infinite}
-
-/* Scroll */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-thumb{
-background:linear-gradient(#3b82f6,#1e40af);
-border-radius:10px;
+.barcode{
+    margin-top:12px;
+    height:45px;
+    background:repeating-linear-gradient(
+        90deg,#000,#000 2px,#fff 2px,#fff 4px
+    );
+}
+.status{
+    margin-top:8px;
+    font-weight:bold;
+    color:#d10000;
+    text-align:center;
+}
+.footer{
+    text-align:center;
+    font-size:12px;
+    margin-top:8px;
+}
+.whatsapp-btn{
+    margin-top:10px;
+    background:#25D366;
+    color:#fff;
 }
 </style>
 </head>
 
-<body class="h-screen flex flex-col overflow-hidden">
+<body>
 
-<!-- NAV -->
-<nav class="glass p-4 flex justify-between items-center">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl">R</div>
-<div>
-<h1 class="heading-font text-2xl">RAS ELITE</h1>
-<p class="text-[10px] text-slate-400 uppercase">Mock Engine V3.0</p>
-</div>
-</div>
-<button onclick="openImportModal()" class="text-xs bg-slate-800 px-3 py-1.5 rounded border">
-<i class="fas fa-plus-circle mr-1"></i> Import Qs
-</button>
-</nav>
+<div class="container">
+<h2>🎟 Student Complaint Ticket</h2>
 
-<main class="flex-1 p-4 flex flex-col items-center overflow-hidden">
+<input type="text" id="name" placeholder="Student Name">
+<input type="number" id="mobile" placeholder="Mobile Number">
 
-<!-- DASHBOARD -->
-<div id="view-dashboard" class="w-full max-w-4xl overflow-y-auto">
-<h2 class="text-center text-3xl font-bold my-6">Configure Your Test</h2>
+<select id="issue">
+<option value="">Select Complaint Type</option>
+<option>App Problem</option>
+<option>Course Issue</option>
+<option>PDF Problem</option>
+<option>Test Series Issue</option>
+<option>Payment Issue</option>
+</select>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<button onclick="generateTicket()">Generate Ticket</button>
 
-<div class="subject-card selected glass p-4 text-center" onclick="selectSubject('All',this)">
-<i class="fas fa-layer-group text-purple-400 text-2xl"></i><div>Mix</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('History',this)">
-<i class="fas fa-landmark text-orange-400 text-2xl"></i><div>History</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('Geography',this)">
-<i class="fas fa-globe-asia text-green-400 text-2xl"></i><div>Geography</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('Polity',this)">
-<i class="fas fa-balance-scale text-blue-400 text-2xl"></i><div>Polity</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('Art & Culture',this)">
-<i class="fas fa-paint-brush text-pink-400 text-2xl"></i><div>Art & Culture</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('Science',this)">
-<i class="fas fa-atom text-cyan-400 text-2xl"></i><div>Science</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('Computer',this)">
-<i class="fas fa-desktop text-indigo-400 text-2xl"></i><div>Computer</div>
-</div>
-<div class="subject-card glass p-4 text-center" onclick="selectSubject('Current Affairs',this)">
-<i class="fas fa-newspaper text-yellow-400 text-2xl"></i><div>Current Affairs</div>
-</div>
+<div class="ticket" id="ticket">
+    <div class="ticket-header">
+        <h3>STUDENT SUPPORT TICKET</h3>
+        <small>Ticket No: <span id="tno"></span></small>
+    </div>
 
-</div>
+    <div class="ticket-body">
+        <b>Name:</b> <span id="tname"></span><br>
+        <b>Mobile:</b> <span id="tmobile"></span><br>
+        <b>Issue:</b> <span id="tissue"></span><br>
+        <b>Generated:</b> <span id="tdate"></span><br>
+        <b>Valid Till:</b> <span id="tvalid"></span>
+    </div>
 
-<div class="glass p-4 rounded mb-4">
-<div class="flex justify-between text-sm mb-2">
-<span>Number of Questions</span>
-<span id="q-count">5</span>
-</div>
-<input id="q-slider" type="range" min="1" max="20" value="5"
-oninput="document.getElementById('q-count').innerText=this.value"
-class="w-full">
-</div>
+    <div class="barcode"></div>
+    <div class="status">STATUS : OPEN</div>
+    <div class="footer">Please keep this ticket for reference</div>
 
-<div class="glass p-4 rounded text-center mb-6">
-<div id="total-q-display" class="text-2xl font-bold">0</div>
-<div class="text-xs uppercase">Total Questions</div>
-</div>
-
-<button onclick="startSession()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl font-bold">
-START MOCK TEST
-</button>
-</div>
-
-<!-- QUIZ -->
-<div id="view-quiz" class="hidden w-full max-w-3xl overflow-y-auto">
-<div class="flex justify-between mb-4">
-<div>Question <span id="curr-q-num"></span>/<span id="total-sess-q"></span></div>
-</div>
-
-<h3 id="q-text" class="text-xl mb-4"></h3>
-<div id="q-options" class="grid gap-3 mb-6"></div>
-
-<div class="flex justify-between">
-<button onclick="showResult()" class="text-red-400">
-<i class="fas fa-times-circle mr-1"></i> End Test
-</button>
-<button id="next-btn" onclick="nextQuestion()" disabled class="bg-blue-600 px-6 py-2 rounded">
-Next
-</button>
+    <button class="whatsapp-btn" onclick="sendWhatsApp()">
+        📲 Send Ticket on WhatsApp
+    </button>
 </div>
 </div>
 
-<!-- RESULT -->
-<div id="view-result" class="hidden w-full max-w-xl text-center overflow-y-auto">
-<h2 class="text-3xl font-bold mb-4">Test Completed</h2>
-
-<div class="grid grid-cols-3 gap-4 mb-6">
-<div class="glass p-4 rounded">
-<div id="res-correct" class="text-green-400 text-xl">0</div>
-<div class="text-xs">Correct</div>
-</div>
-<div class="glass p-4 rounded">
-<div id="res-wrong" class="text-red-400 text-xl">0</div>
-<div class="text-xs">Wrong</div>
-</div>
-<div class="glass p-4 rounded">
-<div id="res-accuracy" class="text-blue-400 text-xl">0%</div>
-<div class="text-xs">Accuracy</div>
-</div>
-</div>
-
-<button onclick="showReview()" class="w-full bg-slate-700 py-3 rounded mb-3">
-<i class="fas fa-eye mr-1"></i> Review Solutions & Explanations
-</button>
-
-<div class="flex gap-3">
-<button onclick="resetToDashboard()" class="flex-1 bg-slate-800 py-3 rounded">
-Re-attempt
-</button>
-<button onclick="resetToDashboard()" class="flex-1 bg-blue-600 py-3 rounded font-bold">
-New Test
-</button>
-</div>
-</div>
-
-<!-- REVIEW -->
-<div id="view-review" class="hidden w-full max-w-3xl h-full overflow-y-auto">
-<div class="flex justify-between items-center mb-4">
-<h2 class="text-xl font-bold">Solutions</h2>
-<button onclick="closeReview()" class="text-blue-400">Close</button>
-</div>
-<div id="review-box" class="space-y-6"></div>
-</div>
-
-</main>
-
-<!-- IMPORT -->
-<div id="import-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center">
-<div class="glass p-6 rounded max-w-lg w-full">
-<h3 class="font-bold mb-2">Import Questions (JSON)</h3>
-<textarea id="json-input" class="w-full h-32 bg-slate-900 p-2 text-xs"></textarea>
-<button onclick="saveCustomData()" class="bg-blue-600 px-4 py-2 mt-3 rounded">Import</button>
-<button onclick="closeImport()" class="ml-3">Cancel</button>
-</div>
-</div>
+<!-- html2canvas CDN -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
-/* ================= DATA ================= */
-const BASE_QUESTIONS=[
-{subject:"History",question:"1857 में कोटा का पॉलिटिकल एजेंट कौन था?",options:["मेजर बर्टन","मैकमोसन","ईडन","मॉरिसन"],correct:0,explanation:"1857 में कोटा का पॉलिटिकल एजेंट मेजर बर्टन था।"},
-{subject:"Science",question:"रक्त में ऑक्सीजन का परिवहन कौन करता है?",options:["RBC","WBC","Platelet","Plasma"],correct:0,explanation:"RBC ऑक्सीजन का परिवहन करते हैं।"}
-];
+let studentMobile="";
 
-let stored = JSON.parse(localStorage.getItem("ras_questions")||"[]");
-let allQuestions=[...BASE_QUESTIONS,...stored];
+function generateTicket(){
+    let name=document.getElementById("name").value;
+    let mobile=document.getElementById("mobile").value;
+    let issue=document.getElementById("issue").value;
 
-let selectedSubject="All",sessionQuestions=[],currentIdx=0;
+    if(name==""||mobile==""||issue==""){
+        alert("All fields are required");
+        return;
+    }
 
-/* ================= INIT ================= */
-updateTotal();
+    studentMobile=mobile;
 
-/* ================= CORE ================= */
-function updateTotal(){
-document.getElementById("total-q-display").innerText=allQuestions.length;
-document.getElementById("q-slider").max=allQuestions.length;
+    let ticketNo="TKT"+Date.now();
+    let now=new Date();
+    let valid=new Date();
+    valid.setDate(now.getDate()+7);
+
+    document.getElementById("tno").innerText=ticketNo;
+    document.getElementById("tname").innerText=name;
+    document.getElementById("tmobile").innerText=mobile;
+    document.getElementById("tissue").innerText=issue;
+    document.getElementById("tdate").innerText=now.toLocaleString();
+    document.getElementById("tvalid").innerText=valid.toLocaleDateString();
+
+    document.getElementById("ticket").style.display="block";
 }
 
-function selectSubject(s,el){
-selectedSubject=s;
-document.querySelectorAll(".subject-card").forEach(c=>c.classList.remove("selected"));
-el.classList.add("selected");
-}
+function sendWhatsApp(){
+    if(!navigator.share){
+        alert("WhatsApp sharing works only on mobile browser");
+        return;
+    }
 
-function startSession(){
-let pool = selectedSubject==="All"
-? [...allQuestions]
-: allQuestions.filter(q=>q.subject===selectedSubject);
+    html2canvas(document.getElementById("ticket")).then(canvas=>{
+        canvas.toBlob(blob=>{
+            let file=new File([blob],"ticket.png",{type:"image/png"});
 
-const limit=parseInt(document.getElementById("q-slider").value);
-sessionQuestions=pool.slice(0,limit);
-currentIdx=0;
-
-switchView("view-dashboard","view-quiz");
-document.getElementById("total-sess-q").innerText=sessionQuestions.length;
-loadQuestion();
-}
-
-function loadQuestion(){
-const q=sessionQuestions[currentIdx];
-document.getElementById("curr-q-num").innerText=currentIdx+1;
-document.getElementById("q-text").innerText=q.question;
-const box=document.getElementById("q-options");
-box.innerHTML="";
-document.getElementById("next-btn").disabled=true;
-
-q.options.forEach((o,i)=>{
-const b=document.createElement("button");
-b.className="option-btn";
-b.innerText=o;
-b.onclick=()=>{q.userSel=i;document.getElementById("next-btn").disabled=false;};
-box.appendChild(b);
-});
-}
-
-function nextQuestion(){
-currentIdx++;
-if(currentIdx>=sessionQuestions.length){showResult();return;}
-loadQuestion();
-}
-
-function showResult(){
-switchView("view-quiz","view-result");
-
-let c=0;
-sessionQuestions.forEach(q=>q.userSel===q.correct && c++);
-document.getElementById("res-correct").innerText=c;
-document.getElementById("res-wrong").innerText=sessionQuestions.length-c;
-document.getElementById("res-accuracy").innerText=Math.round(c/sessionQuestions.length*100)+"%";
-}
-
-function showReview(){
-switchView("view-result","view-review");
-
-const box=document.getElementById("review-box");
-box.innerHTML="";
-sessionQuestions.forEach((q,i)=>{
-let opts="";
-q.options.forEach((o,idx)=>{
-let cls="option-btn";
-if(idx===q.correct)cls+=" correct";
-if(idx===q.userSel && idx!==q.correct)cls+=" wrong";
-opts+=`<div class="${cls}">${o}</div>`;
-});
-box.innerHTML+=`
-<div class="glass p-4 rounded">
-<div class="text-sm text-slate-400 mb-1">Q${i+1}</div>
-<div class="mb-2">${q.question}</div>
-<div class="grid gap-2 mb-3">${opts}</div>
-<div class="text-sm bg-slate-900 p-3 rounded">💡 ${q.explanation||""}</div>
-</div>`;
-});
-}
-
-function closeReview(){
-switchView("view-review","view-result");
-}
-
-/* ===== SMOOTH RESET (NO FLASH) ===== */
-function resetToDashboard(){
-switchView("view-result","view-dashboard");
-}
-
-/* ===== VIEW SWITCH HELPER ===== */
-function switchView(hideId,showId){
-document.getElementById(hideId).classList.add("hidden");
-document.getElementById(showId).classList.remove("hidden");
-}
-
-/* ================= IMPORT ================= */
-function openImportModal(){document.getElementById("import-modal").classList.remove("hidden")}
-function closeImport(){document.getElementById("import-modal").classList.add("hidden")}
-
-function normalizeSubject(sub){
-if(!sub) return "All";
-sub=sub.trim().toLowerCase();
-const map={
-"history":"History",
-"geography":"Geography",
-"polity":"Polity",
-"art & culture":"Art & Culture",
-"art and culture":"Art & Culture",
-"science":"Science",
-"computer":"Computer",
-"current affairs":"Current Affairs"
-};
-return map[sub]||sub;
-}
-
-function saveCustomData(){
-try{
-const data=JSON.parse(document.getElementById("json-input").value);
-let existing = JSON.parse(localStorage.getItem("ras_questions")||"[]");
-
-data.forEach(q=>{
-q.subject=normalizeSubject(q.subject);
-const duplicate = [...BASE_QUESTIONS,...existing].some(
-x=>x.subject===q.subject && x.question===q.question
-);
-if(!duplicate) existing.push(q);
-});
-
-localStorage.setItem("ras_questions",JSON.stringify(existing));
-allQuestions=[...BASE_QUESTIONS,...existing];
-updateTotal();
-closeImport();
-document.getElementById("json-input").value="";
-alert("Questions Imported & Saved");
-}catch{alert("Invalid JSON")}
+            navigator.share({
+                files:[file],
+                title:"Support Ticket",
+                text:"Your complaint ticket"
+            });
+        });
+    });
 }
 </script>
 
 </body>
-    </html>
+</html>
