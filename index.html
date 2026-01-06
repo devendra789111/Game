@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAS Pro - Stable Version</title>
+    <title>RAS Pro - Final Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -16,27 +16,14 @@
         .correct { background: #064e3b !important; border-color: #10b981 !important; }
         .wrong { background: #7f1d1d !important; border-color: #ef4444 !important; }
         .hidden { display: none; }
-        
-        /* Smooth transitions */
-        #dashboard, #test-selector, #quiz-view, #result-view, #review-view, #admin-panel, #test-config {
-            animation: fadeIn 0.4s ease-in-out;
-        }
+        #dashboard, #test-selector, #quiz-view, #result-view, #review-view, #admin-panel, #test-config { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Custom Switch */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #3b82f6; }
         input:checked + .slider:before { transform: translateX(26px); }
-
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .text-4xl { font-size: 1.875rem; }
-            .p-12 { padding: 1.5rem; }
-            .neo-card { padding: 1.5rem !important; }
-        }
     </style>
 </head>
 <body class="min-h-screen pb-10">
@@ -48,84 +35,77 @@
             </div>
             <h1 class="text-xl font-black tracking-tighter italic">RAS <span class="text-blue-500">PRO</span></h1>
         </div>
-        <div class="flex gap-4 items-center">
-            <button onclick="showView('admin-panel')" class="text-xs bg-slate-800 px-3 py-2 rounded-lg hover:bg-slate-700 transition">ADMIN</button>
-            <div class="text-xs text-slate-500 font-bold uppercase hidden sm:block">DB: <span id="db-stat" class="text-blue-400">0</span></div>
-        </div>
+        <button onclick="showView('admin-panel'); renderDeleteList();" class="text-xs bg-slate-800 px-3 py-2 rounded-lg hover:bg-slate-700 transition">ADMIN/DELETE</button>
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div id="dashboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+        <div id="dashboard" class="space-y-6">
+            <div id="history-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            <div id="subject-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+        </div>
 
-        <div id="test-config" class="max-w-md mx-auto hidden glass p-6 sm:p-8 rounded-3xl mt-10">
-            <h2 id="config-title" class="text-2xl font-bold mb-6 text-center text-blue-400 font-mono">Test Settings</h2>
-            <div id="mix-only-option" class="hidden mb-6">
-                <label class="block text-sm text-slate-400 mb-2">Number of Questions:</label>
-                <input type="number" id="mix-q-count" value="30" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500">
+        <div id="admin-panel" class="hidden max-w-4xl mx-auto space-y-6">
+            <div class="glass p-6 rounded-3xl">
+                <h2 class="text-2xl font-bold mb-4 italic">Import Questions (JSON)</h2>
+                <textarea id="json-input" class="w-full h-40 bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 font-mono text-sm" placeholder='JSON data yahan paste karein...'></textarea>
+                <div class="flex gap-4">
+                    <button onclick="uploadQuestions()" class="bg-blue-600 px-6 py-3 rounded-xl font-bold">ADD QUESTIONS</button>
+                    <button onclick="showView('dashboard')" class="bg-slate-700 px-6 py-3 rounded-xl font-bold">BACK</button>
+                </div>
             </div>
-            <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl mb-8 border border-slate-800">
+            <div class="glass p-6 rounded-3xl">
+                <h2 class="text-xl font-bold mb-4 text-red-500">Delete Questions</h2>
+                <div id="delete-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+
+        <div id="test-config" class="max-w-md mx-auto hidden glass p-8 rounded-3xl mt-10 text-center">
+            <h2 id="config-title" class="text-2xl font-bold mb-6 text-blue-400">Settings</h2>
+            <div id="mix-only-option" class="hidden mb-6 text-left">
+                <label class="block text-xs text-slate-500 mb-2 uppercase">Sawal ki Sankhya:</label>
+                <input type="number" id="mix-q-count" value="30" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700">
+            </div>
+            <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl mb-8">
                 <span class="font-bold">Negative Marking (1/3)</span>
-                <label class="switch">
-                    <input type="checkbox" id="neg-marking-toggle" checked>
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="neg-marking-toggle" checked><span class="slider"></span></label>
             </div>
-            <button id="start-btn-final" class="w-full bg-blue-600 p-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-900/40 transition">Start Test</button>
-            <button onclick="showView('dashboard')" class="w-full mt-4 text-slate-500 text-sm hover:text-white transition">Back to Home</button>
+            <button id="start-btn-final" class="w-full bg-blue-600 p-4 rounded-xl font-bold">START TEST</button>
         </div>
 
-        <div id="test-selector" class="hidden">
-            <button onclick="showView('dashboard')" class="mb-8 text-blue-400 font-bold hover:text-blue-300 transition underline underline-offset-4">← Back to Subjects</button>
-            <h2 id="current-subject-title" class="text-3xl sm:text-4xl font-bold mb-10 tracking-tight">Subject</h2>
-            <div id="topic-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"></div>
+        <div id="test-selector" class="hidden space-y-6">
+            <button onclick="showView('dashboard')" class="text-blue-400 font-bold underline underline-offset-4">← Back to Subjects</button>
+            <h2 id="current-subject-title" class="text-3xl font-bold mb-8">Subject</h2>
+            <div id="topic-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="quiz-view" class="hidden max-w-4xl mx-auto">
-            <div class="glass p-5 sm:p-8 rounded-3xl">
-                <div class="flex justify-between items-center mb-10">
-                    <div class="text-slate-400 font-mono text-sm sm:text-base">Q <span id="q-idx" class="text-white font-bold text-xl">1</span>/<span id="q-total">30</span></div>
-                    <div id="timer" class="text-2xl sm:text-3xl font-black text-blue-500 bg-blue-500/10 px-4 sm:px-6 py-2 rounded-2xl">00:00</div>
-                    <button onclick="endQuiz()" class="text-red-500 font-bold px-3 py-1 hover:bg-red-500/10 rounded-xl transition text-sm sm:text-base">Submit</button>
-                </div>
-                <p id="q-text" class="text-xl sm:text-2xl font-medium mb-10 leading-snug"></p>
-                <div id="opt-container" class="grid gap-3 sm:gap-4"></div>
-                <div class="flex justify-between mt-12 gap-4">
-                    <button onclick="skipQ()" class="text-slate-500 font-bold hover:text-white transition text-sm sm:text-base">Skip</button>
-                    <button id="next-btn" onclick="nextQ()" class="bg-blue-600 px-6 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg shadow-xl shadow-blue-900/40 transition">Next Question</button>
-                </div>
+        <div id="quiz-view" class="hidden max-w-4xl mx-auto glass p-8 rounded-3xl">
+            <div class="flex justify-between items-center mb-8">
+                <span class="font-mono">Q: <span id="q-idx">1</span>/<span id="q-total">30</span></span>
+                <div id="timer" class="text-2xl font-black text-blue-500 bg-blue-500/10 px-4 py-1 rounded-xl">00:00</div>
+                <button onclick="endQuiz()" class="text-red-500 font-bold">SUBMIT</button>
+            </div>
+            <p id="q-text" class="text-xl sm:text-2xl mb-10 leading-relaxed"></p>
+            <div id="opt-container" class="grid gap-4"></div>
+            <div class="flex justify-between mt-12">
+                <button onclick="skipQ()" class="text-slate-500 font-bold">SKIP</button>
+                <button id="next-btn" onclick="nextQ()" class="bg-blue-600 px-10 py-4 rounded-2xl font-bold">NEXT</button>
             </div>
         </div>
 
-        <div id="result-view" class="hidden max-w-2xl mx-auto text-center">
-            <div class="glass p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3rem]">
-                <h2 class="text-xl sm:text-2xl text-slate-400 font-bold mb-2 uppercase tracking-tighter">Result Analysis</h2>
-                <div id="score-val" class="text-6xl sm:text-7xl font-black text-blue-500 mb-2">0.00</div>
-                <p id="neg-status-msg" class="text-xs text-slate-500 mb-8 uppercase tracking-widest font-mono"></p>
-                
-                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-10">
-                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Total Questions<br><span id="res-total" class="text-white font-bold">0</span></div>
-                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Correct<br><span id="res-right" class="text-green-400 font-bold">0</span></div>
-                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Wrong<br><span id="res-wrong" class="text-red-400 font-bold">0</span></div>
-                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Skipped<br><span id="res-skip" class="text-yellow-400 font-bold">0</span></div>
-                </div>
-
-                <div class="flex flex-col gap-4">
-                    <button onclick="showReview()" class="bg-emerald-600 p-4 rounded-2xl font-bold hover:bg-emerald-700 transition">Review Solutions</button>
-                    <button onclick="resetApp()" class="bg-slate-700 p-4 rounded-2xl font-bold hover:bg-slate-600 transition">Back to Home</button>
-                </div>
+        <div id="result-view" class="hidden max-w-2xl mx-auto glass p-10 rounded-[3rem] text-center">
+            <h2 class="text-slate-400 font-bold mb-2 uppercase">Final Score</h2>
+            <div id="score-val" class="text-7xl font-black text-blue-500 mb-8">0.00</div>
+            <div class="grid grid-cols-2 gap-4 mb-10 text-sm">
+                <div class="bg-slate-900 p-4 rounded-2xl">Total: <span id="res-total">0</span></div>
+                <div class="bg-slate-900 p-4 rounded-2xl">Correct: <span id="res-right" class="text-green-400">0</span></div>
+                <div class="bg-slate-900 p-4 rounded-2xl">Wrong: <span id="res-wrong" class="text-red-400">0</span></div>
+                <div class="bg-slate-900 p-4 rounded-2xl">Skip: <span id="res-skip" class="text-yellow-400">0</span></div>
             </div>
+            <button onclick="showReview()" class="w-full bg-emerald-600 p-4 rounded-2xl font-bold mb-3">REVIEW SOLUTIONS</button>
+            <button onclick="resetApp()" class="w-full bg-slate-700 p-4 rounded-2xl font-bold">HOME</button>
         </div>
 
         <div id="review-view" class="hidden space-y-6 max-w-4xl mx-auto"></div>
-
-        <div id="admin-panel" class="hidden max-w-4xl mx-auto glass p-6 sm:p-8 rounded-3xl">
-            <h2 class="text-2xl font-bold mb-6">Import Questions (JSON)</h2>
-            <textarea id="json-input" class="w-full h-64 bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 font-mono text-xs sm:text-sm focus:outline-none focus:border-blue-500" placeholder='Example: [{"subject": "Science", "topic": "Biology", "q": "Sample Q?", "options": ["A","B","C","D"], "correct": 0, "explain": "Detail text"}]'></textarea>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button onclick="uploadQuestions()" class="bg-blue-600 px-6 py-3 rounded-xl font-bold transition">Import Questions</button>
-                <button onclick="showView('dashboard')" class="bg-slate-700 px-6 py-3 rounded-xl font-bold transition">Close</button>
-            </div>
-        </div>
     </main>
 
     <script>
@@ -138,37 +118,60 @@
             "Computer": "fa-laptop-code", "Science": "fa-flask-vial", "Mix Test": "fa-layer-group"
         };
 
-        let masterDB = JSON.parse(localStorage.getItem('ras_db')) || [
-            {
-                subject: "Rajasthan Art and culture",
-                topic: "लोक चित्रशैली",
-                q: "मेवाड़ चित्रकला शैली का स्वर्ण काल किस शासक के काल को माना जाता है?",
-                options: ["महाराणा कुम्भा", "जगत सिंह प्रथम", "महाराणा प्रताप", "अमर सिंह"],
-                correct: 1,
-                explain: "<b>जगत सिंह प्रथम:</b> इनके शासनकाल को स्वर्ण युग माना जाता है। इन्होंने 'चितेरों की ओवरी' विद्यालय बनवाया।"
-            }
-        ];
-
+        let masterDB = JSON.parse(localStorage.getItem('ras_db')) || [];
+        let historyData = JSON.parse(localStorage.getItem('ras_results')) || [];
         let currentSet = [], currentIndex = 0, answers = [], timer, timeLeft = 0, isNegativeEnabled = true;
 
+        // Auto-fix agar page blank ho
         function init() {
-            const dash = document.getElementById('dashboard');
+            const dash = document.getElementById('subject-grid');
+            if(!dash) return;
+            
             dash.innerHTML = Object.keys(subjectIcons).map(sub => {
                 const count = sub === "Mix Test" ? masterDB.length : masterDB.filter(q => q.subject === sub).length;
                 return `<div class="glass p-6 sm:p-8 neo-card" onclick="openConfig('${sub}')">
                     <i class="fas ${subjectIcons[sub]} text-3xl sm:text-4xl text-blue-500 mb-6"></i>
-                    <h3 class="text-lg sm:text-xl font-bold mb-2">${sub}</h3>
-                    <p class="text-slate-500 text-xs sm:text-sm font-mono">${count} Questions</p>
+                    <h3 class="text-lg font-bold mb-2">${sub}</h3>
+                    <p class="text-slate-500 text-xs font-mono uppercase tracking-widest">${count} Questions</p>
                 </div>`;
             }).join('');
-            document.getElementById('db-stat').innerText = masterDB.length;
+            
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const histCont = document.getElementById('history-container');
+            if(historyData.length > 0) {
+                histCont.innerHTML = historyData.slice(-2).reverse().map(res => `
+                    <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                        <div><div class="text-blue-400 font-bold text-sm">${res.subject}</div><div class="text-[10px] text-slate-500">${res.date}</div></div>
+                        <div class="text-xl font-black text-white">${res.score}</div>
+                    </div>`).join('');
+                histCont.classList.remove('hidden');
+            } else { histCont.classList.add('hidden'); }
+        }
+
+        function renderDeleteList() {
+            const list = document.getElementById('delete-list');
+            list.innerHTML = masterDB.map((q, i) => `
+                <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-xs mb-2">
+                    <span class="truncate pr-4">${i+1}. [${q.subject}] ${q.q}</span>
+                    <button onclick="deleteQuestion(${i})" class="text-red-500 font-bold">DELETE</button>
+                </div>`).join('') || `<p class="text-center py-4 text-slate-500 italic">No questions found</p>`;
+        }
+
+        function deleteQuestion(index) {
+            if(confirm("Confirm Delete?")) {
+                masterDB.splice(index, 1);
+                localStorage.setItem('ras_db', JSON.stringify(masterDB));
+                renderDeleteList(); init();
+            }
         }
 
         function openConfig(sub, topic = null, testNum = null) {
             showView('test-config');
             const mixOpt = document.getElementById('mix-only-option');
             const startBtn = document.getElementById('start-btn-final');
-            
             if(sub === "Mix Test") {
                 mixOpt.classList.remove('hidden');
                 document.getElementById('config-title').innerText = "Mix Test Practice";
@@ -177,9 +180,7 @@
                 mixOpt.classList.add('hidden');
                 document.getElementById('config-title').innerText = `${topic} - Test ${testNum}`;
                 startBtn.onclick = () => startActualTest(sub, topic, testNum);
-            } else {
-                renderTopics(sub);
-            }
+            } else { renderTopics(sub); }
         }
 
         function renderTopics(sub) {
@@ -188,37 +189,33 @@
             document.getElementById('current-subject-title').innerText = sub;
             let filtered = masterDB.filter(q => q.subject === sub);
             let topics = [...new Set(filtered.map(q => q.topic))];
-
             grid.innerHTML = topics.map(t => {
                 let topicQs = filtered.filter(q => q.topic === t);
-                let testCount = Math.ceil(topicQs.length / 30);
                 let btns = "";
-                for(let i=1; i<=testCount; i++) {
+                for(let i=1; i<=Math.ceil(topicQs.length / 30); i++) {
                     btns += `<button onclick="openConfig('${sub}', '${t}', ${i})" class="bg-blue-600/10 border border-blue-500/20 p-4 rounded-xl hover:bg-blue-600 transition font-bold text-left">${t} - Test ${i}</button>`;
                 }
                 return `<div class="flex flex-col gap-3">${btns}</div>`;
-            }).join('');
+            }).join('') || '<div class="col-span-full py-10 text-slate-500 italic text-center">No questions added yet.</div>';
         }
 
         function startMixTest() {
             let count = parseInt(document.getElementById('mix-q-count').value);
             currentSet = [...masterDB].sort(() => 0.5 - Math.random()).slice(0, count);
-            launchQuiz();
+            launchQuiz("Mix Test");
         }
 
         function startActualTest(sub, topic, num) {
             let pool = masterDB.filter(q => q.subject === sub && q.topic === topic);
-            currentSet = pool.slice((num-1)*30, num*30);
-            launchQuiz();
+            currentSet = pool.slice((num-1)*30, num*30).sort(() => 0.5 - Math.random());
+            launchQuiz(sub);
         }
 
-        function launchQuiz() {
+        function launchQuiz(subName) {
             isNegativeEnabled = document.getElementById('neg-marking-toggle').checked;
-            currentIndex = 0;
-            answers = new Array(currentSet.length).fill(null);
-            timeLeft = currentSet.length * 30;
-            showView('quiz-view');
-            renderQuestion();
+            currentIndex = 0; answers = new Array(currentSet.length).fill(null);
+            timeLeft = currentSet.length * 30; window.activeSub = subName;
+            showView('quiz-view'); renderQuestion();
             if(timer) clearInterval(timer);
             timer = setInterval(() => { timeLeft--; updateTimer(); if(timeLeft <= 0) endQuiz(); }, 1000);
         }
@@ -230,11 +227,10 @@
             document.getElementById('q-text').innerText = q.q;
             const container = document.getElementById('opt-container');
             container.innerHTML = q.options.map((opt, i) => `
-                <div onclick="selectOpt(${i})" class="option-box p-4 sm:p-5 flex items-center gap-4 ${answers[currentIndex] === i ? 'selected' : ''}">
-                    <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-[10px] sm:text-xs text-blue-400">${String.fromCharCode(65+i)}</span>
-                    <span class="text-base sm:text-lg">${opt}</span>
-                </div>
-            `).join('');
+                <div onclick="selectOpt(${i})" class="option-box p-4 flex items-center gap-4 ${answers[currentIndex] === i ? 'selected' : ''}">
+                    <span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-xs text-blue-400">${String.fromCharCode(65+i)}</span>
+                    <span class="text-base">${opt}</span>
+                </div>`).join('');
             document.getElementById('next-btn').innerText = (currentIndex === currentSet.length - 1) ? "Finish Test" : "Next Question";
         }
 
@@ -248,75 +244,61 @@
 
         function endQuiz() {
             clearInterval(timer);
-            calculateResult();
+            const score = calculateResult();
+            const resultObj = {
+                subject: window.activeSub, score: score,
+                date: new Date().toLocaleDateString('hi-IN', {day:'2-digit', month:'short'})
+            };
+            historyData.push(resultObj);
+            localStorage.setItem('ras_results', JSON.stringify(historyData.slice(-10)));
             showView('result-view');
         }
 
         function calculateResult() {
             let r=0, w=0, s=0;
-            currentSet.forEach((q, i) => {
-                if(answers[i] === q.correct) r++;
-                else if(answers[i] === null) s++;
-                else w++;
-            });
+            currentSet.forEach((q, i) => { if(answers[i] === q.correct) r++; else if(answers[i] === null) s++; else w++; });
             let score = isNegativeEnabled ? (r - (w * 0.33)).toFixed(2) : r.toFixed(2);
             document.getElementById('score-val').innerText = score;
             document.getElementById('res-total').innerText = currentSet.length;
             document.getElementById('res-right').innerText = r;
             document.getElementById('res-wrong').innerText = w;
             document.getElementById('res-skip').innerText = s;
-            document.getElementById('neg-status-msg').innerText = isNegativeEnabled ? "Negative Marking Applied" : "No Negative Marking";
+            return score;
         }
 
         function showReview() {
             showView('review-view');
             const container = document.getElementById('review-view');
-            container.innerHTML = `<button onclick="resetApp()" class="bg-slate-800 p-4 rounded-xl mb-6 font-bold w-full transition border border-slate-700 hover:bg-slate-700 tracking-widest uppercase text-xs">← Back to Dashboard</button>` + 
+            container.innerHTML = `<button onclick="resetApp()" class="bg-slate-800 p-4 rounded-xl mb-6 font-bold w-full uppercase text-xs">← Back Home</button>` + 
             currentSet.map((q, i) => `
-                <div class="glass p-6 sm:p-8 rounded-3xl border-l-8 ${answers[i] === q.correct ? 'border-green-500' : (answers[i] === null ? 'border-yellow-500' : 'border-red-500')}">
-                    <p class="text-lg sm:text-xl font-bold mb-6">${q.q}</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 text-sm">
-                        ${q.options.map((o, oi) => `
-                            <div class="p-3 rounded-lg ${oi === q.correct ? 'correct' : (answers[i] === oi ? 'wrong' : 'bg-slate-900')}">
-                                ${o}
-                            </div>
-                        `).join('')}
+                <div class="glass p-6 rounded-3xl border-l-8 ${answers[i] === q.correct ? 'border-green-500' : (answers[i] === null ? 'border-yellow-500' : 'border-red-500')}">
+                    <p class="text-lg font-bold mb-6">${q.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                        ${q.options.map((o, oi) => `<div class="p-3 rounded-lg text-sm ${oi === q.correct ? 'correct' : (answers[i] === oi ? 'wrong' : 'bg-slate-900')}">${o}</div>`).join('')}
                     </div>
-                    <div class="bg-blue-500/10 p-4 rounded-xl text-sm border border-blue-500/20">
-                        <strong class="text-blue-400">Explanation:</strong> ${q.explain}
-                    </div>
-                </div>
-            `).join('');
+                    <div class="bg-blue-500/10 p-4 rounded-xl text-sm border border-blue-500/20"><strong class="text-blue-400">Explanation:</strong> ${q.explain}</div>
+                </div>`).join('');
         }
 
         function uploadQuestions() {
             try {
                 const newData = JSON.parse(document.getElementById('json-input').value);
-                const existingQs = masterDB.map(x => x.q);
-                const filteredNew = newData.filter(x => !existingQs.includes(x.q));
-                masterDB = [...masterDB, ...filteredNew];
+                masterDB = [...masterDB, ...newData];
                 localStorage.setItem('ras_db', JSON.stringify(masterDB));
-                alert(`${filteredNew.length} New questions added!`);
+                alert("Success!");
                 resetApp();
-            } catch(e) { alert("Invalid JSON Format!"); }
+            } catch(e) { alert("Invalid JSON!"); }
         }
 
         function showView(id) {
             ['dashboard', 'test-selector', 'quiz-view', 'result-view', 'review-view', 'admin-panel', 'test-config'].forEach(v => {
-                document.getElementById(v).classList.add('hidden');
+                const el = document.getElementById(v); if(el) el.classList.add('hidden');
             });
-            document.getElementById(id).classList.remove('hidden');
-            window.scrollTo(0,0);
+            const el = document.getElementById(id); if(el) el.classList.remove('hidden');
         }
 
-        function resetApp() {
-            clearInterval(timer);
-            init();
-            showView('dashboard');
-        }
-
-        init();
+        function resetApp() { if(timer) clearInterval(timer); init(); showView('dashboard'); }
+        window.onload = init;
     </script>
 </body>
-    </html>
-    
+</html>
