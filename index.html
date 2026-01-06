@@ -1,190 +1,322 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Complaint Ticket</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAS Pro - Stable Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+        .neo-card { transition: transform 0.3s, background 0.3s; border-radius: 1.5rem; border-bottom: 4px solid #3b82f6; cursor: pointer; }
+        .neo-card:hover { transform: translateY(-5px); background: rgba(59, 130, 246, 0.1); }
+        .option-box { background: #1e293b; border: 2px solid transparent; transition: 0.2s; cursor: pointer; border-radius: 1rem; }
+        .selected { border-color: #3b82f6 !important; background: #1e3a8a !important; }
+        .correct { background: #064e3b !important; border-color: #10b981 !important; }
+        .wrong { background: #7f1d1d !important; border-color: #ef4444 !important; }
+        .hidden { display: none; }
+        
+        /* Smooth transitions */
+        #dashboard, #test-selector, #quiz-view, #result-view, #review-view, #admin-panel, #test-config {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-<style>
-body{
-    font-family:'Courier New', monospace;
-    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    color:#fff;
-    padding:20px;
-}
-.container{max-width:420px;margin:auto;}
-h2{text-align:center;margin-bottom:15px;}
+        /* Custom Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(26px); }
 
-input,select,button{
-    width:100%;
-    padding:12px;
-    margin:8px 0;
-    border-radius:8px;
-    border:none;
-    font-size:15px;
-}
-button{
-    background:#00eaff;
-    color:#000;
-    font-weight:bold;
-    cursor:pointer;
-}
-button:hover{background:#00c0cc;}
-
-.ticket{
-    margin-top:20px;
-    background:#f5f5f5;
-    color:#000;
-    border-radius:14px;
-    padding:16px;
-    position:relative;
-    box-shadow:0 0 20px rgba(0,0,0,.5);
-    display:none;
-}
-.ticket:before,.ticket:after{
-    content:'';
-    width:18px;
-    height:18px;
-    background:#0f2027;
-    border-radius:50%;
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-}
-.ticket:before{left:-9px;}
-.ticket:after{right:-9px;}
-
-.ticket-header{
-    text-align:center;
-    border-bottom:2px dashed #999;
-    padding-bottom:8px;
-}
-.ticket-body{
-    font-size:14px;
-    line-height:1.6;
-    margin-top:10px;
-}
-.barcode{
-    margin-top:12px;
-    height:45px;
-    background:repeating-linear-gradient(
-        90deg,#000,#000 2px,#fff 2px,#fff 4px
-    );
-}
-.status{
-    margin-top:8px;
-    font-weight:bold;
-    color:#d10000;
-    text-align:center;
-}
-.footer{
-    text-align:center;
-    font-size:12px;
-    margin-top:8px;
-}
-.whatsapp-btn{
-    margin-top:10px;
-    background:#25D366;
-    color:#fff;
-}
-</style>
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .text-4xl { font-size: 1.875rem; }
+            .p-12 { padding: 1.5rem; }
+            .neo-card { padding: 1.5rem !important; }
+        }
+    </style>
 </head>
+<body class="min-h-screen pb-10">
 
-<body>
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/50 text-white">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-tighter italic">RAS <span class="text-blue-500">PRO</span></h1>
+        </div>
+        <div class="flex gap-4 items-center">
+            <button onclick="showView('admin-panel')" class="text-xs bg-slate-800 px-3 py-2 rounded-lg hover:bg-slate-700 transition">ADMIN</button>
+            <div class="text-xs text-slate-500 font-bold uppercase hidden sm:block">DB: <span id="db-stat" class="text-blue-400">0</span></div>
+        </div>
+    </nav>
 
-<div class="container">
-<h2>🎟 Student Complaint Ticket</h2>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div id="dashboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"></div>
 
-<input type="text" id="name" placeholder="Student Name">
-<input type="number" id="mobile" placeholder="Mobile Number">
+        <div id="test-config" class="max-w-md mx-auto hidden glass p-6 sm:p-8 rounded-3xl mt-10">
+            <h2 id="config-title" class="text-2xl font-bold mb-6 text-center text-blue-400 font-mono">Test Settings</h2>
+            <div id="mix-only-option" class="hidden mb-6">
+                <label class="block text-sm text-slate-400 mb-2">Number of Questions:</label>
+                <input type="number" id="mix-q-count" value="30" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl mb-8 border border-slate-800">
+                <span class="font-bold">Negative Marking (1/3)</span>
+                <label class="switch">
+                    <input type="checkbox" id="neg-marking-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button id="start-btn-final" class="w-full bg-blue-600 p-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-900/40 transition">Start Test</button>
+            <button onclick="showView('dashboard')" class="w-full mt-4 text-slate-500 text-sm hover:text-white transition">Back to Home</button>
+        </div>
 
-<select id="issue">
-<option value="">Select Complaint Type</option>
-<option>App Problem</option>
-<option>Course Issue</option>
-<option>PDF Problem</option>
-<option>Test Series Issue</option>
-<option>Payment Issue</option>
-</select>
+        <div id="test-selector" class="hidden">
+            <button onclick="showView('dashboard')" class="mb-8 text-blue-400 font-bold hover:text-blue-300 transition underline underline-offset-4">← Back to Subjects</button>
+            <h2 id="current-subject-title" class="text-3xl sm:text-4xl font-bold mb-10 tracking-tight">Subject</h2>
+            <div id="topic-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"></div>
+        </div>
 
-<button onclick="generateTicket()">Generate Ticket</button>
+        <div id="quiz-view" class="hidden max-w-4xl mx-auto">
+            <div class="glass p-5 sm:p-8 rounded-3xl">
+                <div class="flex justify-between items-center mb-10">
+                    <div class="text-slate-400 font-mono text-sm sm:text-base">Q <span id="q-idx" class="text-white font-bold text-xl">1</span>/<span id="q-total">30</span></div>
+                    <div id="timer" class="text-2xl sm:text-3xl font-black text-blue-500 bg-blue-500/10 px-4 sm:px-6 py-2 rounded-2xl">00:00</div>
+                    <button onclick="endQuiz()" class="text-red-500 font-bold px-3 py-1 hover:bg-red-500/10 rounded-xl transition text-sm sm:text-base">Submit</button>
+                </div>
+                <p id="q-text" class="text-xl sm:text-2xl font-medium mb-10 leading-snug"></p>
+                <div id="opt-container" class="grid gap-3 sm:gap-4"></div>
+                <div class="flex justify-between mt-12 gap-4">
+                    <button onclick="skipQ()" class="text-slate-500 font-bold hover:text-white transition text-sm sm:text-base">Skip</button>
+                    <button id="next-btn" onclick="nextQ()" class="bg-blue-600 px-6 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg shadow-xl shadow-blue-900/40 transition">Next Question</button>
+                </div>
+            </div>
+        </div>
 
-<div class="ticket" id="ticket">
-    <div class="ticket-header">
-        <h3>STUDENT SUPPORT TICKET</h3>
-        <small>Ticket No: <span id="tno"></span></small>
-    </div>
+        <div id="result-view" class="hidden max-w-2xl mx-auto text-center">
+            <div class="glass p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3rem]">
+                <h2 class="text-xl sm:text-2xl text-slate-400 font-bold mb-2 uppercase tracking-tighter">Result Analysis</h2>
+                <div id="score-val" class="text-6xl sm:text-7xl font-black text-blue-500 mb-2">0.00</div>
+                <p id="neg-status-msg" class="text-xs text-slate-500 mb-8 uppercase tracking-widest font-mono"></p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-10">
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Total Questions<br><span id="res-total" class="text-white font-bold">0</span></div>
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Correct<br><span id="res-right" class="text-green-400 font-bold">0</span></div>
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Wrong<br><span id="res-wrong" class="text-red-400 font-bold">0</span></div>
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-sm sm:text-base">Skipped<br><span id="res-skip" class="text-yellow-400 font-bold">0</span></div>
+                </div>
 
-    <div class="ticket-body">
-        <b>Name:</b> <span id="tname"></span><br>
-        <b>Mobile:</b> <span id="tmobile"></span><br>
-        <b>Issue:</b> <span id="tissue"></span><br>
-        <b>Generated:</b> <span id="tdate"></span><br>
-        <b>Valid Till:</b> <span id="tvalid"></span>
-    </div>
+                <div class="flex flex-col gap-4">
+                    <button onclick="showReview()" class="bg-emerald-600 p-4 rounded-2xl font-bold hover:bg-emerald-700 transition">Review Solutions</button>
+                    <button onclick="resetApp()" class="bg-slate-700 p-4 rounded-2xl font-bold hover:bg-slate-600 transition">Back to Home</button>
+                </div>
+            </div>
+        </div>
 
-    <div class="barcode"></div>
-    <div class="status">STATUS : OPEN</div>
-    <div class="footer">Please keep this ticket for reference</div>
+        <div id="review-view" class="hidden space-y-6 max-w-4xl mx-auto"></div>
 
-    <button class="whatsapp-btn" onclick="sendWhatsApp()">
-        📲 Send Ticket on WhatsApp
-    </button>
-</div>
-</div>
+        <div id="admin-panel" class="hidden max-w-4xl mx-auto glass p-6 sm:p-8 rounded-3xl">
+            <h2 class="text-2xl font-bold mb-6">Import Questions (JSON)</h2>
+            <textarea id="json-input" class="w-full h-64 bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 font-mono text-xs sm:text-sm focus:outline-none focus:border-blue-500" placeholder='Example: [{"subject": "Science", "topic": "Biology", "q": "Sample Q?", "options": ["A","B","C","D"], "correct": 0, "explain": "Detail text"}]'></textarea>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button onclick="uploadQuestions()" class="bg-blue-600 px-6 py-3 rounded-xl font-bold transition">Import Questions</button>
+                <button onclick="showView('dashboard')" class="bg-slate-700 px-6 py-3 rounded-xl font-bold transition">Close</button>
+            </div>
+        </div>
+    </main>
 
-<!-- html2canvas CDN -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script>
+        const subjectIcons = {
+            "Rajasthan History": "fa-monument", "Rajasthan Art and culture": "fa-palette",
+            "Rajasthan Polity": "fa-building-columns", "Rajasthan Geography": "fa-map-location-dot",
+            "Rajasthan Economics": "fa-chart-line", "Indian Polity": "fa-scale-balanced",
+            "Indian History": "fa-landmark", "Indian Economics": "fa-money-bill-trend-up",
+            "India Static GK": "fa-earth-asia", "Current Affairs": "fa-newspaper",
+            "Computer": "fa-laptop-code", "Science": "fa-flask-vial", "Mix Test": "fa-layer-group"
+        };
 
-<script>
-let studentMobile="";
+        let masterDB = JSON.parse(localStorage.getItem('ras_db')) || [
+            {
+                subject: "Rajasthan Art and culture",
+                topic: "लोक चित्रशैली",
+                q: "मेवाड़ चित्रकला शैली का स्वर्ण काल किस शासक के काल को माना जाता है?",
+                options: ["महाराणा कुम्भा", "जगत सिंह प्रथम", "महाराणा प्रताप", "अमर सिंह"],
+                correct: 1,
+                explain: "<b>जगत सिंह प्रथम:</b> इनके शासनकाल को स्वर्ण युग माना जाता है। इन्होंने 'चितेरों की ओवरी' विद्यालय बनवाया।"
+            }
+        ];
 
-function generateTicket(){
-    let name=document.getElementById("name").value;
-    let mobile=document.getElementById("mobile").value;
-    let issue=document.getElementById("issue").value;
+        let currentSet = [], currentIndex = 0, answers = [], timer, timeLeft = 0, isNegativeEnabled = true;
 
-    if(name==""||mobile==""||issue==""){
-        alert("All fields are required");
-        return;
-    }
+        function init() {
+            const dash = document.getElementById('dashboard');
+            dash.innerHTML = Object.keys(subjectIcons).map(sub => {
+                const count = sub === "Mix Test" ? masterDB.length : masterDB.filter(q => q.subject === sub).length;
+                return `<div class="glass p-6 sm:p-8 neo-card" onclick="openConfig('${sub}')">
+                    <i class="fas ${subjectIcons[sub]} text-3xl sm:text-4xl text-blue-500 mb-6"></i>
+                    <h3 class="text-lg sm:text-xl font-bold mb-2">${sub}</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm font-mono">${count} Questions</p>
+                </div>`;
+            }).join('');
+            document.getElementById('db-stat').innerText = masterDB.length;
+        }
 
-    studentMobile=mobile;
+        function openConfig(sub, topic = null, testNum = null) {
+            showView('test-config');
+            const mixOpt = document.getElementById('mix-only-option');
+            const startBtn = document.getElementById('start-btn-final');
+            
+            if(sub === "Mix Test") {
+                mixOpt.classList.remove('hidden');
+                document.getElementById('config-title').innerText = "Mix Test Practice";
+                startBtn.onclick = () => startMixTest();
+            } else if(topic) {
+                mixOpt.classList.add('hidden');
+                document.getElementById('config-title').innerText = `${topic} - Test ${testNum}`;
+                startBtn.onclick = () => startActualTest(sub, topic, testNum);
+            } else {
+                renderTopics(sub);
+            }
+        }
 
-    let ticketNo="TKT"+Date.now();
-    let now=new Date();
-    let valid=new Date();
-    valid.setDate(now.getDate()+7);
+        function renderTopics(sub) {
+            showView('test-selector');
+            const grid = document.getElementById('topic-grid');
+            document.getElementById('current-subject-title').innerText = sub;
+            let filtered = masterDB.filter(q => q.subject === sub);
+            let topics = [...new Set(filtered.map(q => q.topic))];
 
-    document.getElementById("tno").innerText=ticketNo;
-    document.getElementById("tname").innerText=name;
-    document.getElementById("tmobile").innerText=mobile;
-    document.getElementById("tissue").innerText=issue;
-    document.getElementById("tdate").innerText=now.toLocaleString();
-    document.getElementById("tvalid").innerText=valid.toLocaleDateString();
+            grid.innerHTML = topics.map(t => {
+                let topicQs = filtered.filter(q => q.topic === t);
+                let testCount = Math.ceil(topicQs.length / 30);
+                let btns = "";
+                for(let i=1; i<=testCount; i++) {
+                    btns += `<button onclick="openConfig('${sub}', '${t}', ${i})" class="bg-blue-600/10 border border-blue-500/20 p-4 rounded-xl hover:bg-blue-600 transition font-bold text-left">${t} - Test ${i}</button>`;
+                }
+                return `<div class="flex flex-col gap-3">${btns}</div>`;
+            }).join('');
+        }
 
-    document.getElementById("ticket").style.display="block";
-}
+        function startMixTest() {
+            let count = parseInt(document.getElementById('mix-q-count').value);
+            currentSet = [...masterDB].sort(() => 0.5 - Math.random()).slice(0, count);
+            launchQuiz();
+        }
 
-function sendWhatsApp(){
-    if(!navigator.share){
-        alert("WhatsApp sharing works only on mobile browser");
-        return;
-    }
+        function startActualTest(sub, topic, num) {
+            let pool = masterDB.filter(q => q.subject === sub && q.topic === topic);
+            currentSet = pool.slice((num-1)*30, num*30);
+            launchQuiz();
+        }
 
-    html2canvas(document.getElementById("ticket")).then(canvas=>{
-        canvas.toBlob(blob=>{
-            let file=new File([blob],"ticket.png",{type:"image/png"});
+        function launchQuiz() {
+            isNegativeEnabled = document.getElementById('neg-marking-toggle').checked;
+            currentIndex = 0;
+            answers = new Array(currentSet.length).fill(null);
+            timeLeft = currentSet.length * 30;
+            showView('quiz-view');
+            renderQuestion();
+            if(timer) clearInterval(timer);
+            timer = setInterval(() => { timeLeft--; updateTimer(); if(timeLeft <= 0) endQuiz(); }, 1000);
+        }
 
-            navigator.share({
-                files:[file],
-                title:"Support Ticket",
-                text:"Your complaint ticket"
+        function renderQuestion() {
+            const q = currentSet[currentIndex];
+            document.getElementById('q-idx').innerText = currentIndex + 1;
+            document.getElementById('q-total').innerText = currentSet.length;
+            document.getElementById('q-text').innerText = q.q;
+            const container = document.getElementById('opt-container');
+            container.innerHTML = q.options.map((opt, i) => `
+                <div onclick="selectOpt(${i})" class="option-box p-4 sm:p-5 flex items-center gap-4 ${answers[currentIndex] === i ? 'selected' : ''}">
+                    <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-[10px] sm:text-xs text-blue-400">${String.fromCharCode(65+i)}</span>
+                    <span class="text-base sm:text-lg">${opt}</span>
+                </div>
+            `).join('');
+            document.getElementById('next-btn').innerText = (currentIndex === currentSet.length - 1) ? "Finish Test" : "Next Question";
+        }
+
+        function selectOpt(i) { answers[currentIndex] = i; renderQuestion(); }
+        function nextQ() { if(currentIndex < currentSet.length - 1) { currentIndex++; renderQuestion(); } else { endQuiz(); } }
+        function skipQ() { answers[currentIndex] = null; nextQ(); }
+        function updateTimer() {
+            let m = Math.floor(timeLeft / 60); let s = timeLeft % 60;
+            document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+        }
+
+        function endQuiz() {
+            clearInterval(timer);
+            calculateResult();
+            showView('result-view');
+        }
+
+        function calculateResult() {
+            let r=0, w=0, s=0;
+            currentSet.forEach((q, i) => {
+                if(answers[i] === q.correct) r++;
+                else if(answers[i] === null) s++;
+                else w++;
             });
-        });
-    });
-}
-</script>
+            let score = isNegativeEnabled ? (r - (w * 0.33)).toFixed(2) : r.toFixed(2);
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('res-total').innerText = currentSet.length;
+            document.getElementById('res-right').innerText = r;
+            document.getElementById('res-wrong').innerText = w;
+            document.getElementById('res-skip').innerText = s;
+            document.getElementById('neg-status-msg').innerText = isNegativeEnabled ? "Negative Marking Applied" : "No Negative Marking";
+        }
 
+        function showReview() {
+            showView('review-view');
+            const container = document.getElementById('review-view');
+            container.innerHTML = `<button onclick="resetApp()" class="bg-slate-800 p-4 rounded-xl mb-6 font-bold w-full transition border border-slate-700 hover:bg-slate-700 tracking-widest uppercase text-xs">← Back to Dashboard</button>` + 
+            currentSet.map((q, i) => `
+                <div class="glass p-6 sm:p-8 rounded-3xl border-l-8 ${answers[i] === q.correct ? 'border-green-500' : (answers[i] === null ? 'border-yellow-500' : 'border-red-500')}">
+                    <p class="text-lg sm:text-xl font-bold mb-6">${q.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 text-sm">
+                        ${q.options.map((o, oi) => `
+                            <div class="p-3 rounded-lg ${oi === q.correct ? 'correct' : (answers[i] === oi ? 'wrong' : 'bg-slate-900')}">
+                                ${o}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="bg-blue-500/10 p-4 rounded-xl text-sm border border-blue-500/20">
+                        <strong class="text-blue-400">Explanation:</strong> ${q.explain}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function uploadQuestions() {
+            try {
+                const newData = JSON.parse(document.getElementById('json-input').value);
+                const existingQs = masterDB.map(x => x.q);
+                const filteredNew = newData.filter(x => !existingQs.includes(x.q));
+                masterDB = [...masterDB, ...filteredNew];
+                localStorage.setItem('ras_db', JSON.stringify(masterDB));
+                alert(`${filteredNew.length} New questions added!`);
+                resetApp();
+            } catch(e) { alert("Invalid JSON Format!"); }
+        }
+
+        function showView(id) {
+            ['dashboard', 'test-selector', 'quiz-view', 'result-view', 'review-view', 'admin-panel', 'test-config'].forEach(v => {
+                document.getElementById(v).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function resetApp() {
+            clearInterval(timer);
+            init();
+            showView('dashboard');
+        }
+
+        init();
+    </script>
 </body>
-</html>
+    </html>
+    
