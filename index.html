@@ -44,10 +44,24 @@
             <div id="subject-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"></div>
         </div>
 
+        <div id="test-config" class="max-w-md mx-auto hidden glass p-8 rounded-3xl mt-10 text-center">
+            <h2 id="config-title" class="text-2xl font-bold mb-6 text-blue-400 font-mono">Test Settings</h2>
+            <div id="mix-only-option" class="hidden mb-6 text-left">
+                <label class="block text-xs text-slate-500 mb-2 uppercase">Sawal ki Sankhya:</label>
+                <input type="number" id="mix-q-count" value="30" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700">
+            </div>
+            <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl mb-8 border border-slate-800">
+                <span class="font-bold">Negative Marking (1/3)</span>
+                <label class="switch"><input type="checkbox" id="neg-marking-toggle" checked><span class="slider"></span></label>
+            </div>
+            <button id="start-btn-final" class="w-full bg-blue-600 p-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-900/40 transition">START TEST</button>
+            <button onclick="showView('dashboard')" class="w-full mt-4 bg-slate-700 p-4 rounded-xl font-bold hover:bg-slate-600 transition">BACK</button>
+        </div>
+
         <div id="admin-panel" class="hidden max-w-4xl mx-auto space-y-6">
             <div class="glass p-6 rounded-3xl">
                 <h2 class="text-2xl font-bold mb-4 italic">Import Questions (JSON)</h2>
-                <textarea id="json-input" class="w-full h-40 bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 font-mono text-sm" placeholder='JSON data yahan paste karein...'></textarea>
+                <textarea id="json-input" class="w-full h-40 bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 font-mono text-sm" placeholder="JSON data yahan paste karein..."></textarea>
                 <div class="flex gap-4">
                     <button onclick="uploadQuestions()" class="bg-blue-600 px-6 py-3 rounded-xl font-bold">ADD QUESTIONS</button>
                     <button onclick="showView('dashboard')" class="bg-slate-700 px-6 py-3 rounded-xl font-bold">BACK</button>
@@ -55,21 +69,8 @@
             </div>
             <div class="glass p-6 rounded-3xl">
                 <h2 class="text-xl font-bold mb-4 text-red-500">Delete Questions</h2>
-                <div id="delete-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
+                <div id="delete-list" class="space-y-2 max-h-80 overflow-y-auto pr-2 font-sans"></div>
             </div>
-        </div>
-
-        <div id="test-config" class="max-w-md mx-auto hidden glass p-8 rounded-3xl mt-10 text-center">
-            <h2 id="config-title" class="text-2xl font-bold mb-6 text-blue-400">Settings</h2>
-            <div id="mix-only-option" class="hidden mb-6 text-left">
-                <label class="block text-xs text-slate-500 mb-2 uppercase">Sawal ki Sankhya:</label>
-                <input type="number" id="mix-q-count" value="30" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700">
-            </div>
-            <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl mb-8">
-                <span class="font-bold">Negative Marking (1/3)</span>
-                <label class="switch"><input type="checkbox" id="neg-marking-toggle" checked><span class="slider"></span></label>
-            </div>
-            <button id="start-btn-final" class="w-full bg-blue-600 p-4 rounded-xl font-bold">START TEST</button>
         </div>
 
         <div id="test-selector" class="hidden space-y-6">
@@ -78,31 +79,31 @@
             <div id="topic-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="quiz-view" class="hidden max-w-4xl mx-auto glass p-8 rounded-3xl">
+        <div id="quiz-view" class="hidden max-w-4xl mx-auto glass p-5 sm:p-8 rounded-3xl">
             <div class="flex justify-between items-center mb-8">
-                <span class="font-mono">Q: <span id="q-idx">1</span>/<span id="q-total">30</span></span>
+                <span class="font-mono text-sm">Q: <span id="q-idx">1</span>/<span id="q-total">30</span></span>
                 <div id="timer" class="text-2xl font-black text-blue-500 bg-blue-500/10 px-4 py-1 rounded-xl">00:00</div>
                 <button onclick="endQuiz()" class="text-red-500 font-bold">SUBMIT</button>
             </div>
-            <p id="q-text" class="text-xl sm:text-2xl mb-10 leading-relaxed"></p>
-            <div id="opt-container" class="grid gap-4"></div>
+            <p id="q-text" class="text-xl sm:text-2xl mb-10 leading-relaxed font-medium"></p>
+            <div id="opt-container" class="grid gap-3 sm:gap-4"></div>
             <div class="flex justify-between mt-12">
                 <button onclick="skipQ()" class="text-slate-500 font-bold">SKIP</button>
-                <button id="next-btn" onclick="nextQ()" class="bg-blue-600 px-10 py-4 rounded-2xl font-bold">NEXT</button>
+                <button id="next-btn" onclick="nextQ()" class="bg-blue-600 px-8 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold transition">NEXT</button>
             </div>
         </div>
 
-        <div id="result-view" class="hidden max-w-2xl mx-auto glass p-10 rounded-[3rem] text-center">
-            <h2 class="text-slate-400 font-bold mb-2 uppercase">Final Score</h2>
-            <div id="score-val" class="text-7xl font-black text-blue-500 mb-8">0.00</div>
-            <div class="grid grid-cols-2 gap-4 mb-10 text-sm">
-                <div class="bg-slate-900 p-4 rounded-2xl">Total: <span id="res-total">0</span></div>
-                <div class="bg-slate-900 p-4 rounded-2xl">Correct: <span id="res-right" class="text-green-400">0</span></div>
-                <div class="bg-slate-900 p-4 rounded-2xl">Wrong: <span id="res-wrong" class="text-red-400">0</span></div>
-                <div class="bg-slate-900 p-4 rounded-2xl">Skip: <span id="res-skip" class="text-yellow-400">0</span></div>
+        <div id="result-view" class="hidden max-w-2xl mx-auto glass p-8 sm:p-12 rounded-[3rem] text-center">
+            <h2 class="text-slate-400 font-bold mb-2 uppercase tracking-widest text-sm">Final Score</h2>
+            <div id="score-val" class="text-6xl sm:text-7xl font-black text-blue-500 mb-8">0.00</div>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-10 text-sm">
+                <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">Total: <span id="res-total" class="font-bold">0</span></div>
+                <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-green-400">Correct: <span id="res-right" class="font-bold">0</span></div>
+                <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-red-400">Wrong: <span id="res-wrong" class="font-bold">0</span></div>
+                <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 text-yellow-400">Skip: <span id="res-skip" class="font-bold">0</span></div>
             </div>
-            <button onclick="showReview()" class="w-full bg-emerald-600 p-4 rounded-2xl font-bold mb-3">REVIEW SOLUTIONS</button>
-            <button onclick="resetApp()" class="w-full bg-slate-700 p-4 rounded-2xl font-bold">HOME</button>
+            <button onclick="showReview()" class="w-full bg-emerald-600 p-4 rounded-2xl font-bold mb-3 transition">REVIEW SOLUTIONS</button>
+            <button onclick="resetApp()" class="w-full bg-slate-700 p-4 rounded-2xl font-bold transition">HOME</button>
         </div>
 
         <div id="review-view" class="hidden space-y-6 max-w-4xl mx-auto"></div>
@@ -122,20 +123,17 @@
         let historyData = JSON.parse(localStorage.getItem('ras_results')) || [];
         let currentSet = [], currentIndex = 0, answers = [], timer, timeLeft = 0, isNegativeEnabled = true;
 
-        // Auto-fix agar page blank ho
         function init() {
             const dash = document.getElementById('subject-grid');
             if(!dash) return;
-            
             dash.innerHTML = Object.keys(subjectIcons).map(sub => {
                 const count = sub === "Mix Test" ? masterDB.length : masterDB.filter(q => q.subject === sub).length;
                 return `<div class="glass p-6 sm:p-8 neo-card" onclick="openConfig('${sub}')">
                     <i class="fas ${subjectIcons[sub]} text-3xl sm:text-4xl text-blue-500 mb-6"></i>
-                    <h3 class="text-lg font-bold mb-2">${sub}</h3>
+                    <h3 class="text-lg font-bold mb-2 font-sans">${sub}</h3>
                     <p class="text-slate-500 text-xs font-mono uppercase tracking-widest">${count} Questions</p>
                 </div>`;
             }).join('');
-            
             renderHistory();
         }
 
@@ -156,14 +154,13 @@
             list.innerHTML = masterDB.map((q, i) => `
                 <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-xs mb-2">
                     <span class="truncate pr-4">${i+1}. [${q.subject}] ${q.q}</span>
-                    <button onclick="deleteQuestion(${i})" class="text-red-500 font-bold">DELETE</button>
+                    <button onclick="deleteQuestion(${i})" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded-lg">DELETE</button>
                 </div>`).join('') || `<p class="text-center py-4 text-slate-500 italic">No questions found</p>`;
         }
 
         function deleteQuestion(index) {
             if(confirm("Confirm Delete?")) {
-                masterDB.splice(index, 1);
-                localStorage.setItem('ras_db', JSON.stringify(masterDB));
+                masterDB.splice(index, 1); localStorage.setItem('ras_db', JSON.stringify(masterDB));
                 renderDeleteList(); init();
             }
         }
@@ -229,7 +226,7 @@
             container.innerHTML = q.options.map((opt, i) => `
                 <div onclick="selectOpt(${i})" class="option-box p-4 flex items-center gap-4 ${answers[currentIndex] === i ? 'selected' : ''}">
                     <span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-xs text-blue-400">${String.fromCharCode(65+i)}</span>
-                    <span class="text-base">${opt}</span>
+                    <span class="text-base font-sans">${opt}</span>
                 </div>`).join('');
             document.getElementById('next-btn').innerText = (currentIndex === currentSet.length - 1) ? "Finish Test" : "Next Question";
         }
@@ -243,14 +240,12 @@
         }
 
         function endQuiz() {
-            clearInterval(timer);
-            const score = calculateResult();
+            clearInterval(timer); const score = calculateResult();
             const resultObj = {
                 subject: window.activeSub, score: score,
                 date: new Date().toLocaleDateString('hi-IN', {day:'2-digit', month:'short'})
             };
-            historyData.push(resultObj);
-            localStorage.setItem('ras_results', JSON.stringify(historyData.slice(-10)));
+            historyData.push(resultObj); localStorage.setItem('ras_results', JSON.stringify(historyData.slice(-10)));
             showView('result-view');
         }
 
@@ -276,17 +271,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                         ${q.options.map((o, oi) => `<div class="p-3 rounded-lg text-sm ${oi === q.correct ? 'correct' : (answers[i] === oi ? 'wrong' : 'bg-slate-900')}">${o}</div>`).join('')}
                     </div>
-                    <div class="bg-blue-500/10 p-4 rounded-xl text-sm border border-blue-500/20"><strong class="text-blue-400">Explanation:</strong> ${q.explain}</div>
+                    <div class="bg-blue-500/10 p-4 rounded-xl text-sm border border-blue-500/20"><strong class="text-blue-400 font-sans">Explanation:</strong> ${q.explain}</div>
                 </div>`).join('');
         }
 
         function uploadQuestions() {
             try {
                 const newData = JSON.parse(document.getElementById('json-input').value);
-                masterDB = [...masterDB, ...newData];
-                localStorage.setItem('ras_db', JSON.stringify(masterDB));
-                alert("Success!");
-                resetApp();
+                masterDB = [...masterDB, ...newData]; localStorage.setItem('ras_db', JSON.stringify(masterDB));
+                alert("Success!"); resetApp();
             } catch(e) { alert("Invalid JSON!"); }
         }
 
