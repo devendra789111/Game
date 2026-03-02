@@ -7,16 +7,14 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
         
-        /* हेडर को छोटा और प्रोफेशनल किया गया है */
         .header { background: #1a237e; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header h2 { margin: 5px 0; font-size: 22px; }
         .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
         
-        .container { background: white; padding: 20px; border-radius: 10px; max-width: 1000px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 20px; border-radius: 10px; max-width: 1050px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .input-group { margin-bottom: 15px; }
         input[type="text"] { padding: 10px; width: 30%; margin: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         
-        /* अलग-अलग बटन्स का डिज़ाइन */
         .btn-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
         button { padding: 10px 15px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -26,17 +24,20 @@
         .btn-train-start { background-color: #9C27B0; } .btn-train-end { background-color: #7B1FA2; }
         .btn-break-start { background-color: #FF9800; } .btn-break-end { background-color: #F57C00; }
         
-        #cameraBox { display: none; margin: 15px auto; padding: 15px; background: #fff3e0; border: 2px dashed #ff9800; border-radius: 10px; }
-        video { width: 100%; max-width: 250px; border-radius: 10px; border: 3px solid #1a237e; }
-        
-        /* स्टेटस बॉक्स को छोटा किया गया है */
-        .status-box { margin: 15px 0; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px; font-size: 18px; font-weight: bold; color: #0d47a1; }
+        /* सेल्फी पॉप-अप (Modal) की स्टाइल */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
+        video { width: 100%; border-radius: 8px; border: 3px solid #1a237e; margin-bottom: 10px; }
 
-        /* टेबल डिज़ाइन - एक ही लाइन में सब कुछ */
+        /* स्टेटस बॉक्स */
+        .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 18px; font-weight: bold; color: #0d47a1; max-width: 500px; transition: 0.3s; }
+        .geo-text { display: block; margin-top: 5px; font-size: 14px; font-weight: normal; }
+        .out-of-zone { background: #ffebee !important; border-color: #ef5350 !important; color: #c62828 !important; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; background: white; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background-color: #1a237e; color: white; }
-        .active-timer { font-weight: bold; color: red; } /* जो टाइमर चल रहा होगा वो लाल दिखेगा */
+        .active-timer { font-weight: bold; color: red; } 
         
         .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
         .btn-pdf { background-color: #D32F2F; padding: 10px 20px; }
@@ -58,12 +59,7 @@
 
         <div class="status-box" id="statusBox">
             स्टेटस: <span id="currentStatus">Not Punched In</span>
-        </div>
-
-        <div id="cameraBox">
-            <p style="color:#d84315; font-weight:bold; margin-top:0;">📍 लोकेशन वेरीफाई हो गई है। कृपया सेल्फी लें।</p>
-            <video id="video" autoplay playsinline></video><br>
-            <button class="btn-in" style="margin-top: 10px;" onclick="takePhotoAndPunch()">सेल्फी कैप्चर करें और कन्फर्म करें</button>
+            <span class="geo-text" id="geoText"></span>
         </div>
 
         <div class="btn-grid">
@@ -84,14 +80,15 @@
                         <th>स्टेटस</th>
                         <th>Punch In</th>
                         <th>Punch Out</th>
-                        <th>Work Hrs</th>
                         <th>Break Time</th>
-                        <th>Train Time</th>
+                        <th>Training Time</th>
+                        <th>Total Working Hours</th>
                         <th>Selfie</th>
                     </tr>
                 </thead>
                 <tbody id="logTableBody">
-                    </tbody>
+                    <tr><td colspan="9">कोई डेटा उपलब्ध नहीं है</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -101,25 +98,38 @@
         </div>
     </div>
 
+    <div id="selfieModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3>
+            <video id="video" autoplay playsinline></video>
+            <button class="btn-in" style="width:100%;" onclick="takePhotoAndPunch()">सेल्फी कैप्चर करें</button>
+        </div>
+    </div>
+
     <script>
-        // --- सिस्टम वेरिएबल्स ---
         const ADMIN_PASS = "1234";
         let stream = null;
         let globalTimer = null;
+        let geoWatchId = null;
         
-        // --- लोकल स्टोरेज से डेटा रिकवर करना (Refresh-proof) ---
+        // लोकल स्टोरेज से डेटा रिकवर करना
         let sessionData = JSON.parse(localStorage.getItem('attendanceSession')) || null;
+        let todayDate = new Date().toLocaleDateString('en-IN');
 
         window.onload = () => {
             updateDateTime();
             setInterval(updateDateTime, 1000);
             
-            if (sessionData && sessionData.isActive) {
+            // अगर डेटा पुराने दिन का है तो नया दिन मानकर रिसेट न करें, लेकिन दिखने दें
+            if (sessionData) {
                 document.getElementById("empName").value = sessionData.name;
                 document.getElementById("empId").value = sessionData.id;
                 renderTable();
                 updateUIBasedOnState();
-                startMasterTimer();
+                if(sessionData.isActive) {
+                    startMasterTimer();
+                    startGeoTracking();
+                }
             }
         };
 
@@ -128,7 +138,6 @@
             document.getElementById('liveDateTime').innerText = now.toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' });
         }
 
-        // --- 1. पंच इन प्रोसेस (पहले लोकेशन, फिर कैमरा) ---
         function initPunchIn() {
             let name = document.getElementById("empName").value;
             let id = document.getElementById("empId").value;
@@ -138,23 +147,31 @@
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
-                    // लोकेशन मिल गई, अब कैमरा खोलें
-                    document.getElementById('currentStatus').innerText = "लोकेशन वेरीफाईड। सेल्फी पेंडिंग...";
-                    document.getElementById("cameraBox").style.display = "block";
+                    // बेस लोकेशन सेव करना
+                    let lat = pos.coords.latitude;
+                    let lng = pos.coords.longitude;
+                    
+                    document.getElementById('currentStatus').innerText = "सेल्फी पेंडिंग...";
+                    document.getElementById('selfieModal').style.display = 'flex';
+                    
                     try {
                         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                         document.getElementById("video").srcObject = stream;
                     } catch (err) { alert("कैमरा चालू नहीं हो सका!"); }
+                    
+                    // डेटा तैयार करना (अभी सेव नहीं करेंगे जब तक सेल्फी न हो)
+                    window.tempLocation = { lat, lng };
+
                 }, () => { alert("लोकेशन परमिशन अनिवार्य है!"); }, { enableHighAccuracy: true });
             } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
 
         function takePhotoAndPunch() {
-            if(stream) stream.getTracks().forEach(track => track.stop()); // कैमरा बंद करें
-            document.getElementById("cameraBox").style.display = "none";
+            if(stream) stream.getTracks().forEach(track => track.stop());
+            document.getElementById('selfieModal').style.display = 'none';
             
-            // नया सेशन बनाना
             sessionData = {
+                date: todayDate,
                 isActive: true,
                 name: document.getElementById("empName").value,
                 id: document.getElementById("empId").value,
@@ -162,16 +179,19 @@
                 punchInTime: new Date().toLocaleTimeString('hi-IN'),
                 punchOutTime: "-",
                 workSecs: 0, breakSecs: 0, trainSecs: 0,
-                activeMode: "work" // work, break, train
+                activeMode: "work",
+                baseLat: window.tempLocation.lat,
+                baseLng: window.tempLocation.lng,
+                isWithin50m: true
             };
             
             saveData();
             renderTable();
             updateUIBasedOnState();
             startMasterTimer();
+            startGeoTracking();
         }
 
-        // --- 2. पंच आउट ---
         function initPunchOut() {
             sessionData.isActive = false;
             sessionData.activeMode = "none";
@@ -179,13 +199,15 @@
             sessionData.punchOutTime = new Date().toLocaleTimeString('hi-IN');
             
             clearInterval(globalTimer);
-            saveData();
-            renderTable();
-            updateUIBasedOnState();
+            if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
+            
+            document.getElementById('geoText').innerHTML = "";
+            document.getElementById('statusBox').classList.remove('out-of-zone');
+            
+            saveData(); renderTable(); updateUIBasedOnState();
             alert("सफलतापूर्वक पंच-आउट हो गया!");
         }
 
-        // --- 3. ब्रेक सिस्टम ---
         function startBreak() {
             sessionData.activeMode = "break";
             sessionData.status = "On Break ☕";
@@ -197,7 +219,6 @@
             saveData(); renderTable(); updateUIBasedOnState();
         }
 
-        // --- 4. ट्रेनिंग सिस्टम ---
         function startTraining() {
             let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
@@ -212,20 +233,55 @@
             saveData(); renderTable(); updateUIBasedOnState();
         }
 
-        // --- 5. मास्टर टाइमर (लगातार चलता रहेगा और UI अपडेट करेगा) ---
+        // --- जियो-फेंसिंग और 50m लाइव ट्रैकिंग ---
+        function startGeoTracking() {
+            if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
+            
+            geoWatchId = navigator.geolocation.watchPosition((pos) => {
+                if(!sessionData || !sessionData.isActive) return;
+
+                let dist = calculateDistance(sessionData.baseLat, sessionData.baseLng, pos.coords.latitude, pos.coords.longitude);
+                let geoText = document.getElementById("geoText");
+                let statusBox = document.getElementById("statusBox");
+
+                if(dist <= 50) {
+                    sessionData.isWithin50m = true;
+                    geoText.innerHTML = `<span style="color: green;">You are within 50m working zone</span>`;
+                    statusBox.classList.remove('out-of-zone');
+                } else {
+                    sessionData.isWithin50m = false;
+                    geoText.innerHTML = `<span style="color: #c62828;">You are ${Math.round(dist)} meters away from working zone!</span>`;
+                    statusBox.classList.add('out-of-zone');
+                }
+                saveData();
+            }, null, { enableHighAccuracy: true });
+        }
+
+        // मास्टर टाइमर
         function startMasterTimer() {
             if(globalTimer) clearInterval(globalTimer);
             globalTimer = setInterval(() => {
-                if(sessionData.activeMode === "work") sessionData.workSecs++;
-                else if(sessionData.activeMode === "break") sessionData.breakSecs++;
-                else if(sessionData.activeMode === "train") sessionData.trainSecs++;
+                if(sessionData.activeMode === "work" && sessionData.isWithin50m) {
+                    sessionData.workSecs++; // काम का समय तभी बढ़ेगा जब 50m के अंदर हो
+                }
+                else if(sessionData.activeMode === "break") {
+                    sessionData.breakSecs++;
+                }
+                else if(sessionData.activeMode === "train") {
+                    sessionData.trainSecs++; // ट्रेनिंग का समय लोकेशन से स्वतंत्र है
+                }
                 
-                saveData(); // हर सेकंड लोकल स्टोरेज में सेव ताकि रिफ्रेश पर उड़े नहीं
-                renderTable(); // टेबल में लाइव टाइमर अपडेट
+                saveData();
+                renderTable();
             }, 1000);
         }
 
-        // --- 6. UI और टेबल अपडेट फंक्शन्स ---
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
         function saveData() { localStorage.setItem('attendanceSession', JSON.stringify(sessionData)); }
 
         function formatTime(totalSeconds) {
@@ -239,10 +295,12 @@
             if(!sessionData) return;
             document.getElementById('currentStatus').innerText = sessionData.status;
 
-            // जो टाइमर चल रहा है उसे लाल (active-timer) क्लास देना
-            let wClass = sessionData.activeMode === 'work' ? 'active-timer' : '';
             let bClass = sessionData.activeMode === 'break' ? 'active-timer' : '';
             let tClass = sessionData.activeMode === 'train' ? 'active-timer' : '';
+            let wClass = sessionData.activeMode === 'work' ? 'active-timer' : '';
+
+            // टोटल वर्किंग ऑवर्स = (रेगुलर वर्किंग टाइम + ट्रेनिंग टाइम) - ब्रेक का टाइम इसमें गिना ही नहीं गया है
+            let totalWorkSecs = sessionData.workSecs + sessionData.trainSecs;
 
             let row = `<tr>
                 <td>${sessionData.name}</td>
@@ -250,9 +308,9 @@
                 <td style="font-weight:bold; color:#1a237e;">${sessionData.status}</td>
                 <td>${sessionData.punchInTime}</td>
                 <td>${sessionData.punchOutTime}</td>
-                <td class="${wClass}">${formatTime(sessionData.workSecs)}</td>
                 <td class="${bClass}">${formatTime(sessionData.breakSecs)}</td>
                 <td class="${tClass}">${formatTime(sessionData.trainSecs)}</td>
+                <td class="${wClass}" style="background-color: #e8f5e9;">${formatTime(totalWorkSecs)}</td>
                 <td>📸 Done</td>
             </tr>`;
             document.getElementById("logTableBody").innerHTML = row;
@@ -263,11 +321,9 @@
             let st = sessionData.activeMode;
             let isActive = sessionData.isActive;
 
-            // नाम और ID बॉक्स लॉक कर दें
-            document.getElementById("empName").disabled = isActive;
-            document.getElementById("empId").disabled = isActive;
+            document.getElementById("empName").disabled = true; // एक बार एंट्री होने पर लॉक
+            document.getElementById("empId").disabled = true;
 
-            // बटन एनेबल/डिसेबल लॉजिक
             document.getElementById("btnIn").disabled = isActive;
             document.getElementById("btnOut").disabled = !isActive;
             
@@ -278,14 +334,11 @@
             document.getElementById("btnTrainEnd").disabled = (!isActive || st !== "train");
         }
 
-        // --- 7. डाउनलोड फंक्शन्स ---
         function downloadFile(type) {
             let pass = prompt(`${type} डाउनलोड करने के लिए पासवर्ड डालें:`);
             if(pass === "admin123") {
                 alert(`आपकी ${type} फाइल डाउनलोड हो रही है...`);
-            } else {
-                alert("पासवर्ड गलत है!");
-            }
+            } else { alert("पासवर्ड गलत है!"); }
         }
     </script>
 </body>
