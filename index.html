@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Education Attendance</title>
+    <title>Quality Education Attendance Kiosk</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
@@ -28,18 +28,25 @@
         .btn-break-start { background-color: #FF9800; } .btn-break-end { background-color: #F57C00; }
         .btn-leave { background-color: #E91E63; }
         
+        /* Modals (Popups) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 340px; }
         video { width: 100%; border-radius: 8px; border: 3px solid #1a237e; margin-bottom: 10px; }
         canvas { display: none; }
+        
+        /* Leave Form CSS */
+        .leave-form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        .leave-form select, .leave-form input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        .leave-alert { color: red; font-size: 12px; font-weight: bold; display: none; }
 
         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 16px; font-weight: bold; color: #0d47a1; max-width: 500px; }
         .out-of-zone { background: #ffebee !important; border-color: #ef5350 !important; color: #c62828 !important; }
+        .holiday-banner { background: #ffebee; border-color: #f44336; color: #b71c1c; }
 
         #exportArea { margin-top: 20px; background: white; padding: 10px; }
         .report-header { display: none; text-align: center; font-size: 20px; margin-bottom: 15px; color: #1a237e; font-weight: bold; text-transform: uppercase; }
         
-        #tableWrapper { overflow-x: auto; } /* इसे ID दी गई है ताकि PDF के समय कंट्रोल कर सकें */
+        #tableWrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: middle; }
         th { background-color: #1a237e; color: white; }
@@ -61,6 +68,10 @@
     </div>
 
     <div class="container">
+        <div class="status-box" id="systemStatusBox" style="display:none; margin-bottom: 20px;">
+            <span id="systemStatusText"></span>
+        </div>
+
         <div class="input-group">
             <p style="margin: 0 0 10px 0; font-size: 14px; color: #555;">अपना नाम और ID दर्ज करें और बटन दबाएं:</p>
             <input type="text" id="empName" placeholder="कर्मचारी का नाम">
@@ -78,7 +89,7 @@
             <button class="btn-break-end" onclick="actionBtn('work')">End Break</button>
             <button class="btn-train-start" onclick="startTraining()">Start Training</button>
             <button class="btn-train-end" onclick="actionBtn('work')">End Training</button>
-            <button class="btn-leave" onclick="markLeave()">Mark Leave/Holiday</button>
+            <button class="btn-leave" onclick="openLeaveModal()">Mark Leave</button>
         </div>
 
         <div id="exportArea">
@@ -122,38 +133,99 @@
         </div>
     </div>
 
+    <div id="leaveModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#E91E63;">📅 छुट्टी (Leave) दर्ज करें</h3>
+            <div class="leave-form">
+                <label>छुट्टी का प्रकार चुनें:</label>
+                <select id="leaveType" onchange="checkLeaveType()">
+                    <option value="">-- सेलेक्ट करें --</option>
+                    <option value="EL">Earned Leave (EL) - 1/महीना</option>
+                    <option value="CL">Casual Leave (CL) - 6/साल</option>
+                    <option value="SL">Sick Leave (SL) - 6/साल</option>
+                </select>
+                
+                <label>कारण (Reason):</label>
+                <input type="text" id="leaveReason" placeholder="कारण लिखें..." required>
+                
+                <div id="medicalCertBox" style="display: none;">
+                    <label style="color:red; font-size: 12px; font-weight:bold;">लगातार 2 दिन से ज्यादा Sick Leave होने पर मेडिकल सर्टिफिकेट (PDF) अपलोड करना अनिवार्य है:</label>
+                    <input type="file" id="medicalCert" accept=".pdf">
+                </div>
+
+                <p class="leave-alert" id="leaveAlert"></p>
+                
+                <button class="btn-leave" style="width:100%; margin-top:10px;" onclick="submitLeave()">छुट्टी सबमिट करें</button>
+                <button style="width:100%; margin-top:10px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveModal').style.display='none';">रद्द करें</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- ⚙️ छुट्टियां और सेटिंग्स (Holiday Config) ---
         const ADMIN_PASS = "1234";
-        let stream = null;
-        let globalTimer = null;
-        let geoWatchId = null;
-        let pendingAction = ""; 
-        let pendingId = "";
+        const WEEKLY_OFF_DAY = 1; // 1 = Monday (सोमवार)
         
-        let todayDate = new Date().toLocaleDateString('en-IN');
-        let currentMonthName = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+        // त्यौहारों की लिस्ट (Format: DD/MM/YYYY) - आप यहाँ अपने हिसाब से छुट्टियां बदल या बढ़ा सकते हैं
+        const PUBLIC_HOLIDAYS = {
+            "03/03/2026": "Holi (होली)",
+            "04/03/2026": "Dhulandi (धुलंडी)",
+            "15/08/2026": "Independence Day",
+            "08/11/2026": "Diwali (दिवाली)"
+        };
+
+        let stream = null; let globalTimer = null; let geoWatchId = null;
+        let pendingAction = ""; let pendingId = "";
+        
+        // तारीख सेट करना (Indian Format DD/MM/YYYY)
+        let now = new Date();
+        let dd = String(now.getDate()).padStart(2, '0');
+        let mm = String(now.getMonth() + 1).padStart(2, '0');
+        let yyyy = now.getFullYear();
+        let todayDateStr = `${dd}/${mm}/${yyyy}`; // DD/MM/YYYY
+        let currentMonthKey = `${mm}_${yyyy}`; // For tracking monthly leaves
+
+        let currentMonthName = now.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
         document.getElementById('pdfMonthHeader').innerText = `Attendance Report - ${currentMonthName}`;
 
-        let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDate}`)) || {};
+        let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDateStr}`)) || {};
+        let leaveBalances = JSON.parse(localStorage.getItem('leaveBalances')) || {}; 
         
-        let deviceBaseLat = localStorage.getItem(`baseLat_${todayDate}`);
-        let deviceBaseLng = localStorage.getItem(`baseLng_${todayDate}`);
+        let deviceBaseLat = localStorage.getItem(`baseLat_${todayDateStr}`);
+        let deviceBaseLng = localStorage.getItem(`baseLng_${todayDateStr}`);
         let isDeviceWithin50m = false;
+
+        // छुट्टी चेक (Check if today is a holiday)
+        let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY);
+        let holidayName = PUBLIC_HOLIDAYS[todayDateStr];
+        let isHolidayOrOff = isWeeklyOff || holidayName;
 
         window.onload = () => {
             updateDateTime();
             setInterval(updateDateTime, 1000);
             renderTable();
             startMasterTimer();
+            checkTodayHoliday();
             
-            // अगर पहले से बेस लोकेशन सेट है (यानी कोई पंच-इन कर चुका है), तो ट्रैकिंग शुरू करें
-            if(deviceBaseLat && deviceBaseLng) {
-                startDeviceGeoTracking();
-            }
+            if(deviceBaseLat && deviceBaseLng) { startDeviceGeoTracking(); }
         };
 
         function updateDateTime() {
             document.getElementById('liveDateTime').innerText = new Date().toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' });
+        }
+
+        // --- 🛑 Holiday Check Logic ---
+        function checkTodayHoliday() {
+            let sysBox = document.getElementById('systemStatusBox');
+            let sysText = document.getElementById('systemStatusText');
+            
+            if(isWeeklyOff) {
+                sysBox.style.display = "block"; sysBox.classList.add('holiday-banner');
+                sysText.innerText = "🛑 आज सोमवार (Weekly Off) है। सिस्टम बंद है।";
+            } else if(holidayName) {
+                sysBox.style.display = "block"; sysBox.classList.add('holiday-banner');
+                sysText.innerText = `🛑 आज ${holidayName} का अवकाश है। सिस्टम बंद है।`;
+            }
         }
 
         function getInputs() {
@@ -161,13 +233,13 @@
             let id = document.getElementById("empId").value.trim();
             return { name, id };
         }
+        function clearInputs() { document.getElementById("empName").value = ""; document.getElementById("empId").value = ""; }
 
-        function clearInputs() {
-            document.getElementById("empName").value = "";
-            document.getElementById("empId").value = "";
-        }
-
+        // --- 1. पंच इन ---
         function initPunchIn() {
+            if(isWeeklyOff) return alert("आज Weekly Off (सोमवार) है। पंच-इन नहीं किया जा सकता!");
+            if(holidayName) return alert(`आज ${holidayName} की छुट्टी है। पंच-इन ब्लॉक है!`);
+
             let { name, id } = getInputs();
             if(!name || !id) return alert("अपना नाम और ID दर्ज करें!");
             if(attendanceDb[id]) return alert("इस ID से आज का पंच-इन पहले ही हो चुका है!");
@@ -177,8 +249,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
                     window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    pendingAction = "in";
-                    pendingId = id;
+                    pendingAction = "in"; pendingId = id;
                     document.getElementById('modalTitle').innerText = "पंच-इन: सेल्फी कैप्चर करें";
                     openCamera();
                 }, () => { 
@@ -188,60 +259,117 @@
             } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
 
-        function actionBtn(mode) {
-            let { id } = getInputs();
-            if(!id) return alert("ID दर्ज करें!");
-            if(!attendanceDb[id]) return alert("इस ID से पंच-इन नहीं हुआ है!");
-            if(attendanceDb[id].isPunchedOut) return alert("आपकी शिफ्ट समाप्त हो चुकी है!");
-
-            attendanceDb[id].mode = mode;
-            saveData(); renderTable(); clearInputs();
-            alert(`स्टेटस अपडेट हो गया!`);
-        }
-
-        function startTraining() {
-            let { id } = getInputs();
-            if(!id) return alert("ID दर्ज करें!");
-            if(!attendanceDb[id]) return alert("पहले पंच-इन करें!");
-            if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट समाप्त हो चुकी है!");
-
-            let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
-            if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
-            
-            attendanceDb[id].mode = "train";
-            saveData(); renderTable(); clearInputs();
-            alert("ट्रेनिंग मोड चालू!");
-        }
-
         function initPunchOut() {
+            if(isHolidayOrOff) return alert("आज छुट्टी है।");
             let { id } = getInputs();
             if(!id) return alert("ID दर्ज करें!");
             if(!attendanceDb[id]) return alert("पहले पंच-इन करें!");
             if(attendanceDb[id].isPunchedOut) return alert("आप पहले ही पंच-आउट कर चुके हैं!");
             if(!isDeviceWithin50m) return alert("अलर्ट: आप 50 मीटर ज़ोन से बाहर हैं! पंच-आउट केवल वर्किंग ज़ोन से ही होगा।");
 
-            pendingAction = "out";
-            pendingId = id;
+            pendingAction = "out"; pendingId = id;
             document.getElementById('modalTitle').innerText = "पंच-आउट: सेल्फी कैप्चर करें";
             openCamera();
         }
 
-        function markLeave() {
+        // --- 2. लीव मैनेजमेंट (Leave Management) ---
+        function openLeaveModal() {
+            if(isWeeklyOff || holidayName) return alert("आज पहले से ही सिस्टम में छुट्टी (Holiday/Week Off) लागू है, आपको लीव मार्क करने की आवश्यकता नहीं है।");
+            
             let { name, id } = getInputs();
-            if(!name || !id) return alert("नाम और ID दोनों दर्ज करें!");
-            if(attendanceDb[id]) return alert("इस ID का डेटा आज पहले ही बन चुका है।");
+            if(!name || !id) return alert("लीव मार्क करने के लिए पहले नाम और ID दर्ज करें!");
+            if(attendanceDb[id]) return alert("आज का पंच-इन हो चुका है, अब फुल-डे लीव मार्क नहीं हो सकती।");
 
-            let reason = prompt("छुट्टी का प्रकार लिखें (Leave / Week Off / Holiday):");
-            if(reason) {
-                attendanceDb[id] = {
-                    name: name, id: id, statusText: reason,
-                    inTime: "-", outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0,
-                    mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null
-                };
-                saveData(); renderTable(); clearInputs();
+            document.getElementById('leaveModal').style.display = 'flex';
+            document.getElementById('leaveReason').value = "";
+            document.getElementById('leaveType').value = "";
+            document.getElementById('medicalCertBox').style.display = "none";
+            document.getElementById('leaveAlert').style.display = "none";
+        }
+
+        function checkLeaveType() {
+            let { id } = getInputs();
+            let type = document.getElementById('leaveType').value;
+            let alertBox = document.getElementById('leaveAlert');
+            let medBox = document.getElementById('medicalCertBox');
+            alertBox.style.display = "none"; medBox.style.display = "none";
+
+            if(!leaveBalances[id]) leaveBalances[id] = { EL_M: 0, CL_Y: 0, SL_Y: 0, SL_month_count: 0 };
+            let empLeaves = leaveBalances[id];
+
+            if(type === 'EL') {
+                if(empLeaves.EL_M >= 1) { alertBox.innerText = "अलर्ट: आप इस महीने की 1 EL ले चुके हैं!"; alertBox.style.display = "block"; }
+            } else if(type === 'CL') {
+                if(empLeaves.CL_Y >= 6) { alertBox.innerText = "अलर्ट: आप साल की 6 CL पूरी कर चुके हैं!"; alertBox.style.display = "block"; }
+            } else if(type === 'SL') {
+                if(empLeaves.SL_Y >= 6) { alertBox.innerText = "अलर्ट: आप साल की 6 SL पूरी कर चुके हैं!"; alertBox.style.display = "block"; }
+                // अगर इसी महीने में 2 या 2 से ज्यादा SL ले चुके हैं, तो मेडिकल सर्टिफिकेट मांगेगा
+                if(empLeaves.SL_month_count >= 2) {
+                    medBox.style.display = "block";
+                }
             }
         }
 
+        function submitLeave() {
+            let { name, id } = getInputs();
+            let type = document.getElementById('leaveType').value;
+            let reason = document.getElementById('leaveReason').value;
+            
+            if(!type || !reason) return alert("लीव का प्रकार और कारण भरना अनिवार्य है!");
+            
+            let empLeaves = leaveBalances[id];
+            
+            // Validation
+            if(type === 'EL' && empLeaves.EL_M >= 1) return alert("इस महीने की EL खत्म हो चुकी है!");
+            if(type === 'CL' && empLeaves.CL_Y >= 6) return alert("इस साल की CL खत्म हो चुकी है!");
+            if(type === 'SL') {
+                if(empLeaves.SL_Y >= 6) return alert("इस साल की SL खत्म हो चुकी है!");
+                if(empLeaves.SL_month_count >= 2) {
+                    let file = document.getElementById('medicalCert').files[0];
+                    if(!file) return alert("2 दिन से ज्यादा Sick Leave होने पर मेडिकल सर्टिफिकेट (PDF) अपलोड करना अनिवार्य है!");
+                }
+            }
+
+            // Deduct / Add to history
+            if(type === 'EL') empLeaves.EL_M++;
+            if(type === 'CL') empLeaves.CL_Y++;
+            if(type === 'SL') { empLeaves.SL_Y++; empLeaves.SL_month_count++; }
+
+            localStorage.setItem('leaveBalances', JSON.stringify(leaveBalances));
+
+            // Mark in Table
+            attendanceDb[id] = {
+                name: name, id: id, statusText: `${type} (Leave) - ${reason}`,
+                inTime: "-", outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0,
+                mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null
+            };
+            
+            saveData(); renderTable(); clearInputs();
+            document.getElementById('leaveModal').style.display = 'none';
+            alert(`${type} सफलतापूर्वक मार्क हो गई है!`);
+        }
+
+        // --- Other Actions ---
+        function actionBtn(mode) {
+            if(isHolidayOrOff) return alert("आज सिस्टम बंद है।");
+            let { id } = getInputs();
+            if(!id) return alert("ID दर्ज करें!");
+            if(!attendanceDb[id]) return alert("इस ID से पंच-इन नहीं हुआ है!");
+            if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट समाप्त हो चुकी है!");
+            attendanceDb[id].mode = mode; saveData(); renderTable(); clearInputs(); alert(`स्टेटस अपडेट हो गया!`);
+        }
+        function startTraining() {
+            if(isHolidayOrOff) return alert("आज सिस्टम बंद है।");
+            let { id } = getInputs();
+            if(!id) return alert("ID दर्ज करें!");
+            if(!attendanceDb[id]) return alert("पहले पंच-इन करें!");
+            if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट समाप्त हो चुकी है!");
+            let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
+            if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
+            attendanceDb[id].mode = "train"; saveData(); renderTable(); clearInputs(); alert("ट्रेनिंग मोड चालू!");
+        }
+
+        // --- कैमरा लॉजिक ---
         async function openCamera() {
             document.getElementById('selfieModal').style.display = 'flex';
             try {
@@ -254,7 +382,6 @@
             let video = document.getElementById('video');
             let canvas = document.getElementById('canvas');
             let ctx = canvas.getContext('2d');
-            
             canvas.width = 120; canvas.height = 120;
             let minSize = Math.min(video.videoWidth, video.videoHeight);
             ctx.drawImage(video, (video.videoWidth - minSize)/2, (video.videoHeight - minSize)/2, minSize, minSize, 0, 0, 120, 120);
@@ -266,12 +393,10 @@
             let { name } = getInputs();
 
             if(pendingAction === "in") {
-                // अगर यह दिन का पहला पंच-इन है, तो बेस लोकेशन सेट करें
                 if(!deviceBaseLat || !deviceBaseLng) {
-                    deviceBaseLat = window.tempLocation.lat;
-                    deviceBaseLng = window.tempLocation.lng;
-                    localStorage.setItem(`baseLat_${todayDate}`, deviceBaseLat);
-                    localStorage.setItem(`baseLng_${todayDate}`, deviceBaseLng);
+                    deviceBaseLat = window.tempLocation.lat; deviceBaseLng = window.tempLocation.lng;
+                    localStorage.setItem(`baseLat_${todayDateStr}`, deviceBaseLat);
+                    localStorage.setItem(`baseLng_${todayDateStr}`, deviceBaseLng);
                     startDeviceGeoTracking();
                 }
 
@@ -279,8 +404,7 @@
                     name: name, id: pendingId, statusText: "Present",
                     inTime: new Date().toLocaleTimeString('hi-IN'), outTime: "-",
                     workSecs: 0, breakSecs: 0, trainSecs: 0,
-                    mode: "work", isPunchedOut: false,
-                    photoIn: base64Photo, photoOut: null
+                    mode: "work", isPunchedOut: false, photoIn: base64Photo, photoOut: null
                 };
                 alert("पंच-इन सफल!");
             } 
@@ -291,18 +415,15 @@
                 attendanceDb[pendingId].photoOut = base64Photo;
                 alert("पंच-आउट सफल!");
             }
-            
             saveData(); renderTable(); clearInputs();
         }
 
+        // --- Time & Geo ---
         function startDeviceGeoTracking() {
             if(navigator.geolocation) {
                 if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
-                
                 geoWatchId = navigator.geolocation.watchPosition((pos) => {
-                    let lat = pos.coords.latitude; let lng = pos.coords.longitude;
-                    let dist = calculateDistance(deviceBaseLat, deviceBaseLng, lat, lng);
-                    
+                    let dist = calculateDistance(deviceBaseLat, deviceBaseLng, pos.coords.latitude, pos.coords.longitude);
                     let geoText = document.getElementById("geoText");
                     let statusBox = document.getElementById("statusBox");
 
@@ -325,7 +446,6 @@
                 for(let id in attendanceDb) {
                     let emp = attendanceDb[id];
                     if(emp.isPunchedOut) continue; 
-
                     if(emp.mode === "work" && isDeviceWithin50m) emp.workSecs++;
                     else if(emp.mode === "break") emp.breakSecs++;
                     else if(emp.mode === "train") emp.trainSecs++;
@@ -336,12 +456,12 @@
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const R = 6371e3; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
             const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        function saveData() { localStorage.setItem(`attDB_${todayDate}`, JSON.stringify(attendanceDb)); }
+        function saveData() { localStorage.setItem(`attDB_${todayDateStr}`, JSON.stringify(attendanceDb)); }
         function formatTime(s) { return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
 
         function renderTable() {
@@ -355,7 +475,7 @@
                 let totalWorkSecs = emp.workSecs + emp.trainSecs;
 
                 let statusHtml = "Present";
-                let isLeave = ["leave", "week off", "holiday"].some(v => emp.statusText.toLowerCase().includes(v));
+                let isLeave = ["el", "cl", "sl", "leave"].some(v => emp.statusText.toLowerCase().includes(v));
                 
                 if(isLeave) {
                     statusHtml = `<span style="color:red; font-weight:bold;">${emp.statusText}</span>`;
@@ -387,7 +507,7 @@
             if(count === 0) tbody.innerHTML = `<tr><td colspan="10">कोई डेटा उपलब्ध नहीं है</td></tr>`;
         }
 
-        // --- 📥 PDF ब्लैंक समस्या फिक्स (Overflow-x हटाकर) ---
+        // --- 📥 Export Logic ---
         function downloadPDF() {
             let pass = prompt(`PDF डाउनलोड करने के लिए पासवर्ड डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
@@ -396,23 +516,14 @@
             let tableWrap = document.getElementById('tableWrapper');
             let header = document.getElementById('pdfMonthHeader');
             
-            // ब्लैंक पीडीएफ फिक्स: जनरेट करते समय overflow हटा दें
-            tableWrap.style.overflowX = 'visible';
-            header.style.display = 'block';
-            
+            tableWrap.style.overflowX = 'visible'; header.style.display = 'block';
             let opt = {
-                margin:       0.3,
-                filename:     `Attendance_Log_${todayDate.replace(/\//g, '-')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, windowWidth: exportDiv.scrollWidth },
-                jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' } // A3 से चौड़ाई ज्यादा मिलेगी
+                margin: 0.3, filename: `Attendance_${todayDateStr.replace(/\//g, '-')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, windowWidth: exportDiv.scrollWidth },
+                jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
             };
-
-            html2pdf().set(opt).from(exportDiv).save().then(() => {
-                // जनरेट होने के बाद वापस पहले जैसा कर दें
-                header.style.display = 'none';
-                tableWrap.style.overflowX = 'auto';
-            });
+            html2pdf().set(opt).from(exportDiv).save().then(() => { header.style.display = 'none'; tableWrap.style.overflowX = 'auto'; });
         }
 
         function downloadExcel() {
@@ -422,19 +533,12 @@
             let csvContent = "data:text/csv;charset=utf-8,ID,Name,Status,In Time,Out Time,Break Time,Train Time,Total Working Hrs\n";
             for(let id in attendanceDb) {
                 let emp = attendanceDb[id];
-                let isLeave = ["leave", "week off", "holiday"].some(v => emp.statusText.toLowerCase().includes(v));
+                let isLeave = ["el", "cl", "sl", "leave"].some(v => emp.statusText.toLowerCase().includes(v));
                 let statusExcel = isLeave ? emp.statusText : "Present";
-                
-                let row = [
-                    emp.id, emp.name, statusExcel, emp.inTime, emp.outTime,
-                    formatTime(emp.breakSecs), formatTime(emp.trainSecs), formatTime(emp.workSecs + emp.trainSecs)
-                ];
+                let row = [ emp.id, emp.name, statusExcel, emp.inTime, emp.outTime, formatTime(emp.breakSecs), formatTime(emp.trainSecs), formatTime(emp.workSecs + emp.trainSecs) ];
                 csvContent += row.join(",") + "\n";
             }
-            
-            let link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", `Attendance_Log_${todayDate.replace(/\//g, '-')}.csv`);
+            let link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", `Attendance_${todayDateStr.replace(/\//g, '-')}.csv`);
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
     </script>
