@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Education Attendance</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
         
@@ -11,7 +12,7 @@
         .header h2 { margin: 5px 0; font-size: 22px; }
         .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
         
-        .container { background: white; padding: 20px; border-radius: 10px; max-width: 1050px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 20px; border-radius: 10px; max-width: 1100px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .input-group { margin-bottom: 15px; }
         input[type="text"] { padding: 10px; width: 30%; margin: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         
@@ -24,20 +25,31 @@
         .btn-train-start { background-color: #9C27B0; } .btn-train-end { background-color: #7B1FA2; }
         .btn-break-start { background-color: #FF9800; } .btn-break-end { background-color: #F57C00; }
         
-        /* सेल्फी पॉप-अप (Modal) की स्टाइल */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        /* सेल्फी पॉप-अप */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
         video { width: 100%; border-radius: 8px; border: 3px solid #1a237e; margin-bottom: 10px; }
+        canvas { display: none; }
 
         /* स्टेटस बॉक्स */
         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 18px; font-weight: bold; color: #0d47a1; max-width: 500px; transition: 0.3s; }
         .geo-text { display: block; margin-top: 5px; font-size: 14px; font-weight: normal; }
         .out-of-zone { background: #ffebee !important; border-color: #ef5350 !important; color: #c62828 !important; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        /* टेबल डिज़ाइन */
+        #exportArea { margin-top: 20px; background: white; padding: 10px; }
+        .report-header { display: none; text-align: center; font-size: 20px; margin-bottom: 15px; color: #1a237e; font-weight: bold; text-transform: uppercase; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; }
         th { background-color: #1a237e; color: white; }
         .active-timer { font-weight: bold; color: red; } 
+        
+        /* सेल्फी इमेज और स्टेटस बैज */
+        .table-selfie { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; border: 1px solid #ccc; display: inline-block; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: white; margin-top: 5px; font-weight: normal; }
+        .badge-break { background-color: #F57C00; }
+        .badge-train { background-color: #7B1FA2; }
         
         .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
         .btn-pdf { background-color: #D32F2F; padding: 10px 20px; }
@@ -71,38 +83,43 @@
             <button class="btn-train-end" id="btnTrainEnd" onclick="endTraining()" disabled>End Training</button>
         </div>
 
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>नाम</th>
-                        <th>ID</th>
-                        <th>स्टेटस</th>
-                        <th>Punch In</th>
-                        <th>Punch Out</th>
-                        <th>Break Time</th>
-                        <th>Training Time</th>
-                        <th>Total Working Hours</th>
-                        <th>Selfie</th>
-                    </tr>
-                </thead>
-                <tbody id="logTableBody">
-                    <tr><td colspan="9">कोई डेटा उपलब्ध नहीं है</td></tr>
-                </tbody>
-            </table>
+        <div id="exportArea">
+            <div class="report-header" id="pdfMonthHeader">Attendance Report</div>
+            <div style="overflow-x: auto;">
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>नाम</th>
+                            <th>स्टेटस</th>
+                            <th>In Time</th>
+                            <th>Out Time</th>
+                            <th>Break Time</th>
+                            <th>Train Time</th>
+                            <th>Total Work Hrs</th>
+                            <th>In Selfie</th>
+                            <th>Out Selfie</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <tr><td colspan="10">कोई डेटा उपलब्ध नहीं है</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="export-btns">
-            <button class="btn-pdf" onclick="downloadFile('PDF')">Download PDF</button>
-            <button class="btn-excel" onclick="downloadFile('Excel')">Download Excel</button>
+            <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
+            <button class="btn-excel" onclick="downloadExcel()">Download Excel</button>
         </div>
     </div>
 
     <div id="selfieModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3>
+            <h3 id="modalTitle" style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3>
             <video id="video" autoplay playsinline></video>
-            <button class="btn-in" style="width:100%;" onclick="takePhotoAndPunch()">सेल्फी कैप्चर करें</button>
+            <canvas id="canvas"></canvas>
+            <button class="btn-in" style="width:100%;" onclick="captureAndProceed()">सेल्फी कैप्चर करें</button>
         </div>
     </div>
 
@@ -111,17 +128,19 @@
         let stream = null;
         let globalTimer = null;
         let geoWatchId = null;
+        let pendingAction = ""; // 'in' या 'out'
         
-        // लोकल स्टोरेज से डेटा रिकवर करना
-        let sessionData = JSON.parse(localStorage.getItem('attendanceSession')) || null;
         let todayDate = new Date().toLocaleDateString('en-IN');
+        let currentMonthName = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+        document.getElementById('pdfMonthHeader').innerText = `Attendance Report - ${currentMonthName}`;
+
+        let sessionData = JSON.parse(localStorage.getItem('attendanceSession')) || null;
 
         window.onload = () => {
             updateDateTime();
             setInterval(updateDateTime, 1000);
             
-            // अगर डेटा पुराने दिन का है तो नया दिन मानकर रिसेट न करें, लेकिन दिखने दें
-            if (sessionData) {
+            if (sessionData && sessionData.date === todayDate) {
                 document.getElementById("empName").value = sessionData.name;
                 document.getElementById("empId").value = sessionData.id;
                 renderTable();
@@ -130,6 +149,8 @@
                     startMasterTimer();
                     startGeoTracking();
                 }
+            } else {
+                sessionData = null; // पिछले दिन का डेटा रिसेट
             }
         };
 
@@ -138,141 +159,150 @@
             document.getElementById('liveDateTime').innerText = now.toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' });
         }
 
+        // --- पंच इन प्रोसेस ---
         function initPunchIn() {
             let name = document.getElementById("empName").value;
             let id = document.getElementById("empId").value;
             if(!name || !id) return alert("पहले नाम और एम्प्लॉई ID भरें!");
 
+            // 1. चेक करें कि क्या आज इस ID से पहले ही पंच-इन हो चुका है
+            let completedLogs = JSON.parse(localStorage.getItem(`logs_${todayDate}`)) || [];
+            if(completedLogs.includes(id)) {
+                return alert("इस एम्प्लॉई ID से आज का पंच-इन और पंच-आउट पहले ही पूरा हो चुका है!");
+            }
+
             document.getElementById('currentStatus').innerText = "लोकेशन जांची जा रही है...";
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
-                    // बेस लोकेशन सेव करना
-                    let lat = pos.coords.latitude;
-                    let lng = pos.coords.longitude;
-                    
-                    document.getElementById('currentStatus').innerText = "सेल्फी पेंडिंग...";
-                    document.getElementById('selfieModal').style.display = 'flex';
-                    
-                    try {
-                        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                        document.getElementById("video").srcObject = stream;
-                    } catch (err) { alert("कैमरा चालू नहीं हो सका!"); }
-                    
-                    // डेटा तैयार करना (अभी सेव नहीं करेंगे जब तक सेल्फी न हो)
-                    window.tempLocation = { lat, lng };
-
+                    window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    pendingAction = "in";
+                    document.getElementById('modalTitle').innerText = "पंच-इन: सेल्फी कैप्चर करें";
+                    openCamera();
                 }, () => { alert("लोकेशन परमिशन अनिवार्य है!"); }, { enableHighAccuracy: true });
             } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
 
-        function takePhotoAndPunch() {
+        // --- पंच आउट प्रोसेस ---
+        function initPunchOut() {
+            if(!sessionData.isWithin50m) {
+                return alert("अलर्ट: आप 50 मीटर ज़ोन से बाहर हैं! पंच-आउट केवल वर्किंग ज़ोन के अंदर से ही किया जा सकता है।");
+            }
+            pendingAction = "out";
+            document.getElementById('modalTitle').innerText = "पंच-आउट: सेल्फी कैप्चर करें";
+            openCamera();
+        }
+
+        // कैमरा खोलना
+        async function openCamera() {
+            document.getElementById('selfieModal').style.display = 'flex';
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById("video").srcObject = stream;
+            } catch (err) { alert("कैमरा चालू नहीं हो सका! परमिशन चेक करें।"); }
+        }
+
+        // फोटो खींचना और आगे बढ़ना
+        function captureAndProceed() {
+            let video = document.getElementById('video');
+            let canvas = document.getElementById('canvas');
+            let ctx = canvas.getContext('2d');
+            
+            // फोटो का साइज़ सेट करना ताकि डेटाबेस/मेमोरी न भरे
+            canvas.width = 150; canvas.height = 150;
+            
+            // वीडियो का बीच का हिस्सा चौकोर में काटना
+            let minSize = Math.min(video.videoWidth, video.videoHeight);
+            let startX = (video.videoWidth - minSize) / 2;
+            let startY = (video.videoHeight - minSize) / 2;
+            ctx.drawImage(video, startX, startY, minSize, minSize, 0, 0, 150, 150);
+            
+            // फोटो को Base64 स्ट्रिंग में बदलना
+            let base64Photo = canvas.toDataURL('image/jpeg', 0.8);
+
+            // कैमरा बंद करना
             if(stream) stream.getTracks().forEach(track => track.stop());
             document.getElementById('selfieModal').style.display = 'none';
-            
-            sessionData = {
-                date: todayDate,
-                isActive: true,
-                name: document.getElementById("empName").value,
-                id: document.getElementById("empId").value,
-                status: "Present",
-                punchInTime: new Date().toLocaleTimeString('hi-IN'),
-                punchOutTime: "-",
-                workSecs: 0, breakSecs: 0, trainSecs: 0,
-                activeMode: "work",
-                baseLat: window.tempLocation.lat,
-                baseLng: window.tempLocation.lng,
-                isWithin50m: true
-            };
-            
-            saveData();
-            renderTable();
-            updateUIBasedOnState();
-            startMasterTimer();
-            startGeoTracking();
-        }
 
-        function initPunchOut() {
-            sessionData.isActive = false;
-            sessionData.activeMode = "none";
-            sessionData.status = "Shift Ended";
-            sessionData.punchOutTime = new Date().toLocaleTimeString('hi-IN');
+            if(pendingAction === "in") {
+                // नया सेशन बनाना
+                sessionData = {
+                    date: todayDate, isActive: true, activeMode: "work",
+                    name: document.getElementById("empName").value,
+                    id: document.getElementById("empId").value,
+                    punchInTime: new Date().toLocaleTimeString('hi-IN'),
+                    punchOutTime: "-",
+                    workSecs: 0, breakSecs: 0, trainSecs: 0,
+                    baseLat: window.tempLocation.lat, baseLng: window.tempLocation.lng,
+                    isWithin50m: true,
+                    photoIn: base64Photo, photoOut: null // फोटो सेव की गई
+                };
+                startMasterTimer();
+                startGeoTracking();
+            } 
+            else if(pendingAction === "out") {
+                // सेशन क्लोज़ करना
+                sessionData.isActive = false;
+                sessionData.activeMode = "none";
+                sessionData.punchOutTime = new Date().toLocaleTimeString('hi-IN');
+                sessionData.photoOut = base64Photo; // पंच आउट फोटो सेव
+                
+                clearInterval(globalTimer);
+                if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
+                
+                document.getElementById('geoText').innerHTML = "";
+                document.getElementById('statusBox').classList.remove('out-of-zone');
+                
+                // आज के लिए इस ID को ब्लॉक लिस्ट (Completed) में डालना
+                let completedLogs = JSON.parse(localStorage.getItem(`logs_${todayDate}`)) || [];
+                completedLogs.push(sessionData.id);
+                localStorage.setItem(`logs_${todayDate}`, JSON.stringify(completedLogs));
+                
+                alert("सफलतापूर्वक पंच-आउट हो गया!");
+            }
             
-            clearInterval(globalTimer);
-            if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
-            
-            document.getElementById('geoText').innerHTML = "";
-            document.getElementById('statusBox').classList.remove('out-of-zone');
-            
-            saveData(); renderTable(); updateUIBasedOnState();
-            alert("सफलतापूर्वक पंच-आउट हो गया!");
-        }
-
-        function startBreak() {
-            sessionData.activeMode = "break";
-            sessionData.status = "On Break ☕";
-            saveData(); renderTable(); updateUIBasedOnState();
-        }
-        function endBreak() {
-            sessionData.activeMode = "work";
-            sessionData.status = "Present";
             saveData(); renderTable(); updateUIBasedOnState();
         }
 
+        // --- बटन्स (ब्रेक और ट्रेनिंग) ---
+        function startBreak() { sessionData.activeMode = "break"; saveData(); renderTable(); updateUIBasedOnState(); }
+        function endBreak() { sessionData.activeMode = "work"; saveData(); renderTable(); updateUIBasedOnState(); }
+        
         function startTraining() {
             let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
-            
-            sessionData.activeMode = "train";
-            sessionData.status = "On Official Duty";
-            saveData(); renderTable(); updateUIBasedOnState();
+            sessionData.activeMode = "train"; saveData(); renderTable(); updateUIBasedOnState();
         }
-        function endTraining() {
-            sessionData.activeMode = "work";
-            sessionData.status = "Present";
-            saveData(); renderTable(); updateUIBasedOnState();
-        }
+        function endTraining() { sessionData.activeMode = "work"; saveData(); renderTable(); updateUIBasedOnState(); }
 
-        // --- जियो-फेंसिंग और 50m लाइव ट्रैकिंग ---
+        // --- जियो ट्रैकिंग और टाइमर ---
         function startGeoTracking() {
             if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
-            
             geoWatchId = navigator.geolocation.watchPosition((pos) => {
                 if(!sessionData || !sessionData.isActive) return;
-
                 let dist = calculateDistance(sessionData.baseLat, sessionData.baseLng, pos.coords.latitude, pos.coords.longitude);
-                let geoText = document.getElementById("geoText");
-                let statusBox = document.getElementById("statusBox");
-
+                
                 if(dist <= 50) {
                     sessionData.isWithin50m = true;
-                    geoText.innerHTML = `<span style="color: green;">You are within 50m working zone</span>`;
-                    statusBox.classList.remove('out-of-zone');
+                    document.getElementById("geoText").innerHTML = `<span style="color: green;">You are within 50m working zone</span>`;
+                    document.getElementById("statusBox").classList.remove('out-of-zone');
                 } else {
                     sessionData.isWithin50m = false;
-                    geoText.innerHTML = `<span style="color: #c62828;">You are ${Math.round(dist)} meters away from working zone!</span>`;
-                    statusBox.classList.add('out-of-zone');
+                    document.getElementById("geoText").innerHTML = `<span style="color: #c62828;">You are ${Math.round(dist)} meters away from working zone!</span>`;
+                    document.getElementById("statusBox").classList.add('out-of-zone');
                 }
                 saveData();
             }, null, { enableHighAccuracy: true });
         }
 
-        // मास्टर टाइमर
         function startMasterTimer() {
             if(globalTimer) clearInterval(globalTimer);
             globalTimer = setInterval(() => {
-                if(sessionData.activeMode === "work" && sessionData.isWithin50m) {
-                    sessionData.workSecs++; // काम का समय तभी बढ़ेगा जब 50m के अंदर हो
-                }
-                else if(sessionData.activeMode === "break") {
-                    sessionData.breakSecs++;
-                }
-                else if(sessionData.activeMode === "train") {
-                    sessionData.trainSecs++; // ट्रेनिंग का समय लोकेशन से स्वतंत्र है
-                }
+                if(sessionData.activeMode === "work" && sessionData.isWithin50m) sessionData.workSecs++;
+                else if(sessionData.activeMode === "break") sessionData.breakSecs++;
+                else if(sessionData.activeMode === "train") sessionData.trainSecs++;
                 
-                saveData();
-                renderTable();
+                saveData(); renderTable();
             }, 1000);
         }
 
@@ -282,6 +312,7 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // --- टेबल और UI रेंडरिंग ---
         function saveData() { localStorage.setItem('attendanceSession', JSON.stringify(sessionData)); }
 
         function formatTime(totalSeconds) {
@@ -293,25 +324,44 @@
 
         function renderTable() {
             if(!sessionData) return;
-            document.getElementById('currentStatus').innerText = sessionData.status;
+            
+            // स्टेटस कॉलम का डिज़ाइन (Present के नीचे बॉक्स)
+            let statusHtml = `Present`;
+            let uiStatus = "Present";
+            if(sessionData.activeMode === 'break') {
+                statusHtml = `Present <br> <span class="badge badge-break">☕ On Break</span>`;
+                uiStatus = "On Break ☕";
+            } else if(sessionData.activeMode === 'train') {
+                statusHtml = `Present <br> <span class="badge badge-train">💼 On Official Duty</span>`;
+                uiStatus = "On Official Duty";
+            } else if(!sessionData.isActive) {
+                statusHtml = `Shift Ended`;
+                uiStatus = "Shift Ended";
+            }
+            
+            document.getElementById('currentStatus').innerText = uiStatus;
 
             let bClass = sessionData.activeMode === 'break' ? 'active-timer' : '';
             let tClass = sessionData.activeMode === 'train' ? 'active-timer' : '';
             let wClass = sessionData.activeMode === 'work' ? 'active-timer' : '';
 
-            // टोटल वर्किंग ऑवर्स = (रेगुलर वर्किंग टाइम + ट्रेनिंग टाइम) - ब्रेक का टाइम इसमें गिना ही नहीं गया है
             let totalWorkSecs = sessionData.workSecs + sessionData.trainSecs;
 
+            // फोटो रेंडरिंग
+            let photoInHtml = sessionData.photoIn ? `<img src="${sessionData.photoIn}" class="table-selfie">` : '-';
+            let photoOutHtml = sessionData.photoOut ? `<img src="${sessionData.photoOut}" class="table-selfie">` : '-';
+
             let row = `<tr>
-                <td>${sessionData.name}</td>
                 <td>${sessionData.id}</td>
-                <td style="font-weight:bold; color:#1a237e;">${sessionData.status}</td>
+                <td>${sessionData.name}</td>
+                <td style="font-weight:bold; color:#1a237e;">${statusHtml}</td>
                 <td>${sessionData.punchInTime}</td>
                 <td>${sessionData.punchOutTime}</td>
                 <td class="${bClass}">${formatTime(sessionData.breakSecs)}</td>
                 <td class="${tClass}">${formatTime(sessionData.trainSecs)}</td>
                 <td class="${wClass}" style="background-color: #e8f5e9;">${formatTime(totalWorkSecs)}</td>
-                <td>📸 Done</td>
+                <td>${photoInHtml}</td>
+                <td>${photoOutHtml}</td>
             </tr>`;
             document.getElementById("logTableBody").innerHTML = row;
         }
@@ -321,10 +371,10 @@
             let st = sessionData.activeMode;
             let isActive = sessionData.isActive;
 
-            document.getElementById("empName").disabled = true; // एक बार एंट्री होने पर लॉक
+            document.getElementById("empName").disabled = true;
             document.getElementById("empId").disabled = true;
 
-            document.getElementById("btnIn").disabled = isActive;
+            document.getElementById("btnIn").disabled = true; // एक बार अंदर आने पर ब्लॉक
             document.getElementById("btnOut").disabled = !isActive;
             
             document.getElementById("btnBreakStart").disabled = (!isActive || st !== "work");
@@ -334,11 +384,57 @@
             document.getElementById("btnTrainEnd").disabled = (!isActive || st !== "train");
         }
 
-        function downloadFile(type) {
-            let pass = prompt(`${type} डाउनलोड करने के लिए पासवर्ड डालें:`);
-            if(pass === "admin123") {
-                alert(`आपकी ${type} फाइल डाउनलोड हो रही है...`);
-            } else { alert("पासवर्ड गलत है!"); }
+        // --- 📥 PDF और Excel डाउनलोड लॉजिक ---
+
+        function downloadPDF() {
+            let pass = prompt(`PDF डाउनलोड करने के लिए पासवर्ड डालें:`);
+            if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
+            
+            // हेडिंग को विजिबल करना
+            document.getElementById('pdfMonthHeader').style.display = 'block';
+            
+            let element = document.getElementById('exportArea');
+            let opt = {
+                margin:       0.5,
+                filename:     `Attendance_${sessionData.name}_${todayDate.replace(/\//g, '-')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } // लैंडस्केप ताकि टेबल पूरी आए
+            };
+
+            // PDF बनाने के बाद हेडिंग वापस छुपाना
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.getElementById('pdfMonthHeader').style.display = 'none';
+            });
+        }
+
+        function downloadExcel() {
+            let pass = prompt(`Excel डाउनलोड करने के लिए पासवर्ड डालें:`);
+            if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
+
+            if(!sessionData) return alert("कोई डेटा नहीं है!");
+
+            // CSV फॉर्मेट तैयार करना (Excel में फोटो नहीं जाती, इसलिए सिर्फ डेटा)
+            let totalWorkSecs = sessionData.workSecs + sessionData.trainSecs;
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID,Name,Date,Punch In,Punch Out,Break Time,Training Time,Total Working Hours\n";
+            
+            let rowData = [
+                sessionData.id, sessionData.name, todayDate,
+                sessionData.punchInTime, sessionData.punchOutTime,
+                formatTime(sessionData.breakSecs), formatTime(sessionData.trainSecs), formatTime(totalWorkSecs)
+            ];
+            
+            csvContent += rowData.join(",") + "\n";
+
+            // डाउनलोड ट्रिगर करना
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Attendance_${sessionData.id}_${todayDate.replace(/\//g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
