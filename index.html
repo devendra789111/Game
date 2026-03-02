@@ -158,7 +158,7 @@
 
     <script>
         const ADMIN_PASS = "1234";
-        const WEEKLY_OFF_DAY = 1; 
+        const WEEKLY_OFF_DAY = 2; 
         
         const PUBLIC_HOLIDAYS = {
             "03/03/2026": "Holi (होली)",
@@ -486,7 +486,7 @@
         }
 
         function downloadPDF() {
-            let pass = prompt(`PDF डाउनलोड करने के लिए एडमिन पासवर्ड (1234) डालें:`);
+            let pass = prompt(`PDF डाउनलोड करने के लिए एडमिन पासवर्ड डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
             
             let monthInfo = getMonthlyDataArray();
@@ -514,7 +514,7 @@
         }
 
         function downloadExcel() {
-            let pass = prompt(`Excel डाउनलोड करने के लिए एडमिन पासवर्ड (1234) डालें:`);
+            let pass = prompt(`Excel डाउनलोड करने के लिए एडमिन पासवर्ड डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
 
             let monthInfo = getMonthlyDataArray();
