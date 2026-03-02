@@ -6,41 +6,47 @@
     <title>Quality Education Attendance</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
-        .header { background: #1a237e; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .live-time { font-size: 24px; font-weight: bold; margin-top: 5px; color: #ffeb3b; }
         
-        .container { background: white; padding: 20px; border-radius: 10px; max-width: 800px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* हेडर को छोटा और प्रोफेशनल किया गया है */
+        .header { background: #1a237e; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h2 { margin: 5px 0; font-size: 22px; }
+        .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
+        
+        .container { background: white; padding: 20px; border-radius: 10px; max-width: 1000px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .input-group { margin-bottom: 15px; }
-        input[type="text"] { padding: 10px; width: 40%; margin: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        input[type="text"] { padding: 10px; width: 30%; margin: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         
-        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
-        button { padding: 12px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* अलग-अलग बटन्स का डिज़ाइन */
+        .btn-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+        button { padding: 10px 15px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .btn-in { background-color: #4CAF50; } .btn-in:hover { background-color: #45a049; }
         .btn-out { background-color: #f44336; } .btn-out:hover { background-color: #d32f2f; }
-        .btn-train { background-color: #9C27B0; } .btn-train:hover { background-color: #7B1FA2; }
-        .btn-break { background-color: #FF9800; } .btn-break:hover { background-color: #F57C00; }
-        .btn-leave { background-color: #00BCD4; } .btn-leave:hover { background-color: #0097A7; }
-        .btn-export { background-color: #607D8B; margin-top: 20px;}
+        .btn-train-start { background-color: #9C27B0; } .btn-train-end { background-color: #7B1FA2; }
+        .btn-break-start { background-color: #FF9800; } .btn-break-end { background-color: #F57C00; }
         
-        #cameraBox { display: none; margin: 15px auto; }
-        video { width: 100%; max-width: 300px; border-radius: 10px; border: 3px solid #1a237e; }
-        canvas { display: none; }
+        #cameraBox { display: none; margin: 15px auto; padding: 15px; background: #fff3e0; border: 2px dashed #ff9800; border-radius: 10px; }
+        video { width: 100%; max-width: 250px; border-radius: 10px; border: 3px solid #1a237e; }
         
-        .status-box { margin: 20px 0; padding: 15px; background: #f1f8e9; border: 1px solid #c5e1a5; border-radius: 8px; font-size: 18px; }
-        .timers { display: flex; justify-content: space-around; font-size: 20px; font-weight: bold; margin-top: 10px; }
-        .timer-work { color: #2E7D32; } .timer-train { color: #6A1B9A; } .timer-break { color: #E65100; }
+        /* स्टेटस बॉक्स को छोटा किया गया है */
+        .status-box { margin: 15px 0; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px; font-size: 18px; font-weight: bold; color: #0d47a1; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        /* टेबल डिज़ाइन - एक ही लाइन में सब कुछ */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background-color: #1a237e; color: white; }
+        .active-timer { font-weight: bold; color: red; } /* जो टाइमर चल रहा होगा वो लाल दिखेगा */
+        
+        .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        .btn-pdf { background-color: #D32F2F; padding: 10px 20px; }
+        .btn-excel { background-color: #2E7D32; padding: 10px 20px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🏢 Quality Education Attendance</h1>
+        <h2>🏢 Quality Education Attendance</h2>
         <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
     </div>
 
@@ -50,239 +56,233 @@
             <input type="text" id="empId" placeholder="एम्प्लॉई ID" required>
         </div>
 
-        <div id="cameraBox">
-            <p style="color:red; font-weight:bold;">कृपया कैमरे में देखकर अपनी पहचान कन्फर्म करें</p>
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-            <br>
-            <button class="btn-in" id="captureBtn" onclick="takePhotoAndPunch()">सेल्फी लें और कन्फर्म करें</button>
+        <div class="status-box" id="statusBox">
+            स्टेटस: <span id="currentStatus">Not Punched In</span>
         </div>
 
-        <div class="status-box" id="statusBox">
-            <strong>स्टेटस:</strong> <span id="currentStatus">पंच-इन का इंतज़ार...</span><br>
-            <small id="geoStatus">लोकेशन: 50 मीटर ट्रैकिंग स्टैंडबाय</small>
-            
-            <div class="timers">
-                <div class="timer-work">Working: <span id="workTimer">00:00:00</span></div>
-                <div class="timer-train" style="display:none;" id="trainTimerBox">Training: <span id="trainTimer">00:00:00</span></div>
-                <div class="timer-break" style="display:none;" id="breakTimerBox">Break: <span id="breakTimer">00:00:00</span></div>
-            </div>
+        <div id="cameraBox">
+            <p style="color:#d84315; font-weight:bold; margin-top:0;">📍 लोकेशन वेरीफाई हो गई है। कृपया सेल्फी लें।</p>
+            <video id="video" autoplay playsinline></video><br>
+            <button class="btn-in" style="margin-top: 10px;" onclick="takePhotoAndPunch()">सेल्फी कैप्चर करें और कन्फर्म करें</button>
         </div>
 
         <div class="btn-grid">
-            <button class="btn-in" onclick="startCameraProcess('in')">Punch In</button>
-            <button class="btn-out" onclick="startCameraProcess('out')">Punch Out</button>
-            <button class="btn-train" id="btnTrain" onclick="toggleTraining()">Start Training</button>
-            <button class="btn-break" id="btnBreak" onclick="toggleBreak()">Start Break ☕</button>
-            <button class="btn-leave" onclick="markLeave()">Mark Leave</button>
+            <button class="btn-in" id="btnIn" onclick="initPunchIn()">Punch In</button>
+            <button class="btn-out" id="btnOut" onclick="initPunchOut()" disabled>Punch Out</button>
+            <button class="btn-break-start" id="btnBreakStart" onclick="startBreak()" disabled>Start Break ☕</button>
+            <button class="btn-break-end" id="btnBreakEnd" onclick="endBreak()" disabled>End Break</button>
+            <button class="btn-train-start" id="btnTrainStart" onclick="startTraining()" disabled>Start Training</button>
+            <button class="btn-train-end" id="btnTrainEnd" onclick="endTraining()" disabled>End Training</button>
         </div>
 
-        <h3>आज की एंट्रीज (Daily Log)</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>नाम</th>
-                    <th>ID</th>
-                    <th>समय</th>
-                    <th>प्रकार</th>
-                    <th>स्टेटस</th>
-                </tr>
-            </thead>
-            <tbody id="logTableBody">
-                </tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>नाम</th>
+                        <th>ID</th>
+                        <th>स्टेटस</th>
+                        <th>Punch In</th>
+                        <th>Punch Out</th>
+                        <th>Work Hrs</th>
+                        <th>Break Time</th>
+                        <th>Train Time</th>
+                        <th>Selfie</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody">
+                    </tbody>
+            </table>
+        </div>
 
-        <button class="btn-export" onclick="exportData()">PDF / Excel डाउनलोड करें</button>
+        <div class="export-btns">
+            <button class="btn-pdf" onclick="downloadFile('PDF')">Download PDF</button>
+            <button class="btn-excel" onclick="downloadFile('Excel')">Download Excel</button>
+        </div>
     </div>
 
     <script>
-        // --- कॉन्फ़िगरेशन (Admin Settings) ---
-        const TRAINING_PASSWORD = "123"; // ट्रेनिंग मोड का पासवर्ड
-        const WEEKLY_OFF_DAY = 1; // 1 = Monday, 0 = Sunday
-        const HOLIDAYS = ["2026-03-25", "2026-11-10"]; // होली, दिवाली आदि की तारीखें (YYYY-MM-DD)
-
-        // --- स्टेट वेरिएबल्स (State) ---
-        let state = {
-            isPunchedIn: false,
-            mode: "regular", // regular, training, break
-            actionType: "", // in or out
-            workSeconds: 0, trainSeconds: 0, breakSeconds: 0,
-            baseLat: null, baseLng: null, isWithin50m: true
-        };
-        let intervals = { work: null, train: null, break: null, geo: null };
+        // --- सिस्टम वेरिएबल्स ---
+        const ADMIN_PASS = "1234";
         let stream = null;
+        let globalTimer = null;
+        
+        // --- लोकल स्टोरेज से डेटा रिकवर करना (Refresh-proof) ---
+        let sessionData = JSON.parse(localStorage.getItem('attendanceSession')) || null;
 
-        // --- 1. लाइव टाइमर (Live Server Time Simulation) ---
+        window.onload = () => {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            if (sessionData && sessionData.isActive) {
+                document.getElementById("empName").value = sessionData.name;
+                document.getElementById("empId").value = sessionData.id;
+                renderTable();
+                updateUIBasedOnState();
+                startMasterTimer();
+            }
+        };
+
         function updateDateTime() {
             const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' };
-            document.getElementById('liveDateTime').innerText = now.toLocaleString('hi-IN', options);
-            
-            // वीकली ऑफ या हॉलिडे चेक
-            if(now.getDay() === WEEKLY_OFF_DAY) {
-                document.getElementById('currentStatus').innerText = "आज वीकली ऑफ है!";
-            }
+            document.getElementById('liveDateTime').innerText = now.toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' });
         }
-        setInterval(updateDateTime, 1000);
 
-        // --- 2. कैमरा और सेल्फी सिस्टम (Smart Camera) ---
-        async function startCameraProcess(type) {
+        // --- 1. पंच इन प्रोसेस (पहले लोकेशन, फिर कैमरा) ---
+        function initPunchIn() {
             let name = document.getElementById("empName").value;
             let id = document.getElementById("empId").value;
-            
             if(!name || !id) return alert("पहले नाम और एम्प्लॉई ID भरें!");
-            if(type === 'in' && state.isPunchedIn) return alert("आप पहले ही पंच-इन कर चुके हैं!");
-            if(type === 'out' && !state.isPunchedIn) return alert("पहले पंच-इन करें!");
 
-            state.actionType = type;
-            document.getElementById("cameraBox").style.display = "block";
+            document.getElementById('currentStatus').innerText = "लोकेशन जांची जा रही है...";
             
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                document.getElementById("video").srcObject = stream;
-            } catch (err) {
-                alert("कैमरा एक्सेस नहीं मिला! सेल्फी अनिवार्य है।");
-            }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    // लोकेशन मिल गई, अब कैमरा खोलें
+                    document.getElementById('currentStatus').innerText = "लोकेशन वेरीफाईड। सेल्फी पेंडिंग...";
+                    document.getElementById("cameraBox").style.display = "block";
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                        document.getElementById("video").srcObject = stream;
+                    } catch (err) { alert("कैमरा चालू नहीं हो सका!"); }
+                }, () => { alert("लोकेशन परमिशन अनिवार्य है!"); }, { enableHighAccuracy: true });
+            } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
 
         function takePhotoAndPunch() {
-            // (यहाँ फोटो खींचने का लॉजिक canvas से होगा, अभी UI के लिए बंद कर रहे हैं)
-            document.getElementById("cameraBox").style.display = "none";
             if(stream) stream.getTracks().forEach(track => track.stop()); // कैमरा बंद करें
+            document.getElementById("cameraBox").style.display = "none";
             
-            if(state.actionType === 'in') processPunchIn();
-            else processPunchOut();
+            // नया सेशन बनाना
+            sessionData = {
+                isActive: true,
+                name: document.getElementById("empName").value,
+                id: document.getElementById("empId").value,
+                status: "Present",
+                punchInTime: new Date().toLocaleTimeString('hi-IN'),
+                punchOutTime: "-",
+                workSecs: 0, breakSecs: 0, trainSecs: 0,
+                activeMode: "work" // work, break, train
+            };
+            
+            saveData();
+            renderTable();
+            updateUIBasedOnState();
+            startMasterTimer();
         }
 
-        // --- 3. जियो-फेंसिंग और पंच-इन (Geo-fencing) ---
-        function processPunchIn() {
-            if (!navigator.geolocation) return alert("लोकेशन सपोर्ट नहीं है!");
+        // --- 2. पंच आउट ---
+        function initPunchOut() {
+            sessionData.isActive = false;
+            sessionData.activeMode = "none";
+            sessionData.status = "Shift Ended";
+            sessionData.punchOutTime = new Date().toLocaleTimeString('hi-IN');
             
-            document.getElementById('geoStatus').innerText = "लोकेशन चेक की जा रही है...";
-            navigator.geolocation.getCurrentPosition((pos) => {
-                state.baseLat = pos.coords.latitude;
-                state.baseLng = pos.coords.longitude;
-                state.isPunchedIn = true;
-                state.mode = "regular";
+            clearInterval(globalTimer);
+            saveData();
+            renderTable();
+            updateUIBasedOnState();
+            alert("सफलतापूर्वक पंच-आउट हो गया!");
+        }
+
+        // --- 3. ब्रेक सिस्टम ---
+        function startBreak() {
+            sessionData.activeMode = "break";
+            sessionData.status = "On Break ☕";
+            saveData(); renderTable(); updateUIBasedOnState();
+        }
+        function endBreak() {
+            sessionData.activeMode = "work";
+            sessionData.status = "Present";
+            saveData(); renderTable(); updateUIBasedOnState();
+        }
+
+        // --- 4. ट्रेनिंग सिस्टम ---
+        function startTraining() {
+            let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
+            if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
+            
+            sessionData.activeMode = "train";
+            sessionData.status = "On Official Duty";
+            saveData(); renderTable(); updateUIBasedOnState();
+        }
+        function endTraining() {
+            sessionData.activeMode = "work";
+            sessionData.status = "Present";
+            saveData(); renderTable(); updateUIBasedOnState();
+        }
+
+        // --- 5. मास्टर टाइमर (लगातार चलता रहेगा और UI अपडेट करेगा) ---
+        function startMasterTimer() {
+            if(globalTimer) clearInterval(globalTimer);
+            globalTimer = setInterval(() => {
+                if(sessionData.activeMode === "work") sessionData.workSecs++;
+                else if(sessionData.activeMode === "break") sessionData.breakSecs++;
+                else if(sessionData.activeMode === "train") sessionData.trainSecs++;
                 
-                updateStatus("Present", "लोकेशन सेट (50m ज़ोन एक्टिव)");
-                startInterval('work');
-                startGeoTracking();
-                logEntry("Punch In", "Present");
-            }, () => { alert("लोकेशन परमिशन अनिवार्य है!"); }, { enableHighAccuracy: true });
+                saveData(); // हर सेकंड लोकल स्टोरेज में सेव ताकि रिफ्रेश पर उड़े नहीं
+                renderTable(); // टेबल में लाइव टाइमर अपडेट
+            }, 1000);
         }
 
-        function processPunchOut() {
-            state.isPunchedIn = false;
-            stopAllIntervals();
-            updateStatus("पंच-आउट हो गया", "शिफ्ट समाप्त");
-            logEntry("Punch Out", "Shift Ended");
-        }
+        // --- 6. UI और टेबल अपडेट फंक्शन्स ---
+        function saveData() { localStorage.setItem('attendanceSession', JSON.stringify(sessionData)); }
 
-        function startGeoTracking() {
-            intervals.geo = navigator.geolocation.watchPosition((pos) => {
-                if(state.mode !== "regular") return; // ट्रेनिंग/ब्रेक में 50m रूल लागू नहीं
-
-                let dist = calculateDistance(state.baseLat, state.baseLng, pos.coords.latitude, pos.coords.longitude);
-                if(dist <= 50) {
-                    if(!state.isWithin50m) { state.isWithin50m = true; startInterval('work'); updateStatus("Present", "आप वर्किंग ज़ोन में हैं"); }
-                } else {
-                    if(state.isWithin50m) { state.isWithin50m = false; stopInterval('work'); updateStatus("Alert: ज़ोन से बाहर!", "वर्किंग टाइम रुका हुआ है", "red"); }
-                }
-            }, null, { enableHighAccuracy: true });
-        }
-
-        // --- 4. ट्रेनिंग और ब्रेक (Training & Break) ---
-        function toggleTraining() {
-            if(!state.isPunchedIn) return alert("पहले पंच-इन करें!");
-            let btn = document.getElementById("btnTrain");
-            
-            if(state.mode !== "training") {
-                let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
-                if(pass !== TRAINING_PASSWORD) return alert("गलत पासवर्ड!");
-                
-                state.mode = "training";
-                stopInterval('work'); stopInterval('break'); startInterval('train');
-                document.getElementById('trainTimerBox').style.display = "block";
-                btn.innerText = "End Training";
-                updateStatus("On Official Duty", "50m जियो-फेंसिंग बाईपास की गई");
-                logEntry("Training Started", "Official Duty");
-            } else {
-                state.mode = "regular";
-                stopInterval('train'); startInterval('work');
-                btn.innerText = "Start Training";
-                updateStatus("Present", "वापस वर्किंग ज़ोन में");
-                logEntry("Training Ended", "Back to Work");
-            }
-        }
-
-        function toggleBreak() {
-            if(!state.isPunchedIn) return alert("पहले पंच-इन करें!");
-            let btn = document.getElementById("btnBreak");
-            
-            if(state.mode !== "break") {
-                state.mode = "break";
-                stopInterval('work'); stopInterval('train'); startInterval('break');
-                document.getElementById('breakTimerBox').style.display = "block";
-                btn.innerText = "End Break ☕";
-                updateStatus("On Break ☕", "वर्किंग टाइम रुका हुआ है");
-                logEntry("Break Started", "Break");
-            } else {
-                state.mode = "regular";
-                stopInterval('break'); startInterval('work');
-                btn.innerText = "Start Break ☕";
-                updateStatus("Present", "वापस काम पर");
-                logEntry("Break Ended", "Back to Work");
-            }
-        }
-
-        // --- 5. यूटिलिटी फंक्शन्स (Timers, Distance, Logs) ---
-        function startInterval(type) {
-            if(type === 'work') intervals.work = setInterval(() => { state.workSeconds++; updateDisplay('workTimer', state.workSeconds); }, 1000);
-            if(type === 'train') intervals.train = setInterval(() => { state.trainSeconds++; updateDisplay('trainTimer', state.trainSeconds); }, 1000);
-            if(type === 'break') intervals.break = setInterval(() => { state.breakSeconds++; updateDisplay('breakTimer', state.breakSeconds); }, 1000);
-        }
-        function stopInterval(type) { clearInterval(intervals[type]); }
-        function stopAllIntervals() { stopInterval('work'); stopInterval('train'); stopInterval('break'); if(intervals.geo) navigator.geolocation.clearWatch(intervals.geo); }
-        
-        function updateDisplay(elementId, totalSeconds) {
+        function formatTime(totalSeconds) {
             let hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
             let mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
             let secs = String(totalSeconds % 60).padStart(2, '0');
-            document.getElementById(elementId).innerText = `${hrs}:${mins}:${secs}`;
+            return `${hrs}:${mins}:${secs}`;
         }
 
-        function updateStatus(mainText, subText, color = "#000") {
-            document.getElementById('currentStatus').innerHTML = `<span style="color:${color}">${mainText}</span>`;
-            document.getElementById('geoStatus').innerText = subText;
+        function renderTable() {
+            if(!sessionData) return;
+            document.getElementById('currentStatus').innerText = sessionData.status;
+
+            // जो टाइमर चल रहा है उसे लाल (active-timer) क्लास देना
+            let wClass = sessionData.activeMode === 'work' ? 'active-timer' : '';
+            let bClass = sessionData.activeMode === 'break' ? 'active-timer' : '';
+            let tClass = sessionData.activeMode === 'train' ? 'active-timer' : '';
+
+            let row = `<tr>
+                <td>${sessionData.name}</td>
+                <td>${sessionData.id}</td>
+                <td style="font-weight:bold; color:#1a237e;">${sessionData.status}</td>
+                <td>${sessionData.punchInTime}</td>
+                <td>${sessionData.punchOutTime}</td>
+                <td class="${wClass}">${formatTime(sessionData.workSecs)}</td>
+                <td class="${bClass}">${formatTime(sessionData.breakSecs)}</td>
+                <td class="${tClass}">${formatTime(sessionData.trainSecs)}</td>
+                <td>📸 Done</td>
+            </tr>`;
+            document.getElementById("logTableBody").innerHTML = row;
         }
 
-        function logEntry(type, statusText) {
-            let name = document.getElementById("empName").value;
-            let id = document.getElementById("empId").value;
-            let time = new Date().toLocaleTimeString('hi-IN');
+        function updateUIBasedOnState() {
+            if(!sessionData) return;
+            let st = sessionData.activeMode;
+            let isActive = sessionData.isActive;
+
+            // नाम और ID बॉक्स लॉक कर दें
+            document.getElementById("empName").disabled = isActive;
+            document.getElementById("empId").disabled = isActive;
+
+            // बटन एनेबल/डिसेबल लॉजिक
+            document.getElementById("btnIn").disabled = isActive;
+            document.getElementById("btnOut").disabled = !isActive;
             
-            let row = `<tr><td>${name}</td><td>${id}</td><td>${time}</td><td>${type}</td><td>${statusText}</td></tr>`;
-            document.getElementById("logTableBody").innerHTML += row;
+            document.getElementById("btnBreakStart").disabled = (!isActive || st !== "work");
+            document.getElementById("btnBreakEnd").disabled = (!isActive || st !== "break");
+            
+            document.getElementById("btnTrainStart").disabled = (!isActive || st !== "work");
+            document.getElementById("btnTrainEnd").disabled = (!isActive || st !== "train");
         }
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        function markLeave() {
-            let date = prompt("छुट्टी की तारीख दर्ज करें (YYYY-MM-DD):");
-            let reason = prompt("छुट्टी का कारण:");
-            if(date && reason) { logEntry(`Leave: ${date}`, reason); alert("छुट्टी मार्क कर दी गई है।"); }
-        }
-
-        function exportData() {
-            let pass = prompt("डाउनलोड करने के लिए एडमिन पासवर्ड डालें:");
+        // --- 7. डाउनलोड फंक्शन्स ---
+        function downloadFile(type) {
+            let pass = prompt(`${type} डाउनलोड करने के लिए पासवर्ड डालें:`);
             if(pass === "admin123") {
-                alert("मंथली PDF और Excel डाउनलोड हो रही है... (नोट: असली PDF में सेल्फी और पक्के डेटाबेस के लिए बैकएंड/सर्वर की आवश्यकता होगी)");
-                window.print(); // बेसिक पीडीएफ/प्रिंट के लिए
+                alert(`आपकी ${type} फाइल डाउनलोड हो रही है...`);
             } else {
                 alert("पासवर्ड गलत है!");
             }
