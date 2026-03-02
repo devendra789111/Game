@@ -377,20 +377,31 @@
             }
         }
 
+                let lastTick = Date.now(); // बैकग्राउंड टाइम को याद रखने के लिए
+        
         function startMasterTimer() {
             setInterval(() => {
-                let updated = false;
-                for(let id in attendanceDb) {
-                    let emp = attendanceDb[id];
-                    if(emp.isPunchedOut) continue; 
-                    if(emp.mode === "work" && isDeviceWithin50m) emp.workSecs++;
-                    else if(emp.mode === "break") emp.breakSecs++;
-                    else if(emp.mode === "train") emp.trainSecs++;
-                    updated = true;
+                let nowTick = Date.now();
+                let deltaSecs = Math.round((nowTick - lastTick) / 1000); // रुका हुआ समय सेकंड्स में निकालें
+                
+                if (deltaSecs > 0) {
+                    let updated = false;
+                    for(let id in attendanceDb) {
+                        let emp = attendanceDb[id];
+                        if(emp.isPunchedOut) continue; 
+                        
+                        // 1-1 सेकंड की बजाय सीधा एक्चुअल टाइम जोड़ें
+                        if(emp.mode === "work" && isDeviceWithin50m) emp.workSecs += deltaSecs;
+                        else if(emp.mode === "break") emp.breakSecs += deltaSecs;
+                        else if(emp.mode === "train") emp.trainSecs += deltaSecs;
+                        updated = true;
+                    }
+                    lastTick = nowTick; // अगले राउंड के लिए टाइमर अपडेट करें
+                    if(updated) { saveData(); renderTable(); }
                 }
-                if(updated) { saveData(); renderTable(); }
             }, 1000);
         }
+
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
