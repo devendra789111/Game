@@ -14,7 +14,6 @@
         
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 1100px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* इनपुट बॉक्स को हाईलाइट और बड़ा किया गया है */
         .input-group { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 2px solid #ddd; }
         input[type="text"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; }
         input[type="text"]::placeholder { font-weight: normal; color: #888; }
@@ -29,20 +28,18 @@
         .btn-break-start { background-color: #FF9800; } .btn-break-end { background-color: #F57C00; }
         .btn-leave { background-color: #E91E63; }
         
-        /* सेल्फी पॉप-अप */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
         video { width: 100%; border-radius: 8px; border: 3px solid #1a237e; margin-bottom: 10px; }
         canvas { display: none; }
 
-        /* स्टेटस बॉक्स */
         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 16px; font-weight: bold; color: #0d47a1; max-width: 500px; }
         .out-of-zone { background: #ffebee !important; border-color: #ef5350 !important; color: #c62828 !important; }
 
-        /* टेबल डिज़ाइन */
         #exportArea { margin-top: 20px; background: white; padding: 10px; }
         .report-header { display: none; text-align: center; font-size: 20px; margin-bottom: 15px; color: #1a237e; font-weight: bold; text-transform: uppercase; }
         
+        #tableWrapper { overflow-x: auto; } /* इसे ID दी गई है ताकि PDF के समय कंट्रोल कर सकें */
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: middle; }
         th { background-color: #1a237e; color: white; }
@@ -71,7 +68,7 @@
         </div>
 
         <div class="status-box" id="statusBox">
-            डिवाइस लोकेशन: <span id="geoText">चेक की जा रही है...</span>
+            डिवाइस लोकेशन: <span id="geoText" style="color:#555;">पंच-इन का इंतज़ार...</span>
         </div>
 
         <div class="btn-grid">
@@ -86,7 +83,7 @@
 
         <div id="exportArea">
             <div class="report-header" id="pdfMonthHeader">Attendance Report</div>
-            <div style="overflow-x: auto;">
+            <div id="tableWrapper">
                 <table id="attendanceTable">
                     <thead>
                         <tr>
@@ -129,27 +126,30 @@
         const ADMIN_PASS = "1234";
         let stream = null;
         let globalTimer = null;
-        let pendingAction = ""; // 'in' या 'out'
+        let geoWatchId = null;
+        let pendingAction = ""; 
         let pendingId = "";
         
         let todayDate = new Date().toLocaleDateString('en-IN');
         let currentMonthName = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
         document.getElementById('pdfMonthHeader').innerText = `Attendance Report - ${currentMonthName}`;
 
-        // मल्टीपल एम्प्लॉइज का डेटाबेस (Object)
         let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDate}`)) || {};
         
-        // बेस लोकेशन (डिवाइस की फिक्स जगह)
-        let deviceBaseLat = localStorage.getItem('deviceBaseLat');
-        let deviceBaseLng = localStorage.getItem('deviceBaseLng');
+        let deviceBaseLat = localStorage.getItem(`baseLat_${todayDate}`);
+        let deviceBaseLng = localStorage.getItem(`baseLng_${todayDate}`);
         let isDeviceWithin50m = false;
 
         window.onload = () => {
             updateDateTime();
             setInterval(updateDateTime, 1000);
             renderTable();
-            startDeviceGeoTracking();
             startMasterTimer();
+            
+            // अगर पहले से बेस लोकेशन सेट है (यानी कोई पंच-इन कर चुका है), तो ट्रैकिंग शुरू करें
+            if(deviceBaseLat && deviceBaseLng) {
+                startDeviceGeoTracking();
+            }
         };
 
         function updateDateTime() {
@@ -167,19 +167,27 @@
             document.getElementById("empId").value = "";
         }
 
-        // --- 1. पंच इन ---
         function initPunchIn() {
             let { name, id } = getInputs();
             if(!name || !id) return alert("अपना नाम और ID दर्ज करें!");
             if(attendanceDb[id]) return alert("इस ID से आज का पंच-इन पहले ही हो चुका है!");
 
-            pendingAction = "in";
-            pendingId = id;
-            document.getElementById('modalTitle').innerText = "पंच-इन: सेल्फी कैप्चर करें";
-            openCamera();
+            document.getElementById('geoText').innerHTML = "लोकेशन जांची जा रही है...";
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    pendingAction = "in";
+                    pendingId = id;
+                    document.getElementById('modalTitle').innerText = "पंच-इन: सेल्फी कैप्चर करें";
+                    openCamera();
+                }, () => { 
+                    alert("लोकेशन परमिशन अनिवार्य है!"); 
+                    document.getElementById('geoText').innerHTML = "लोकेशन परमिशन नहीं मिली!";
+                }, { enableHighAccuracy: true });
+            } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
 
-        // --- 2. एक्शन बटन्स (ब्रेक, काम पर वापस) ---
         function actionBtn(mode) {
             let { id } = getInputs();
             if(!id) return alert("ID दर्ज करें!");
@@ -191,7 +199,6 @@
             alert(`स्टेटस अपडेट हो गया!`);
         }
 
-        // --- 3. ट्रेनिंग मोड ---
         function startTraining() {
             let { id } = getInputs();
             if(!id) return alert("ID दर्ज करें!");
@@ -206,7 +213,6 @@
             alert("ट्रेनिंग मोड चालू!");
         }
 
-        // --- 4. पंच आउट ---
         function initPunchOut() {
             let { id } = getInputs();
             if(!id) return alert("ID दर्ज करें!");
@@ -220,7 +226,6 @@
             openCamera();
         }
 
-        // --- 5. छुट्टी (Leave/Holiday) ---
         function markLeave() {
             let { name, id } = getInputs();
             if(!name || !id) return alert("नाम और ID दोनों दर्ज करें!");
@@ -237,7 +242,6 @@
             }
         }
 
-        // --- कैमरा और सेल्फी प्रोसेसिंग ---
         async function openCamera() {
             document.getElementById('selfieModal').style.display = 'flex';
             try {
@@ -251,7 +255,6 @@
             let canvas = document.getElementById('canvas');
             let ctx = canvas.getContext('2d');
             
-            // क्वालिटी कम और साइज़ छोटा ताकि PDF हैंग न हो
             canvas.width = 120; canvas.height = 120;
             let minSize = Math.min(video.videoWidth, video.videoHeight);
             ctx.drawImage(video, (video.videoWidth - minSize)/2, (video.videoHeight - minSize)/2, minSize, minSize, 0, 0, 120, 120);
@@ -263,6 +266,15 @@
             let { name } = getInputs();
 
             if(pendingAction === "in") {
+                // अगर यह दिन का पहला पंच-इन है, तो बेस लोकेशन सेट करें
+                if(!deviceBaseLat || !deviceBaseLng) {
+                    deviceBaseLat = window.tempLocation.lat;
+                    deviceBaseLng = window.tempLocation.lng;
+                    localStorage.setItem(`baseLat_${todayDate}`, deviceBaseLat);
+                    localStorage.setItem(`baseLng_${todayDate}`, deviceBaseLng);
+                    startDeviceGeoTracking();
+                }
+
                 attendanceDb[pendingId] = {
                     name: name, id: pendingId, statusText: "Present",
                     inTime: new Date().toLocaleTimeString('hi-IN'), outTime: "-",
@@ -283,18 +295,14 @@
             saveData(); renderTable(); clearInputs();
         }
 
-        // --- जियो-फेंसिंग ---
         function startDeviceGeoTracking() {
             if(navigator.geolocation) {
-                navigator.geolocation.watchPosition((pos) => {
+                if(geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
+                
+                geoWatchId = navigator.geolocation.watchPosition((pos) => {
                     let lat = pos.coords.latitude; let lng = pos.coords.longitude;
-                    
-                    if(!deviceBaseLat || !deviceBaseLng) {
-                        deviceBaseLat = lat; deviceBaseLng = lng;
-                        localStorage.setItem('deviceBaseLat', lat); localStorage.setItem('deviceBaseLng', lng);
-                    }
-                    
                     let dist = calculateDistance(deviceBaseLat, deviceBaseLng, lat, lng);
+                    
                     let geoText = document.getElementById("geoText");
                     let statusBox = document.getElementById("statusBox");
 
@@ -311,13 +319,12 @@
             }
         }
 
-        // --- मास्टर टाइमर ---
         function startMasterTimer() {
             setInterval(() => {
                 let updated = false;
                 for(let id in attendanceDb) {
                     let emp = attendanceDb[id];
-                    if(emp.isPunchedOut) continue; // आउट होने पर टाइमर बंद
+                    if(emp.isPunchedOut) continue; 
 
                     if(emp.mode === "work" && isDeviceWithin50m) emp.workSecs++;
                     else if(emp.mode === "break") emp.breakSecs++;
@@ -337,7 +344,6 @@
         function saveData() { localStorage.setItem(`attDB_${todayDate}`, JSON.stringify(attendanceDb)); }
         function formatTime(s) { return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
 
-        // --- टेबल रेंडर (कलर्स और लॉजिक के साथ) ---
         function renderTable() {
             let tbody = document.getElementById("logTableBody");
             tbody.innerHTML = "";
@@ -348,7 +354,6 @@
                 let emp = attendanceDb[id];
                 let totalWorkSecs = emp.workSecs + emp.trainSecs;
 
-                // 1. स्टेटस कलर लॉजिक (छुट्टी लाल, बाकी प्रेजेंट)
                 let statusHtml = "Present";
                 let isLeave = ["leave", "week off", "holiday"].some(v => emp.statusText.toLowerCase().includes(v));
                 
@@ -359,12 +364,10 @@
                     else if(emp.mode === 'train') statusHtml = `Present<br><span class="badge badge-train">💼 On Official Duty</span>`;
                 }
 
-                // 2. टाइम कलर लॉजिक (8 घंटे और 1 घंटे वाला)
                 let breakColor = emp.breakSecs > 3600 ? "color: red; font-weight: bold;" : "color: inherit;";
                 let workColor = totalWorkSecs >= 28800 ? "color: green; font-weight: bold;" : "color: red; font-weight: bold;";
-                if(isLeave || totalWorkSecs === 0) workColor = "color: inherit;"; // छुट्टी वाले दिन टाइम काला रहेगा
+                if(isLeave || totalWorkSecs === 0) workColor = "color: inherit;"; 
 
-                // 3. फोटो (PDF सपोर्टेड इनलाइन CSS के साथ)
                 let pIn = emp.photoIn ? `<img src="${emp.photoIn}" style="width:55px; height:55px; border-radius:4px; border:1px solid #ccc; object-fit:cover;">` : '-';
                 let pOut = emp.photoOut ? `<img src="${emp.photoOut}" style="width:55px; height:55px; border-radius:4px; border:1px solid #ccc; object-fit:cover;">` : '-';
 
@@ -384,25 +387,31 @@
             if(count === 0) tbody.innerHTML = `<tr><td colspan="10">कोई डेटा उपलब्ध नहीं है</td></tr>`;
         }
 
-        // --- 📥 PDF और EXCEL डाउनलोड ---
+        // --- 📥 PDF ब्लैंक समस्या फिक्स (Overflow-x हटाकर) ---
         function downloadPDF() {
             let pass = prompt(`PDF डाउनलोड करने के लिए पासवर्ड डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
             
-            document.getElementById('pdfMonthHeader').style.display = 'block';
-            let element = document.getElementById('exportArea');
+            let exportDiv = document.getElementById('exportArea');
+            let tableWrap = document.getElementById('tableWrapper');
+            let header = document.getElementById('pdfMonthHeader');
             
-            // html2pdf सेटिंग्स (फोटो के लिए बेहतरीन)
+            // ब्लैंक पीडीएफ फिक्स: जनरेट करते समय overflow हटा दें
+            tableWrap.style.overflowX = 'visible';
+            header.style.display = 'block';
+            
             let opt = {
                 margin:       0.3,
                 filename:     `Attendance_Log_${todayDate.replace(/\//g, '-')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, // useCORS से फोटो आसानी से रेंडर होती हैं
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+                html2canvas:  { scale: 2, useCORS: true, windowWidth: exportDiv.scrollWidth },
+                jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' } // A3 से चौड़ाई ज्यादा मिलेगी
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                document.getElementById('pdfMonthHeader').style.display = 'none';
+            html2pdf().set(opt).from(exportDiv).save().then(() => {
+                // जनरेट होने के बाद वापस पहले जैसा कर दें
+                header.style.display = 'none';
+                tableWrap.style.overflowX = 'auto';
             });
         }
 
