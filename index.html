@@ -93,7 +93,8 @@
                 <table id="attendanceTable">
                     <thead>
                         <tr>
-                            <th>Date</th> <th>ID</th>
+                            <th>Date</th>
+                            <th>ID</th>
                             <th>नाम</th>
                             <th>स्टेटस</th>
                             <th>In Time</th>
@@ -138,7 +139,8 @@
                     <option value="EL">Earned Leave (EL) - 1/महीना</option>
                     <option value="CL">Casual Leave (CL) - 6/साल</option>
                     <option value="SL">Sick Leave (SL) - 6/साल</option>
-                    <option value="LWP">Leave Without Pay (LWP) - कोई लिमिट नहीं</option> </select>
+                    <option value="LWP">Leave Without Pay (LWP) - कोई लिमिट नहीं</option>
+                </select>
                 
                 <label>कारण (Reason):</label>
                 <input type="text" id="leaveReason" placeholder="कारण लिखें..." required>
@@ -191,7 +193,7 @@
             updateDateTime();
             setInterval(updateDateTime, 1000);
             checkTodayHoliday();
-            renderTable(); // Daily view render
+            renderTable(); 
             startMasterTimer();
             if(deviceBaseLat && deviceBaseLng) { startDeviceGeoTracking(); }
         };
@@ -214,7 +216,6 @@
         function getInputs() { return { name: document.getElementById("empName").value.trim(), id: document.getElementById("empId").value.trim() }; }
         function clearInputs() { document.getElementById("empName").value = ""; document.getElementById("empId").value = ""; }
 
-        // --- Core Functions (unchanged logic, only saving LWP properly) ---
         function initPunchIn() {
             let { name, id } = getInputs();
             if(!name || !id) return alert("अपना नाम और ID दर्ज करें!");
@@ -226,7 +227,7 @@
                 let statusMsg = isWeeklyOff ? "Weekly Off" : `Holiday (${holidayName})`;
                 attendanceDb[id] = {
                     name: name, id: id, statusText: statusMsg, inTime: "-", outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0,
-                    mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null
+                    mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null, timestamp: Date.now() // टाइमस्टैम्प जोड़ा
                 };
                 saveData(); renderTable(); clearInputs();
                 return alert(`पॉपअप: आज ${statusMsg} है। आपकी अटेंडेंस शीट और PDF में यह दर्ज कर लिया गया है!`);
@@ -270,7 +271,6 @@
             attendanceDb[id].mode = "train"; saveData(); renderTable(); clearInputs(); alert("ट्रेनिंग मोड चालू!");
         }
 
-        // --- Leave Management (Added LWP) ---
         function openLeaveModal() {
             if(isHolidayOrOff) return alert("आज पहले से ही सिस्टम में छुट्टी (Holiday/Week Off) लागू है, आपको लीव मार्क करने की आवश्यकता नहीं है।");
             let { name, id } = getInputs();
@@ -291,7 +291,6 @@
             if(!leaveBalances[id]) leaveBalances[id] = { EL_M: 0, CL_Y: 0, SL_Y: 0, SL_month_count: 0 };
             let empLeaves = leaveBalances[id];
 
-            // LWP के लिए कोई लिमिट चेक नहीं
             if(type === 'EL' && empLeaves.EL_M >= 1) { alertBox.innerText = "अलर्ट: आप इस महीने की 1 EL ले चुके हैं!"; alertBox.style.display = "block"; }
             else if(type === 'CL' && empLeaves.CL_Y >= 6) { alertBox.innerText = "अलर्ट: आप साल की 6 CL पूरी कर चुके हैं!"; alertBox.style.display = "block"; }
             else if(type === 'SL') {
@@ -307,7 +306,6 @@
             if(!type || !reason) return alert("लीव का प्रकार और कारण भरना अनिवार्य है!");
             
             let empLeaves = leaveBalances[id];
-            
             if(type !== 'LWP') {
                 if(type === 'EL' && empLeaves.EL_M >= 1) return alert("इस महीने की EL खत्म हो चुकी है!");
                 if(type === 'CL' && empLeaves.CL_Y >= 6) return alert("इस साल की CL खत्म हो चुकी है!");
@@ -315,16 +313,14 @@
                     if(empLeaves.SL_Y >= 6) return alert("इस साल की SL खत्म हो चुकी है!");
                     if(empLeaves.SL_month_count >= 2 && !document.getElementById('medicalCert').files[0]) return alert("मेडिकल सर्टिफिकेट (PDF) अपलोड करना अनिवार्य है!");
                 }
-                // Balance Deduct
                 if(type === 'EL') empLeaves.EL_M++; if(type === 'CL') empLeaves.CL_Y++; if(type === 'SL') { empLeaves.SL_Y++; empLeaves.SL_month_count++; }
                 localStorage.setItem('leaveBalances', JSON.stringify(leaveBalances));
             }
 
-            // LWP हो या कोई और लीव, स्टेटस सेव होगा
             attendanceDb[id] = {
                 name: name, id: id, statusText: `${type} (Leave) - ${reason}`,
                 inTime: "-", outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0,
-                mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null
+                mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null, timestamp: Date.now() // टाइमस्टैम्प जोड़ा
             };
             saveData(); renderTable(); clearInputs(); document.getElementById('leaveModal').style.display = 'none';
             alert(`${type} सफलतापूर्वक मार्क हो गई है!`);
@@ -355,7 +351,7 @@
                 }
                 attendanceDb[pendingId] = {
                     name: name, id: pendingId, statusText: "Present", inTime: new Date().toLocaleTimeString('hi-IN'), outTime: "-",
-                    workSecs: 0, breakSecs: 0, trainSecs: 0, mode: "work", isPunchedOut: false, photoIn: base64Photo, photoOut: null
+                    workSecs: 0, breakSecs: 0, trainSecs: 0, mode: "work", isPunchedOut: false, photoIn: base64Photo, photoOut: null, timestamp: Date.now() // टाइमस्टैम्प जोड़ा
                 };
                 alert("पंच-इन सफल!");
             } else if(pendingAction === "out") {
@@ -405,7 +401,6 @@
         function saveData() { localStorage.setItem(`attDB_${todayDateStr}`, JSON.stringify(attendanceDb)); }
         function formatTime(s) { return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
 
-        // --- टेबल रेंडर (Daily/Monthly) ---
         function renderTableRows(dataArray) {
             let tbody = document.getElementById("logTableBody"); tbody.innerHTML = "";
             if(dataArray.length === 0) { tbody.innerHTML = `<tr><td colspan="11">कोई डेटा उपलब्ध नहीं है</td></tr>`; return; }
@@ -437,18 +432,20 @@
             }
         }
 
-        // नॉर्मल डेली व्यू के लिए
+        // --- लाइव स्क्रीन के लिए (सबसे नया ऊपर) ---
         function renderTable() {
             let dailyData = [];
             for(let id in attendanceDb) {
                 let emp = attendanceDb[id];
-                emp.recordDate = todayDateStr; // आज की डेट सेट कर रहे हैं
+                emp.recordDate = todayDateStr; 
                 dailyData.push(emp);
             }
+            // टाइमस्टैम्प के हिसाब से उल्टा सॉर्ट करना (Newest First)
+            dailyData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             renderTableRows(dailyData);
         }
 
-        // --- 📥 Export Logic (Monthly) ---
+        // --- PDF/Excel के लिए (सबसे पुराना ऊपर / सीधा क्रम) ---
         function getMonthlyDataArray() {
             let choice = prompt("कौनसे महीने की रिपोर्ट चाहिए? \n1 = वर्तमान महीना (Current Month)\n2 = पिछला महीना (Last Month)", "1");
             if(choice !== "1" && choice !== "2") return null;
@@ -458,41 +455,42 @@
             
             let t_mm = String(targetDate.getMonth() + 1).padStart(2, '0');
             let t_yyyy = targetDate.getFullYear();
-            let targetSuffix = `${t_mm}/${t_yyyy}`; // e.g., "03/2026"
+            let targetSuffix = `${t_mm}/${t_yyyy}`; 
             
             let monthlyData = [];
             for(let i=0; i<localStorage.length; i++){
                 let key = localStorage.key(i);
                 if(key.startsWith('attDB_') && key.endsWith(targetSuffix)){
-                    let dateStr = key.replace('attDB_', ''); // "DD/MM/YYYY" मिलेगा
+                    let dateStr = key.replace('attDB_', ''); 
                     let db = JSON.parse(localStorage.getItem(key));
                     for(let id in db) {
                         let emp = db[id];
-                        emp.recordDate = dateStr; // हर एंट्री में उसकी डेट लगा रहे हैं
+                        emp.recordDate = dateStr; 
                         monthlyData.push(emp);
                     }
                 }
             }
             
-            // डेट के हिसाब से क्रम में जमाना (Sort by date)
+            // डेट और टाइम के हिसाब से सीधा सॉर्ट करना (Oldest First)
             monthlyData.sort((a,b) => {
                 let d1 = a.recordDate.split('/'); let d2 = b.recordDate.split('/');
                 let t1 = new Date(d1[2], d1[1]-1, d1[0]).getTime();
                 let t2 = new Date(d2[2], d2[1]-1, d2[0]).getTime();
-                return t1 - t2;
+                if (t1 !== t2) return t1 - t2; // पहले डेट के हिसाब से 
+                return (a.timestamp || 0) - (b.timestamp || 0); // फिर टाइम के हिसाब से
             });
 
             return { array: monthlyData, monthName: targetDate.toLocaleString('en-IN', { month: 'long', year: 'numeric' }) };
         }
 
         function downloadPDF() {
-            let pass = prompt(`PDF डाउनलोड करने के लिए एडमिन पासवर्ड डालें:`);
+            let pass = prompt(`PDF डाउनलोड करने के लिए एडमिन पासवर्ड (1234) डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
             
             let monthInfo = getMonthlyDataArray();
             if(!monthInfo) return alert("डाउनलोड रद्द किया गया।");
 
-            // पूरे महीने का डेटा टेबल में डालें
+            // पूरे महीने का डेटा सीधे क्रम में डालकर रेंडर करना
             renderTableRows(monthInfo.array);
             document.getElementById('pdfMonthHeader').innerText = `Attendance Report - ${monthInfo.monthName}`;
 
@@ -508,13 +506,12 @@
             
             html2pdf().set(opt).from(exportDiv).save().then(() => { 
                 header.style.display = 'none'; tableWrap.style.overflowX = 'auto'; 
-                // PDF जनरेट होने के बाद टेबल को वापस आज (Daily view) पर सेट करें
-                renderTable();
+                renderTable(); // PDF जनरेट होने के बाद वापस लाइव स्क्रीन (उल्टा क्रम) पर लाना
             });
         }
 
         function downloadExcel() {
-            let pass = prompt(`Excel डाउनलोड करने के लिए एडमिन पासवर्ड डालें:`);
+            let pass = prompt(`Excel डाउनलोड करने के लिए एडमिन पासवर्ड (1234) डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
 
             let monthInfo = getMonthlyDataArray();
