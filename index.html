@@ -17,6 +17,9 @@
         .input-group { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 2px solid #ddd; }
         input[type="text"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; }
         
+        /* नाम वाला बॉक्स अब लॉक रहेगा, इसलिए उसका रंग थोड़ा अलग किया है */
+        #empName { background-color: #e9ecef; cursor: not-allowed; }
+
         .btn-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
         button { padding: 10px 15px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
         button:hover { filter: brightness(0.9); }
@@ -35,6 +38,320 @@
         .leave-form select, .leave-form input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
 
         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 16px; font-weight: bold; color: #0d47a1; max-width: 500px; }
+        .out-of-zone { background: #ffebee !important; border-color: #ef5350 !important; color: #c62828 !important; }
+        .holiday-banner { background: #ffebee; border-color: #f44336; color: #b71c1c; padding: 15px; }
+
+        #exportArea { margin-top: 20px; background: white; padding: 10px; }
+        .report-header { display: none; text-align: center; font-size: 20px; margin-bottom: 15px; color: #1a237e; font-weight: bold; text-transform: uppercase; }
+        
+        #tableWrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: middle; }
+        th { background-color: #1a237e; color: white; }
+        tr { page-break-inside: avoid; } /* PDF कटने से रोकेगा */
+        
+        .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 11px; color: white; margin-top: 3px; }
+        .badge-break { background-color: #F57C00; }
+        .badge-train { background-color: #7B1FA2; }
+        
+        .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        .btn-pdf { background-color: #D32F2F; padding: 10px 20px; }
+        .btn-excel { background-color: #2E7D32; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🏢 Quality Education Attendance Kiosk</h2>
+        <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
+    </div>
+
+    <div class="container">
+        <div class="status-box" id="systemStatusBox" style="display:none; margin-bottom: 20px;">
+            <span id="systemStatusText"></span>
+        </div>
+
+        <div class="input-group">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #555;">अपनी एम्प्लॉई ID दर्ज करें (नाम अपने आप आ जाएगा):</p>
+            <input type="text" id="empId" placeholder="एम्प्लॉई ID (उदा. 1111)" oninput="autoFillName()">
+            <input type="text" id="empName" placeholder="कर्मचारी का नाम" readonly>
+        </div>
+
+        <div class="status-box" id="statusBox">
+            डिवाइस लोकेशन: <span id="geoText" style="color:#555;">पंच-इन का इंतज़ार...</span>
+        </div>
+
+        <div class="btn-grid">
+            <button class="btn-in" onclick="initPunchIn()">Punch In</button>
+            <button class="btn-out" onclick="initPunchOut()">Punch Out</button>
+            <button class="btn-break-start" onclick="actionBtn('break')">Start Break ☕</button>
+            <button class="btn-break-end" onclick="actionBtn('work')">End Break</button>
+            <button class="btn-train-start" onclick="startTraining()">Start Training</button>
+            <button class="btn-train-end" onclick="actionBtn('work')">End Training</button>
+            <button class="btn-leave" onclick="openLeaveModal()">Mark Leave</button>
+        </div>
+
+        <div id="exportArea">
+            <div class="report-header" id="pdfMonthHeader">Attendance Report</div>
+            <div id="tableWrapper">
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>ID</th>
+                            <th>नाम</th>
+                            <th>स्टेटस</th>
+                            <th>In Time</th>
+                            <th>Out Time</th>
+                            <th>Break Time</th>
+                            <th>Train Time</th>
+                            <th>Total Hrs</th>
+                            <th>In Selfie</th>
+                            <th>Out Selfie</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <tr><td colspan="11">कोई डेटा उपलब्ध नहीं है</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="export-btns">
+            <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
+            <button class="btn-excel" onclick="downloadExcel()">Download Excel</button>
+        </div>
+    </div>
+
+    <div id="selfieModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3>
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <button class="btn-in" style="width:100%;" onclick="captureAndProceed()">सेल्फी कैप्चर करें</button>
+            <button style="width:100%; margin-top:10px; background:#aaa;" onclick="document.getElementById('selfieModal').style.display='none'; if(stream) stream.getTracks().forEach(t=>t.stop());">रद्द करें</button>
+        </div>
+    </div>
+
+    <div id="leaveModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#E91E63;">📅 छुट्टी (Leave) दर्ज करें</h3>
+            <div class="leave-form">
+                <label>छुट्टी का प्रकार चुनें:</label>
+                <select id="leaveType" onchange="checkLeaveType()">
+                    <option value="">-- सेलेक्ट करें --</option>
+                    <option value="EL">Earned Leave (EL) - 1/महीना</option>
+                    <option value="CL">Casual Leave (CL) - 6/साल</option>
+                    <option value="SL">Sick Leave (SL) - 6/साल</option>
+                    <option value="LWP">Leave Without Pay (LWP) - कोई लिमिट नहीं</option>
+                </select>
+                
+                <label>कारण (Reason):</label>
+                <input type="text" id="leaveReason" placeholder="कारण लिखें..." required>
+                
+                <div id="medicalCertBox" style="display: none;">
+                    <label style="color:red; font-size: 12px; font-weight:bold;">लगातार 2 दिन से ज्यादा Sick Leave होने पर मेडिकल सर्टिफिकेट (PDF) अपलोड करना अनिवार्य है:</label>
+                    <input type="file" id="medicalCert" accept=".pdf">
+                </div>
+
+                <p style="color:red; font-size:12px; font-weight:bold; display:none;" id="leaveAlert"></p>
+                
+                <button class="btn-leave" style="width:100%; margin-top:10px;" onclick="submitLeave()">छुट्टी सबमिट करें</button>
+                <button style="width:100%; margin-top:10px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveModal').style.display='none';">रद्द करें</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================================
+        // ⚙️ सेटिंग्स (यहाँ आप बदलाव कर सकते हैं)
+        // ==========================================================
+        const ADMIN_PASS = "1234";
+        const WEEKLY_OFF_DAY = 1; // 1 = Monday, 2 = Tuesday
+        
+        // 1. त्यौहारों की लिस्ट
+        const PUBLIC_HOLIDAYS = {
+            "03/03/2026": "Holi",
+            "04/03/2026": "Dhulandi",
+            "15/08/2026": "Independence Day",
+            "08/11/2026": "Diwali"
+        };
+
+        // 2. एम्प्लॉई मास्टर लिस्ट (यहाँ अपने सारे कर्मचारियों की ID और नाम लिखें)
+        const EMPLOYEE_MASTER_LIST = {
+            "1111": "Devendra Kumar",
+            "1112": "Rahul Sharma",
+            "1113": "Priya Singh",
+            "1114": "Amit Verma",
+            "1001": "Quality Education Admin"
+        };
+        // ==========================================================
+
+        let stream = null; let geoWatchId = null;
+        let pendingAction = ""; let pendingId = "";
+        let lastTick = Date.now(); // बैकग्राउंड टाइम ट्रैकिंग के लिए
+        
+        let now = new Date();
+        let dd = String(now.getDate()).padStart(2, '0');
+        let mm = String(now.getMonth() + 1).padStart(2, '0');
+        let yyyy = now.getFullYear();
+        let todayDateStr = `${dd}/${mm}/${yyyy}`; 
+
+        let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDateStr}`)) || {};
+        let leaveBalances = JSON.parse(localStorage.getItem('leaveBalances')) || {}; 
+        
+        let deviceBaseLat = localStorage.getItem(`baseLat_${todayDateStr}`);
+        let deviceBaseLng = localStorage.getItem(`baseLng_${todayDateStr}`);
+        let isDeviceWithin50m = false;
+
+        let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY);
+        let holidayName = PUBLIC_HOLIDAYS[todayDateStr];
+        let isHolidayOrOff = isWeeklyOff || holidayName;
+
+        window.onload = () => {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            checkTodayHoliday();
+            renderTable(); 
+            startMasterTimer();
+            if(deviceBaseLat && deviceBaseLng) { startDeviceGeoTracking(); }
+        };
+
+        function updateDateTime() {
+            document.getElementById('liveDateTime').innerText = new Date().toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' });
+        }
+
+        function checkTodayHoliday() {
+            let sysBox = document.getElementById('systemStatusBox'); let sysText = document.getElementById('systemStatusText');
+            if(isWeeklyOff) {
+                sysBox.style.display = "block"; sysBox.classList.add('holiday-banner');
+                sysText.innerText = "🛑 आज सोमवार (Weekly Off) है। अपनी उपस्थिति (Weekly Off) दर्ज करने के लिए 'Punch In' करें।";
+            } else if(holidayName) {
+                sysBox.style.display = "block"; sysBox.classList.add('holiday-banner');
+                sysText.innerText = `🛑 आज ${holidayName} का अवकाश है। अपनी उपस्थिति (Holiday) दर्ज करने के लिए 'Punch In' करें।`;
+            }
+        }
+
+        // ऑटो-फिल नाम (Auto-Fill Name) फंक्शन
+        function autoFillName() {
+            let id = document.getElementById("empId").value.trim();
+            if (EMPLOYEE_MASTER_LIST[id]) {
+                document.getElementById("empName").value = EMPLOYEE_MASTER_LIST[id];
+            } else {
+                document.getElementById("empName").value = "";
+            }
+        }
+
+        function getInputs() { return { name: document.getElementById("empName").value.trim(), id: document.getElementById("empId").value.trim() }; }
+        function clearInputs() { document.getElementById("empName").value = ""; document.getElementById("empId").value = ""; }
+
+        function initPunchIn() {
+            let { name, id } = getInputs();
+            if(!id) return alert("अपनी एम्प्लॉई ID दर्ज करें!");
+            
+            // सिक्योरिटी चेक
+            if (!EMPLOYEE_MASTER_LIST[id]) {
+                return alert("❌ यह एम्प्लॉई ID सिस्टम में रजिस्टर्ड नहीं है!");
+            }
+
+            if(attendanceDb[id]) {
+                if(isHolidayOrOff) return alert("आपका आज का वीकली ऑफ/हॉलिडे पहले ही लग चुका है!");
+                else return alert("इस ID से आज का पंच-इन पहले ही हो चुका है!");
+            }
+
+            if(isHolidayOrOff) {
+                let statusMsg = isWeeklyOff ? "Weekly Off" : `Holiday (${holidayName})`;
+                attendanceDb[id] = {
+                    name: EMPLOYEE_MASTER_LIST[id], id: id, statusText: statusMsg, inTime: "-", outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0,
+                    mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null, timestamp: Date.now()
+                };
+                saveData(); renderTable(); clearInputs();
+                return alert(`पॉपअप: आज ${statusMsg} है। आपकी अटेंडेंस शीट और PDF में यह दर्ज कर लिया गया है!`);
+            }
+
+            document.getElementById('geoText').innerHTML = "लोकेशन जांची जा रही है...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    pendingAction = "in"; pendingId = id; document.getElementById('modalTitle').innerText = "पंच-इन: सेल्फी कैप्चर करें"; openCamera();
+                }, () => { alert("लोकेशन परमिशन अनिवार्य है!"); document.getElementById('geoText').innerHTML = "लोकेशन परमिशन नहीं मिली!"; }, { enableHighAccuracy: true });
+            } else { alert("लोकेशन सपोर्ट नहीं है!"); }
+        }
+
+        function initPunchOut() {
+            if(isHolidayOrOff) return alert("आज छुट्टी है, पंच-आउट की आवश्यकता नहीं है।");
+            let { id } = getInputs();
+            if(!id || !EMPLOYEE_MASTER_LIST[id]) return alert("सही ID दर्ज करें!");
+            if(!attendanceDb[id]) return alert("पहले पंच-इन करें!");
+            if(attendanceDb[id].isPunchedOut) return alert("आप पहले ही पंच-आउट कर चुके हैं!");
+            if(!isDeviceWithin50m) return alert("अलर्ट: आप 50 मीटर ज़ोन से बाहर हैं! पंच-आउट केवल वर्किंग ज़ोन से ही होगा।");
+            pendingAction = "out"; pendingId = id; document.getElementById('modalTitle').innerText = "पंच-आउट: सेल्फी कैप्चर करें"; openCamera();
+        }
+
+        function actionBtn(mode) {
+            if(isHolidayOrOff) return alert("आज सिस्टम बंद है।");
+            let { id } = getInputs();
+            if(!id || !EMPLOYEE_MASTER_LIST[id]) return alert("सही ID दर्ज करें!");
+            if(!attendanceDb[id]) return alert("इस ID से पंच-इन नहीं हुआ है!");
+            if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट समाप्त हो चुकी है!");
+            attendanceDb[id].mode = mode; saveData(); renderTable(); clearInputs(); alert(`स्टेटस अपडेट हो गया!`);
+        }
+
+        function startTraining() {
+            if(isHolidayOrOff) return alert("आज सिस्टम बंद है।");
+            let { id } = getInputs();
+            if(!id || !EMPLOYEE_MASTER_LIST[id]) return alert("सही ID दर्ज करें!");
+            if(!attendanceDb[id]) return alert("पहले पंच-इन करें!");
+            if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट समाप्त हो चुकी है!");
+            let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन पासवर्ड डालें:");
+            if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
+            attendanceDb[id].mode = "train"; saveData(); renderTable(); clearInputs(); alert("ट्रेनिंग मोड चालू!");
+        }
+
+        function openLeaveModal() {
+            if(isHolidayOrOff) return alert("आज पहले से ही सिस्टम में छुट्टी (Holiday/Week Off) लागू है, आपको लीव मार्क करने की आवश्यकता नहीं है।");
+            let { id } = getInputs();
+            if(!id || !EMPLOYEE_MASTER_LIST[id]) return alert("लीव मार्क करने के लिए पहले सही ID दर्ज करें!");
+            if(attendanceDb[id]) return alert("आज का पंच-इन हो चुका है, अब फुल-डे लीव मार्क नहीं हो सकती।");
+
+            document.getElementById('leaveModal').style.display = 'flex';
+            document.getElementById('leaveReason').value = ""; document.getElementById('leaveType').value = "";
+            document.getElementById('medicalCertBox').style.display = "none"; document.getElementById('leaveAlert').style.display = "none";
+        }
+
+        function checkLeaveType() {
+            let { id } = getInputs();
+            let type = document.getElementById('leaveType').value;
+            let alertBox = document.getElementById('leaveAlert'); let medBox = document.getElementById('medicalCertBox');
+            alertBox.style.display = "none"; medBox.style.display = "none";
+
+            if(!leaveBalances[id]) leaveBalances[id] = { EL_M: 0, CL_Y: 0, SL_Y: 0, SL_month_count: 0 };
+            let empLeaves = leaveBalances[id];
+
+            if(type === 'EL' && empLeaves.EL_M >= 1) { alertBox.innerText = "अलर्ट: आप इस महीने की 1 EL ले चुके हैं!"; alertBox.style.display = "block"; }
+            else if(type === 'CL' && empLeaves.CL_Y >= 6) { alertBox.innerText = "अलर्ट: आप साल की 6 CL पूरी कर चुके हैं!"; alertBox.style.display = "block"; }
+            else if(type === 'SL') {
+                if(empLeaves.SL_Y >= 6) { alertBox.innerText = "अलर्ट: आप साल की 6 SL पूरी कर चुके हैं!"; alertBox.style.display = "block"; }
+                if(empLeaves.SL_month_count >= 2) medBox.style.display = "block";
+            }
+        }
+
+        function submitLeave() {
+            let { id } = getInputs();
+            let name = EMPLOYEE_MASTER_LIST[id];
+            let type = document.getElementById('leaveType').value;
+            let reason = document.getElementById('leaveReason').value;
+            if(!type || !reason) return alert("लीव का प्रकार और कारण भरना अनिवार्य है!");
+            
+            let empLeaves = leaveBalances[id];
+            if(type !== 'LWP') {
+                if(type === 'EL' && empLeaves.EL_M >= 1) return alert("इस महीने की EL खत्म हो चुकी है!");
+                if(type === 'CL' && empLeaves.CL_Y >= 6) return alert("इस साल की CL खत्म हो चुकी है!");
+                if(type === 'SL') {
+                    if(empLeaves.SL_Y >= 6) return alert("इस साल की SL खत्म हो चुकी है!");
+                    if(empLeaves.SL_month_count >= 2 && !document.getElementById('medicalCert').files[0]) return alert("मेडिकल सर्टिफिकेट (PDF) अपलोड करना अनिवार्य है!");
+                }
+                if(type === 'EL') empLeaves.EL_M++; if(type === 'CL') empLeaves.CL_Y++; if(type         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 16px; font-weight: bold; color: #0d47a1; max-width: 500px; }
         .out-of-zone { background: #ffebee !important; border-color: #ef5350 !important; color: #c62828 !important; }
         .holiday-banner { background: #ffebee; border-color: #f44336; color: #b71c1c; padding: 15px; }
 
