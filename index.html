@@ -252,15 +252,42 @@
             } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
 
-        function initPunchOut() {
-            if(isHolidayOrOff) return alert("आज छुट्टी है, पंच-आउट की आवश्यकता नहीं है।");
-            let { id } = getInputs();
-            if(!id) return alert("ID दर्ज करें!");
-            if(!attendanceDb[id]) return alert("पहले पंच-इन करें!");
-            if(attendanceDb[id].isPunchedOut) return alert("आप पहले ही पंच-आउट कर चुके हैं!");
-            if(!isDeviceWithin50m) return alert("अलर्ट: आप 50 मीटर ज़ोन से बाहर हैं! पंच-आउट केवल वर्किंग ज़ोन से ही होगा।");
-            pendingAction = "out"; pendingId = id; document.getElementById('modalTitle').innerText = "पंच-आउट: सेल्फी कैप्चर करें"; openCamera();
+                function initPunchIn() {
+            let { name, id } = getInputs();
+            if(!name || !id) return alert("अपना नाम और ID दर्ज करें!");
+
+            // --- मास्टर लिस्ट वेरिफिकेशन (सिक्योरिटी चेक) ---
+            if (!EMPLOYEE_MASTER_LIST[id]) {
+                return alert("❌ यह एम्प्लॉई ID सिस्टम में रजिस्टर्ड नहीं है! केवल अधिकृत कर्मचारी ही पंच-इन कर सकते हैं।");
+            }
+            if (EMPLOYEE_MASTER_LIST[id].toLowerCase() !== name.toLowerCase()) {
+                return alert(`❌ गलत नाम! इस ID ( ${id} ) के लिए सही नाम '${EMPLOYEE_MASTER_LIST[id]}' दर्ज करें।`);
+            }
+            // ---------------------------------------------
+
+            if(attendanceDb[id]) {
+                if(isHolidayOrOff) return alert("आपका आज का वीकली ऑफ/हॉलिडे पहले ही लग चुका है!");
+                else return alert("इस ID से आज का पंच-इन पहले ही हो चुका है!");
+            }
+            if(isHolidayOrOff) {
+                let statusMsg = isWeeklyOff ? "Weekly Off" : `Holiday (${holidayName})`;
+                attendanceDb[id] = {
+                    name: EMPLOYEE_MASTER_LIST[id], // मास्टर लिस्ट वाला एकदम सही नाम सेव होगा
+                    id: id, statusText: statusMsg, inTime: "-", outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0,
+                    mode: "leave", isPunchedOut: true, photoIn: null, photoOut: null, timestamp: Date.now() 
+                };
+                saveData(); renderTable(); clearInputs();
+                return alert(`पॉपअप: आज ${statusMsg} है। आपकी अटेंडेंस शीट और PDF में यह दर्ज कर लिया गया है!`);
+            }
+            document.getElementById('geoText').innerHTML = "लोकेशन जांची जा रही है...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    pendingAction = "in"; pendingId = id; document.getElementById('modalTitle').innerText = "पंच-इन: सेल्फी कैप्चर करें"; openCamera();
+                }, () => { alert("लोकेशन परमिशन अनिवार्य है!"); document.getElementById('geoText').innerHTML = "लोकेशन परमिशन नहीं मिली!"; }, { enableHighAccuracy: true });
+            } else { alert("लोकेशन सपोर्ट नहीं है!"); }
         }
+
 
         function actionBtn(mode) {
             if(isHolidayOrOff) return alert("आज सिस्टम बंद है।");
@@ -282,16 +309,23 @@
             attendanceDb[id].mode = "train"; saveData(); renderTable(); clearInputs(); alert("ट्रेनिंग मोड चालू!");
         }
 
-        function openLeaveModal() {
+                function openLeaveModal() {
             if(isHolidayOrOff) return alert("आज पहले से ही सिस्टम में छुट्टी (Holiday/Week Off) लागू है, आपको लीव मार्क करने की आवश्यकता नहीं है।");
             let { name, id } = getInputs();
             if(!name || !id) return alert("लीव मार्क करने के लिए पहले नाम और ID दर्ज करें!");
+
+            // --- मास्टर लिस्ट वेरिफिकेशन ---
+            if (!EMPLOYEE_MASTER_LIST[id]) return alert("❌ यह एम्प्लॉई ID सिस्टम में रजिस्टर्ड नहीं है!");
+            if (EMPLOYEE_MASTER_LIST[id].toLowerCase() !== name.toLowerCase()) return alert(`❌ गलत नाम! इस ID का सही नाम '${EMPLOYEE_MASTER_LIST[id]}' है।`);
+            // -----------------------------
+
             if(attendanceDb[id]) return alert("आज का पंच-इन हो चुका है, अब फुल-डे लीव मार्क नहीं हो सकती।");
 
             document.getElementById('leaveModal').style.display = 'flex';
             document.getElementById('leaveReason').value = ""; document.getElementById('leaveType').value = "";
             document.getElementById('medicalCertBox').style.display = "none"; document.getElementById('leaveAlert').style.display = "none";
         }
+
 
         function checkLeaveType() {
             let { id } = getInputs();
