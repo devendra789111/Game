@@ -160,14 +160,25 @@
 
     <script>
         const ADMIN_PASS = "1234";
-        const WEEKLY_OFF_DAY = 2; 
+        const WEEKLY_OFF_DAY = 1; 
         
         const PUBLIC_HOLIDAYS = {
+                const PUBLIC_HOLIDAYS = {
             "03/03/2026": "Holi (होली)",
             "04/03/2026": "Dhulandi (धुलंडी)",
             "15/08/2026": "Independence Day",
             "08/11/2026": "Diwali (दिवाली)"
         };
+
+        // --- एम्प्लॉई मास्टर लिस्ट (यहाँ अपने कर्मचारियों को जोड़ें या हटाएं) ---
+        const EMPLOYEE_MASTER_LIST = {
+            "1111": "Devendra Kumar",
+            "1112": "Rahul Sharma",
+            "1113": "Priya Singh",
+            "1114": "Amit Verma"
+        };
+        // -------------------------------------------------------------------
+
 
         let stream = null; let globalTimer = null; let geoWatchId = null;
         let pendingAction = ""; let pendingId = "";
