@@ -656,6 +656,7 @@
                 return;
             }
 
+            // Default Zero Setup
             let presentCount = 0; let slCount = 0; let clCount = 0; let elCount = 0; 
             let weekOffCount = 0; let holidayCount = 0; let halfDayCount = 0; let absentCount = 0;
 
@@ -666,12 +667,24 @@
                 return;
             }
 
+            let tableDates = []; // 🌟 NAYA: Table ki dates yaad rakhne ke liye
+            let sampleDate = "";
+
             tableRows.forEach(row => {
                 let cells = row.getElementsByTagName("td");
                 let rowStatus = "";
                 
-                if(cells.length === 10) { rowStatus = cells[3].innerText.trim().toUpperCase(); } 
-                else if(cells.length === 2) { rowStatus = cells[1].innerText.trim().toUpperCase(); }
+                // Date nikalna taaki missing days track ho sakein
+                if(cells.length === 10) { 
+                    tableDates.push(cells[0].innerText.trim());
+                    if(!sampleDate) sampleDate = cells[0].innerText.trim();
+                    rowStatus = cells[3].innerText.trim().toUpperCase(); 
+                } 
+                else if(cells.length === 2) { 
+                    tableDates.push(cells[0].innerText.trim());
+                    if(!sampleDate) sampleDate = cells[0].innerText.trim();
+                    rowStatus = cells[1].innerText.trim().toUpperCase(); 
+                }
 
                 if(rowStatus !== "") {
                     if(rowStatus.includes("PRESENT")) presentCount++;
@@ -685,13 +698,38 @@
                 }
             });
 
+            // 🌟🌟 NAYA LOGIC: Missing Dates ko check karna (Holiday hai ya Week-Off ya Absent)
+            let tM = new Date().getMonth(); let tY = new Date().getFullYear();
+            if(sampleDate.includes('/')) {
+                let parts = sampleDate.split('/');
+                tM = parseInt(parts[1]) - 1; 
+                tY = parseInt(parts[2]);
+            }
+
+            let todayOnly = new Date(); todayOnly.setHours(0,0,0,0);
+
+            for(let d = 1; d <= monthDays; d++) {
+                let dateObj = new Date(tY, tM, d);
+                if(dateObj > todayOnly) break; // Future ki date ko ignore karo
+
+                let dateStr = String(d).padStart(2,'0') + "/" + String(tM+1).padStart(2,'0') + "/" + tY;
+
+                // Agar ye date search wali table me NAHI hai, tab check karo
+                if(!tableDates.includes(dateStr)) {
+                    if(PUBLIC_HOLIDAYS[dateStr]) {
+                        holidayCount++; // Yeh Public Holiday tha
+                    } else if(dateObj.getDay() === WEEKLY_OFF_DAY) {
+                        weekOffCount++; // Yeh Sunday (Week-off) tha
+                    } else {
+                        absentCount++; // Yeh proper Absent hai
+                    }
+                }
+            }
+            // 🌟🌟 LOGIC END
+
             let paidLeaves = slCount + clCount + elCount;
             let fullPayDays = presentCount + weekOffCount + holidayCount;
             let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); 
-            
-            let recordedDays = fullPayDays + paidLeaves + halfDayCount + absentCount;
-            let missingDays = monthDays - recordedDays;
-            if(missingDays > 0) absentCount += missingDays;
 
             let netSalary = payableDays * perDay;
             let empName = (typeof EMP_LIST !== 'undefined' && EMP_LIST[empId]) ? EMP_LIST[empId].name : "Unknown Employee";
