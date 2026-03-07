@@ -332,7 +332,10 @@
                     if(t.status === 'Review' && t.originalAssigner === 'ADMIN') {
                         actions += `<button class="btn-approve" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'accept', '')">🏆 Accept</button><br>`;
                         actions += `<button class="btn-reject" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'reject', '${t.currentOwner}')">❌ Return Work</button>`;
-                    } else if (t.status !== 'Closed') {
+                    } else if (t.status === 'Closed') {
+                        // 🌟 NAYA: DELETE CLOSED TASKS 🌟
+                        actions += `<button class="btn-reject" style="margin-top:5px; background:#757575;" onclick="adminUpdateTask('${t.taskId}', 'delete')">🗑️ Delete Task</button>`;
+                    } else {
                         actions += `<button class="btn-exception" style="background:#f44336; margin-top:5px;" onclick="adminUpdateTask('${t.taskId}', 'close')">Force Close</button>`;
                     }
 
@@ -347,8 +350,8 @@
                     </tr>`;
                 });
             } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:red;">Error fetching tasks.</td></tr>`; }
-        }
-
+                }
+            
         async function adminCreateTask() {
             let receiverId = document.getElementById("adminTaskTo").value.trim();
             let desc = document.getElementById("adminTaskDesc").value.trim();
