@@ -29,14 +29,12 @@
         .dot-green { background-color: #4CAF50; } .dot-red { background-color: #f44336; }
         .dot-orange { background-color: #FF9800; } .dot-purple { background-color: #9C27B0; }
         
-        input[type="text"], input[type="password"], input[type="number"], input[type="date"] { padding: 10px; width: 100%; max-width: 300px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"] { padding: 10px; width: 100%; max-width: 300px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
         .btn-primary { background: #1a237e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         
         .form-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 1px solid #ddd; align-items: center; }
         .form-group { display: flex; flex-direction: column; text-align: left; }
         .form-group label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 5px; }
-        
-        .exception-summary { background: #e3f2fd; border: 1px solid #90caf9; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; color: #0288D1; margin-bottom: 15px; display: none; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
@@ -52,7 +50,6 @@
         .slip-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
         .slip-header h2 { margin: 0; color: #1a237e; font-size: 26px; text-transform: uppercase; }
         .slip-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
-        
         .slip-table th { border: 2px solid #000 !important; padding: 8px; text-align: left; color: #000 !important; background-color: #f0f0f0 !important; }
         .slip-table td { border: 2px solid #000 !important; padding: 8px; text-align: left; color: #000 !important; background-color: #ffffff !important; }
         .slip-total { font-size: 18px; font-weight: bold; background-color: #e0e0e0 !important; color: #000 !important; }
@@ -67,14 +64,11 @@
             .btn-payroll, .payroll-input, label, h3, p { display: none !important; }
             .slip-table th, .slip-table td { border: 2px solid #000 !important; } 
         }
-        /* 🌟 PAYROLL CSS END 🌟 */
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>👨‍💼 Admin Dashboard - Quality Education (TEST)</h2>
-    </div>
+    <div class="header"><h2>👨‍💼 Admin Dashboard - Quality Education (TEST)</h2></div>
 
     <div class="nav-tabs">
         <button id="tab-liveStatus" onclick="showSection('liveStatus')">🔴 Live Status</button>
@@ -96,9 +90,11 @@
 
         <h4>All Institute Tasks</h4>
         <button class="btn-primary" style="margin-bottom:10px; background:#4CAF50;" onclick="loadAllTasks()">🔄 Refresh Tasks</button>
+        <button class="btn-primary" style="margin-bottom:10px; margin-left:10px; background:#E91E63;" onclick="forceRunPenalty()">🚨 Test Penalty Engine</button>
+        
         <div class="table-responsive">
             <table>
-                <thead><tr><th>Task ID / Date</th><th>Chain (From ➡ To)</th><th>Task Details</th><th>Status</th><th>Deadline Time</th><th>Penalty</th><th>Admin Actions</th></tr></thead>
+                <thead><tr><th>Task ID & Assign Date</th><th>Chain (From ➡ To)</th><th>Task Details</th><th>Status</th><th>Deadline Time</th><th>Penalty</th><th>Admin Actions</th></tr></thead>
                 <tbody id="adminTaskTableBody"><tr><td colspan="7">Loading all tasks...</td></tr></tbody>
             </table>
         </div>
@@ -128,7 +124,7 @@
         <h3>📋 All Active Employees</h3>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Joining Date</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>ID</th><th>Name</th><th>Join Date</th><th>Total Penalty</th><th>Total Reward</th><th>Action</th></tr></thead>
                 <tbody id="empTableBody"><tr><td colspan="6" id="empLoadingMsg">Loading Employee List...</td></tr></tbody>
             </table>
         </div>
@@ -151,15 +147,13 @@
     </div>
 
     <div id="searchEmp" class="section">
-        <h3>Search Employee Attendance & Add Exception</h3>
+        <h3>Search Employee Attendance</h3>
         <div style="margin-bottom: 15px;">
-            <input type="text" id="searchId" placeholder="Enter Employee ID (e.g. 1111)" style="display:inline-block; width:auto;">
+            <input type="text" id="searchId" placeholder="Enter Employee ID (e.g. QE101)" style="display:inline-block; width:auto;">
             <button class="btn-primary" onclick="searchEmployee()">🔍 Search</button>
-            <button class="btn-primary" style="background:#D32F2F;" onclick="downloadEmpPDF()">📄 Download Color PDF</button>
+            <button class="btn-primary" style="background:#D32F2F;" onclick="downloadEmpPDF()">📄 Download PDF</button>
             <button class="btn-primary" style="background:#00897B; margin-left:5px;" onclick="openPayrollModal()">💸 Generate Salary Slip</button>
         </div>
-        
-        <div id="exceptionSummary" class="exception-summary"></div>
         
         <div id="pdfArea">
             <h3 id="pdfTitle" style="display:none; text-align:center; color:#1a237e; margin-bottom: 15px;">Attendance Report</h3>
@@ -202,20 +196,40 @@
         </div>
     </div>
 
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-top:0;">✏️ Edit Task Deadline</h3>
+            <p style="font-size:12px; color:#555; font-weight:bold;">Task ID: <span id="eTaskId"></span></p>
+            <label style="font-weight:bold; font-size:13px; display:block; margin-top:10px; text-align:left;">Set New Deadline Time:</label>
+            <input type="datetime-local" id="eTaskTime" style="margin-top:5px;">
+            <button class="btn-primary" style="width:100%; margin-top:10px; background:#4CAF50;" onclick="saveTaskEdit()">💾 Save Changes</button>
+            <button style="width:100%; margin-top:10px; padding:10px; border:none; border-radius:5px; background:#aaa; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('editTaskModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+
+    <div id="managePointsModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#d32f2f; margin-top:0;">⚖️ Manage Points</h3>
+            <p style="font-size:14px; color:#555; font-weight:bold;">Emp ID: <span id="mpEmpId"></span></p>
+            <label style="font-weight:bold; font-size:13px; display:block; margin-top:10px; text-align:left;">Total Penalties (Edit manually):</label>
+            <input type="number" id="mpPenalty" style="margin-top:5px; font-size:18px; color:red; font-weight:bold; text-align:center;">
+            <label style="font-weight:bold; font-size:13px; display:block; margin-top:10px; text-align:left;">Total Rewards:</label>
+            <input type="number" id="mpReward" style="margin-top:5px; font-size:18px; color:green; font-weight:bold; text-align:center;">
+            <button class="btn-primary" style="width:100%; margin-top:10px; background:#1a237e;" onclick="saveGlobalPoints()">💾 Update Profile</button>
+            <button style="width:100%; margin-top:10px; padding:10px; border:none; border-radius:5px; background:#aaa; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('managePointsModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+
     <div id="payrollModal" class="payroll-modal">
         <div class="payroll-box">
             <h3 style="color:#1a237e; margin-top:0; text-align:center;">💼 Salary Calculator</h3>
-            <p style="text-align:center; color:#d32f2f; font-weight:bold; font-size:13px;">(Note: Search Employee ID first)</p>
-            
-            <label style="font-weight:bold;">Employee ID:</label>
-            <input type="text" id="payEmpId" class="payroll-input" readonly style="background:#e0e0e0;">
-            <label style="font-weight:bold;">Per Day Salary (₹):</label>
-            <input type="number" id="payPerDay" class="payroll-input" placeholder="e.g., 500">
-            <label style="font-weight:bold;">Total Days in Month:</label>
-            <input type="number" id="payMonthDays" class="payroll-input" value="30">
+            <label style="font-weight:bold;">Employee ID:</label><input type="text" id="payEmpId" class="payroll-input" readonly style="background:#e0e0e0;">
+            <label style="font-weight:bold;">Per Day Salary (₹):</label><input type="number" id="payPerDay" class="payroll-input" placeholder="e.g., 500">
+            <label style="font-weight:bold;">Total Days in Month:</label><input type="number" id="payMonthDays" class="payroll-input" value="30">
+            <label style="font-weight:bold; color:red;">Penalty Deduction Rate (₹ per point):</label><input type="number" id="payPenaltyRate" class="payroll-input" value="10">
             
             <button class="btn-payroll" onclick="generateSalarySlip()">⚙️ Calculate & Generate Slip</button>
-            <button onclick="document.getElementById('payrollModal').style.display='none'" style="width:100%; padding:10px; cursor:pointer; font-weight:bold; background:#757575; color:white; border:none; border-radius:5px;">❌ Close</button>
+            <button onclick="document.getElementById('payrollModal').style.display='none'" style="width:100%; padding:10px; font-weight:bold; background:#757575; color:white; border:none; border-radius:5px;">❌ Close</button>
 
             <div id="salarySlipArea">
                 <div class="slip-header">
@@ -229,36 +243,40 @@
                 </table>
 
                 <table class="slip-table">
-                    <tr><th>Attendance Details</th><th>Days</th><th>Earnings / Deductions</th><th>Amount (₹)</th></tr>
+                    <tr><th>Attendance Details</th><th>Days / Pts</th><th>Earnings / Deductions</th><th>Amount (₹)</th></tr>
                     <tr><td>Present + Week Off + Holiday</td><td id="slipPWH">0</td><td>Basic Salary (Per day: ₹<span id="slipPerDayText"></span>)</td><td id="slipBasic" style="color:green; font-weight:bold;">0</td></tr>
                     <tr><td>Paid Leaves (EL, CL, SL)</td><td id="slipPaidLeaves">0</td><td>Leave Pay</td><td id="slipLeavePay" style="color:green; font-weight:bold;">0</td></tr>
                     <tr><td>Half Days</td><td id="slipHalf">0</td><td>Half Day Deduction</td><td id="slipHalfDeduct" style="color:red; font-weight:bold;">0</td></tr>
                     <tr><td>Absent / LWP</td><td id="slipAbsent">0</td><td>Absent Deduction</td><td id="slipAbsentDeduct" style="color:red; font-weight:bold;">0</td></tr>
+                    <tr><td style="color:red; font-weight:bold;">Discipline Penalties</td><td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td><td style="color:red;">Penalty Deduction</td><td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td></tr>
                     <tr class="slip-total"><td colspan="3" style="text-align:right;">Net Payable Salary:</td><td id="slipNetPay" style="color:#1a237e;">0</td></tr>
-                </table>
+             </table>
                 
                 <div style="margin-top:50px; display:flex; justify-content:space-between; text-align:center; font-weight:bold;">
                     <div>______________________<br><br>Employee Signature</div>
                     <div>______________________<br><br>Authorized Signatory</div>
                 </div>
-                <button onclick="window.print()" class="btn-payroll" style="margin-top:30px; background:#D32F2F;" id="printBtn">🖨️ Print / Save as PDF</button>
+                <button onclick="window.print()" class="btn-payroll" style="margin-top:30px; background:#D32F2F;">🖨️ Print / Save as PDF</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 🌟 AAPKA TESTING SCRIPT URL 🌟
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8VuJmfGWdSEHLlzhyIaJnu_vwjdP00CrEjgdNJSpcHeVxcC3JFG6o1a7F3MyZAMW18Q/exec";
 
-        const WEEKLY_OFF_DAY = 1; // 1 = Monday
-        const PUBLIC_HOLIDAYS = { "03/03/2026": "Holi", "04/03/2026": "Holi", "02/10/2026": "Gandhi Jayanti" };
-
+        const WEEKLY_OFF_DAY = 1; 
+        const PUBLIC_HOLIDAYS = { "03/03/2026": "Holi", "04/03/2026": "Holi" };
         let EMP_LIST = {}; 
         let currentExcId = ""; let currentExcDate = "";
 
         function formatTime(s) {
             if(!s || isNaN(s)) return "00:00:00";
             return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; 
+        }
+        function cleanDate(isoStr) {
+            let d = new Date(isoStr);
+            if(isNaN(d)) return isoStr;
+            return d.toLocaleString('en-IN', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
         }
 
         function showSection(id) {
@@ -281,10 +299,10 @@
             setInterval(loadLiveStatus, 10000); 
         }; 
 
-        // 🌟🌟 TASK MASTER JAVASCRIPT START 🌟🌟
+        // 🌟🌟 TASK MASTER (UI & LOGIC) 🌟🌟
         async function loadAllTasks() {
             let tbody = document.getElementById("adminTaskTableBody");
-            tbody.innerHTML = `<tr><td colspan="7">Fetching all institute tasks...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7">Fetching all tasks...</td></tr>`;
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getAllTasks&nocache=${Date.now()}`);
                 let tasks = await res.json();
@@ -293,19 +311,30 @@
                 if(tasks.length === 0) return tbody.innerHTML = `<tr><td colspan="7">No tasks in the system.</td></tr>`;
 
                 tasks.reverse().forEach(t => {
-                    let statusColor = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : '#4CAF50');
+                    let statusColor = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : (t.status === 'Returned' ? '#f44336' : (t.status === 'Review' ? '#9C27B0' : '#4CAF50')));
                     let badge = `<span style="background:${statusColor}; color:white; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:11px;">${t.status}</span>`;
                     
-                    let actions = `<button class="btn-exception" style="background:#f44336;" onclick="adminUpdateTask('${t.taskId}', 'close')">Close Task</button>`;
-                    actions += `<button class="btn-exception" style="background:#1a237e; display:block; margin-top:5px; margin-left:auto; margin-right:auto;" onclick="adminUpdateTask('${t.taskId}', 'edit')">Edit Time/Penalty</button>`;
+                    let shortId = t.taskId.includes("TSK_") ? "TSK-" + t.taskId.slice(-5) : t.taskId;
+                    let displayAssigned = cleanDate(t.assignedTime);
+                    let displayDead = t.expectedTime ? cleanDate(t.expectedTime) : "<span style='color:#999;'>Not Set</span>";
+                    let neatChain = t.chain.split("➡").map(s => s.trim() === 'ADMIN' ? '👑 ADMIN' : s.trim()).join(" ➡ ");
+
+                    let actions = `<button class="btn-exception" style="background:#1a237e;" onclick="openEditDeadline('${t.taskId}', '${t.expectedTime}')">✏️ Edit Time</button><br>`;
+                    
+                    if(t.status === 'Review' && t.originalAssigner === 'ADMIN') {
+                        actions += `<button class="btn-approve" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'accept', '')">🏆 Accept</button><br>`;
+                        actions += `<button class="btn-reject" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'reject', '${t.currentOwner}')">❌ Return Work</button>`;
+                    } else if (t.status !== 'Closed') {
+                        actions += `<button class="btn-exception" style="background:#f44336; margin-top:5px;" onclick="adminUpdateTask('${t.taskId}', 'close')">Force Close</button>`;
+                    }
 
                     tbody.innerHTML += `<tr>
-                        <td style="font-weight:bold; font-size:11px;">${t.taskId}<br><span style="color:#555;">${t.assignedTime}</span></td>
-                        <td style="color:#1a237e; font-weight:bold;">${t.chain}</td>
-                        <td style="text-align:left;">${t.details}</td>
+                        <td style="font-weight:bold; font-size:11px; color:#3F51B5;">${shortId}<br><span style="color:#555;">${displayAssigned}</span></td>
+                        <td style="color:#1a237e; font-weight:bold; font-size:12px;">${neatChain}</td>
+                        <td style="text-align:left; font-size:12px;">${t.details}</td>
                         <td>${badge}</td>
-                        <td style="color:#d32f2f; font-weight:bold;">${t.expectedTime || '-'}</td>
-                        <td style="color:red; font-weight:bold; font-size:14px;">${t.penalty} pts</td>
+                        <td style="color:#d32f2f; font-weight:bold; font-size:12px;">${displayDead}</td>
+                        <td style="color:red; font-weight:bold; font-size:13px;">${t.penalty} pts</td>
                         <td>${actions}</td>
                     </tr>`;
                 });
@@ -315,44 +344,67 @@
         async function adminCreateTask() {
             let receiverId = document.getElementById("adminTaskTo").value.trim();
             let desc = document.getElementById("adminTaskDesc").value.trim();
-
             if(!receiverId || !desc) return alert("Please enter Emp ID and details!");
             if(receiverId !== 'ALL' && !EMP_LIST[receiverId]) return alert("Invalid Employee ID!");
 
             let btn = event.target; btn.innerText = "⏳ Assigning..."; btn.disabled = true;
-
             try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "assignTask", assignerId: "ADMIN", receiverId: receiverId, taskDetails: desc })
-                });
-                alert("✅ Admin Task Assigned Successfully!");
-                document.getElementById("adminTaskTo").value = ""; document.getElementById("adminTaskDesc").value = "";
-                loadAllTasks();
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "assignTask", assignerId: "ADMIN", receiverId: receiverId, taskDetails: desc }) });
+                alert("✅ Admin Task Assigned Successfully!"); document.getElementById("adminTaskTo").value = ""; document.getElementById("adminTaskDesc").value = ""; loadAllTasks();
             } catch(e) { alert("Failed to assign task."); }
             btn.innerText = "🚀 Assign New Task"; btn.disabled = false;
         }
 
-        async function adminUpdateTask(taskId, type) {
-            let reqBody = { action: "adminUpdateTask", taskId: taskId, updateType: type };
-            
-            if(type === 'close') {
-                if(!confirm(`Are you sure you want to FORCE CLOSE task ${taskId}?`)) return;
-            } else if(type === 'edit') {
-                let newTime = prompt("Enter new Deadline (e.g., '12:00 PM Tomorrow') or leave blank to keep same:");
-                let newPen = prompt("Enter new Penalty Points (number) or leave blank to keep same:");
-                if(newTime) reqBody.newDeadline = newTime;
-                if(newPen !== null && newPen !== "") reqBody.newPenalty = parseInt(newPen);
-                if(!newTime && (newPen === null || newPen === "")) return; 
-            }
-
+        function openEditDeadline(taskId, currentExp) {
+            document.getElementById('eTaskId').innerText = taskId;
+            if(currentExp && currentExp.includes("T")) {
+                let iso = new Date(currentExp).toISOString().slice(0,16);
+                document.getElementById('eTaskTime').value = iso;
+            } else { document.getElementById('eTaskTime').value = ""; }
+            document.getElementById('editTaskModal').style.display = 'flex';
+        }
+        async function saveTaskEdit() {
+            let taskId = document.getElementById('eTaskId').innerText;
+            let newTime = document.getElementById('eTaskTime').value;
+            if(!newTime) return alert("Please select a valid date/time.");
+            document.getElementById('editTaskModal').style.display = 'none';
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(reqBody) });
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminUpdateTask", taskId: taskId, updateType: "edit", newDeadline: newTime }) });
+                alert("✅ Deadline Updated!"); loadAllTasks();
+            } catch(e) { alert("Failed to update."); }
+        }
+
+        async function adminUpdateTask(taskId, type) {
+            if(type === 'close' && !confirm(`Are you sure you want to FORCE CLOSE task ${taskId}?`)) return;
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminUpdateTask", taskId: taskId, updateType: type }) });
                 alert("✅ Task Updated Successfully!"); loadAllTasks();
             } catch(e) { alert("Failed to update task."); }
         }
 
-        // --- 100% RESTORED ADMIN FUNCTIONS ---
+        async function adminTaskAction(taskId, actionType, previousWorker) {
+            let payload = { action: "taskAction", taskId: taskId, actionType: actionType, empId: "ADMIN" };
+            if(actionType === 'reject') {
+                if(!confirm("क्या आप यह काम अधूरा बताकर वापस भेजना चाहते हैं?")) return;
+                payload.returnTo = previousWorker;
+            } else if (actionType === 'accept') {
+                if(!confirm("Accept and Award points to the worker?")) return;
+            }
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                alert("✅ Action Processed!"); loadAllTasks();
+            } catch(e) { alert("Failed to process action."); }
+        }
+
+        async function forceRunPenalty() {
+            if(!confirm("⚠️ Force the hourly Penalty Engine to run right now?")) return;
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forcePenaltyRun" }) });
+                alert("✅ Engine Executed! Missed deadlines penalized."); loadAllTasks(); fetchEmployees();
+            } catch(e) { alert("Failed to run engine."); }
+        }
+
+        // --- MANAGE EMPLOYEES & POINTS ---
         async function fetchEmployees() {
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getEmployees&nocache=${Date.now()}`);
@@ -361,11 +413,33 @@
                 let hasActive = false;
                 for(let id in EMP_LIST) {
                     let emp = EMP_LIST[id]; if(emp.status !== "Active") continue; hasActive = true;
-                    let actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="deactivateEmp('${id}')">Deactivate</button>`;
-                    tbody.innerHTML += `<tr><td style="font-weight:bold;">${id}</td><td>${emp.name}</td><td>${emp.mobile}</td><td>${emp.joinDate}</td><td style="color:green; font-weight:bold;">${emp.status}</td><td>${actionBtn}</td></tr>`;
+                    
+                    let d = new Date(emp.joinDate); let cleanJDate = isNaN(d) ? emp.joinDate : d.toLocaleDateString('en-IN');
+                    
+                    let actionBtn = `<button class="btn-force" style="background:#f44336; margin-bottom:5px;" onclick="deactivateEmp('${id}')">Deactivate</button><br>`;
+                    actionBtn += `<button class="btn-exception" style="background:#1a237e;" onclick="openManagePoints('${id}', '${emp.penalty}', '${emp.reward}')">⚖️ Manage Points</button>`;
+                    
+                    tbody.innerHTML += `<tr><td style="font-weight:bold;">${id}</td><td>${emp.name}</td><td>${cleanJDate}</td><td style="color:red; font-weight:bold;">${emp.penalty || 0} pts</td><td style="color:green; font-weight:bold;">${emp.reward || 0} pts</td><td>${actionBtn}</td></tr>`;
                 }
                 if(!hasActive) tbody.innerHTML = `<tr><td colspan="6">No active employees found.</td></tr>`;
             } catch(e) {}
+        }
+
+        function openManagePoints(id, pen, rew) {
+            document.getElementById('mpEmpId').innerText = id;
+            document.getElementById('mpPenalty').value = pen;
+            document.getElementById('mpReward').value = rew;
+            document.getElementById('managePointsModal').style.display = 'flex';
+        }
+        async function saveGlobalPoints() {
+            let id = document.getElementById('mpEmpId').innerText;
+            let pen = document.getElementById('mpPenalty').value;
+            let rew = document.getElementById('mpReward').value;
+            document.getElementById('managePointsModal').style.display = 'none';
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updateGlobalPointsAdmin", empId: id, penalty: parseInt(pen), reward: parseInt(rew) }) });
+                alert("✅ Profile Updated!"); fetchEmployees();
+            } catch(e) { alert("Failed to update points."); }
         }
 
         async function registerEmployee() {
@@ -373,10 +447,8 @@
             let mobile = document.getElementById('regMobile').value.trim();
             let aadhar = document.getElementById('regAadhar').value.trim();
             let joinDate = document.getElementById('regJoinDate').value;
-
             if(!name || !mobile || !aadhar || !joinDate) return alert("Please fill all required details.");
             if(mobile.length < 10 || aadhar.length < 12) return alert("Please enter valid Mobile and Aadhar numbers.");
-
             document.getElementById('empTableBody').innerHTML = `<tr><td colspan="6">Registering... Please wait!</td></tr>`;
             try {
                 let res = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addEmployee", name: name, mobile: mobile, aadhar: aadhar, joinDate: joinDate }) });
@@ -393,6 +465,7 @@
             alert("Employee deactivated successfully."); fetchEmployees();
         }
 
+        // --- LIVE STATUS ---
         async function loadLiveStatus() {
             let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
             try {
@@ -402,7 +475,7 @@
                 let activeCount = 0;
                 for(let id in EMP_LIST) {
                     if(EMP_LIST[id].status !== "Active") continue; activeCount++;
-                    let status = data[id] ? data[id].status : "out";
+                    let status = data[id] ? data[id].mode : "out";
                     let displayStatus, dotClass; let actionBtn = "-";
                     
                     if (status === "in" || status === "work") { displayStatus = "Punched In"; dotClass = "dot-green"; actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
@@ -417,32 +490,26 @@
                 if(activeCount === 0) tbody.innerHTML = `<tr><td colspan="4">No active employees to show.</td></tr>`;
             } catch(e) {}
         }
-
+        
         async function undoPunchOut(id) {
             if(!confirm(`UNDO Punch Out for ${EMP_LIST[id].name}?`)) return;
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut" }) });
             alert("✅ Command sent!"); loadLiveStatus();
         }
-
         async function adminPunchOut(id) {
-            if(!confirm(`Are you sure you want to manually Punch Out ${EMP_LIST[id].name} (${id})?`)) return;
+            if(!confirm(`Manually Punch Out ${EMP_LIST[id].name}?`)) return;
             let exactTime = new Date().toLocaleTimeString('en-IN');
-            let today = new Date();
-            let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
-            
-            await fetch(SCRIPT_URL, { 
-                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) 
-            });
-            alert("✅ Employee punched out successfully."); loadLiveStatus();
+            let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
+            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) });
+            alert("✅ Punched out successfully."); loadLiveStatus();
         }
-
         async function forceCommand(id, type) {
-            if(!confirm("Are you sure you want to remotely stop their training?")) return;
+            if(!confirm("Remotely stop training?")) return;
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: type }) });
             alert("Command sent successfully."); loadLiveStatus();
         }
 
+        // --- LEAVES ---
         async function loadLeaves(filterStatus = 'Pending') {
             document.getElementById('leaveTableTitle').innerText = `Showing: ${filterStatus} Requests`;
             try {
@@ -467,31 +534,41 @@
             alert(`Marked as ${status}`); loadLeaves('Pending'); 
         }
 
+        // --- SEARCH EMPLOYEE & EXCEPTION ---
+        let uniqueRecordsStore = {}; // For PDF and Payroll
         async function searchEmployee() {
             let id = document.getElementById("searchId").value; if(!id) return alert("Enter Employee ID.");
             let tbody = document.getElementById("searchTableBody"); let excSumBox = document.getElementById("exceptionSummary");
             tbody.innerHTML = `<tr><td colspan="10">Fetching records...</td></tr>`; excSumBox.style.display = "none";
             try {
-                let res = await fetch(`${SCRIPT_URL}?action=getEmpData&id=${id}&nocache=${Date.now()}`); let rawDataArray = await res.json();
+                let res = await fetch(`${SCRIPT_URL}?action=getEmpData&id=${id}&nocache=${Date.now()}`); 
+                let rawDataArray = await res.json();
                 tbody.innerHTML = "";
                 if(rawDataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10">No records found.</td></tr>`;
-                let totalExceptionTime = 0;
-                rawDataArray.forEach(jsonStr => {
+                
+                uniqueRecordsStore = {};
+                rawDataArray.forEach(jsonItem => {
                     try {
-                        let emp = JSON.parse(jsonStr); if (!emp) return;
-                        let excSecs = emp.exceptionSecs || 0; totalExceptionTime += excSecs;
-                        let totalWorkSecs = (emp.workSecs || 0) + (emp.trainSecs || 0) + excSecs; 
-                        let wColor = totalWorkSecs >= 28800 ? "green" : "red";
-                        let statusHtml = emp.statusText || "Present";
-                        let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusHtml.toLowerCase().includes(v));
-                        if (!isLeaveOrOff && emp.mode !== "leave") { if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`; else statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`; } 
-                        else { statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`; if(totalWorkSecs === 0) wColor = "black"; }
-                        let dateToPrint = emp.recordDate || emp.date || "-";
-                        let excHtml = excSecs > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(excSecs)}</span>` : `-`;
-                        if (!isLeaveOrOff && emp.isPunchedOut) { excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; }
-                        let totalDisplay = `<span style="font-weight:bold; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
-                        tbody.innerHTML += `<tr><td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td><td>${emp.inTime}</td><td>${emp.outTime}</td><td>${formatTime(emp.breakSecs)}</td><td>${formatTime(emp.trainSecs)}</td><td style="background:#e1f5fe;">${excHtml}</td><td>${totalDisplay}</td></tr>`;
-                    } catch(e) {}
+                        let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; 
+                        if (!emp || !emp.id) return;
+                        let dToPrint = emp.recordDate || emp.date || "-";
+                        uniqueRecordsStore[dToPrint] = emp; 
+                    } catch(e){}
+                });
+
+                Object.values(uniqueRecordsStore).reverse().forEach(emp => {
+                    let excSecs = emp.exceptionSecs || 0; 
+                    let totalWorkSecs = (emp.workSecs || 0) + (emp.trainSecs || 0) + excSecs; 
+                    let wColor = totalWorkSecs >= 28800 ? "green" : "red";
+                    let statusHtml = emp.statusText || "Present";
+                    let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusHtml.toLowerCase().includes(v));
+                    if (!isLeaveOrOff && emp.mode !== "leave") { if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`; else statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`; } 
+                    else { statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`; if(totalWorkSecs === 0) wColor = "black"; }
+                    let dateToPrint = emp.recordDate || emp.date || "-";
+                    let excHtml = excSecs > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(excSecs)}</span>` : `-`;
+                    if (!isLeaveOrOff && emp.isPunchedOut) { excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; }
+                    let totalDisplay = `<span style="font-weight:bold; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
+                    tbody.innerHTML += `<tr><td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td><td>${emp.inTime}</td><td>${emp.outTime}</td><td>${formatTime(emp.breakSecs)}</td><td>${formatTime(emp.trainSecs)}</td><td style="background:#e1f5fe;">${excHtml}</td><td>${totalDisplay}</td></tr>`;
                 });
             } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data.</td></tr>`; }
         }
@@ -502,21 +579,15 @@
         async function submitException() {
             let mins = document.getElementById("excMinutes").value;
             if(!mins || mins <= 0) return alert("Please enter valid minutes.");
-            
             document.getElementById("exceptionModal").style.display = "none";
-            let tbody = document.getElementById("searchTableBody");
-            tbody.innerHTML = `<tr><td colspan="10" style="color:green; font-weight:bold;">⏳ Granting exception time... Please wait.</td></tr>`;
-
+            document.getElementById("searchTableBody").innerHTML = `<tr><td colspan="10" style="color:green; font-weight:bold;">⏳ Granting exception time...</td></tr>`;
             try {
-                await fetch(SCRIPT_URL, { 
-                    method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "addException", id: currentExcId, date: currentExcDate, exceptionMins: mins }) 
-                });
-                alert(`✅ Successfully added ${mins} minutes exception.`);
-                setTimeout(() => { searchEmployee(); }, 2500);
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addException", id: currentExcId, date: currentExcDate, exceptionMins: mins }) });
+                alert(`✅ Successfully added ${mins} minutes exception.`); setTimeout(() => { searchEmployee(); }, 2000);
             } catch(e) { alert("Failed to add exception."); searchEmployee(); }
         }
 
+        // --- SALARY PAYROLL ---
         function openPayrollModal() {
             let searchedId = document.getElementById("searchId").value.trim();
             if(!searchedId) return alert("❌ Search Employee ID first!");
@@ -529,6 +600,7 @@
             let empId = document.getElementById('payEmpId').value.trim();
             let perDay = parseFloat(document.getElementById('payPerDay').value);
             let monthDays = parseInt(document.getElementById('payMonthDays').value);
+            let penRate = parseFloat(document.getElementById('payPenaltyRate').value) || 0;
             
             if(!empId || !perDay || monthDays <= 0 || isNaN(perDay)) return alert("❌ Enter valid Per Day Salary!");
 
@@ -554,9 +626,14 @@
 
             let tM = new Date().getMonth(); let tY = new Date().getFullYear();
             if(sampleDate.includes('/')) { let parts = sampleDate.split('/'); tM = parseInt(parts[1]) - 1; tY = parseInt(parts[2]); }
+            
             let todayOnly = new Date(); todayOnly.setHours(0,0,0,0);
+            let daysToLoop = monthDays;
+            if(tM === todayOnly.getMonth() && tY === todayOnly.getFullYear()) {
+                daysToLoop = Math.min(monthDays, todayOnly.getDate());
+            }
 
-            for(let d = 1; d <= monthDays; d++) {
+            for(let d = 1; d <= daysToLoop; d++) {
                 let dateObj = new Date(tY, tM, d); if(dateObj > todayOnly) break;
                 let dateStr = String(d).padStart(2,'0') + "/" + String(tM+1).padStart(2,'0') + "/" + tY;
                 if(!tableDates.includes(dateStr)) {
@@ -565,7 +642,12 @@
             }
 
             let paidLeaves = slCount + clCount + elCount; let fullPayDays = presentCount + weekOffCount + holidayCount;
-            let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); let netSalary = payableDays * perDay;
+            let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); 
+            
+            let totalPenPts = EMP_LIST[empId] ? (parseInt(EMP_LIST[empId].penalty) || 0) : 0;
+            let totalPenDeduct = totalPenPts * penRate;
+            let netSalary = (payableDays * perDay) - totalPenDeduct;
+
             let empName = EMP_LIST[empId] ? EMP_LIST[empId].name : "Unknown Employee";
 
             document.getElementById('slipEmpId').innerText = empId; document.getElementById('slipEmpName').innerText = empName;
@@ -575,10 +657,15 @@
             document.getElementById('slipPaidLeaves').innerText = `${paidLeaves} (SL:${slCount}, CL:${clCount}, EL:${elCount})`; document.getElementById('slipLeavePay').innerText = paidLeaves * perDay;
             document.getElementById('slipHalf').innerText = halfDayCount; document.getElementById('slipHalfDeduct').innerText = "- " + (halfDayCount * perDay * 0.5); 
             document.getElementById('slipAbsent').innerText = absentCount; document.getElementById('slipAbsentDeduct').innerText = "- " + (absentCount * perDay);
+            
+            document.getElementById('slipPenPts').innerText = totalPenPts + " pts";
+            document.getElementById('slipPenDeduct').innerText = "- " + totalPenDeduct;
+            
             document.getElementById('slipNetPay').innerText = "₹ " + netSalary;
             document.getElementById('salarySlipArea').style.display = 'block';
         }
-        
+
+        // --- 🚨 FIXED PDF DOWNLOAD (LIVE DATA + NO DUPLICATES) 🚨 ---
         async function downloadEmpPDF() {
             let id = document.getElementById("searchId").value.trim();
             if(!id) return alert("❌ Please search an Employee ID first!");
@@ -595,12 +682,22 @@
             let monthName = targetDate.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
             let empName = EMP_LIST[id] ? EMP_LIST[id].name : "Unknown";
 
-            alert("⏳ Generating accurate Admin PDF... Please wait.");
+            alert("⏳ Generating accurate PDF report... Please wait.");
 
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getMonthlyLogs&month=${tSuffix}&nocache=${Date.now()}`);
-                let monthlyData = await res.json();
-                let empData = monthlyData.filter(d => String(d.id).trim() === id);
+                let rawDataArray = await res.json();
+                
+                // 🚨 PDF Duplicate/Live Data Fix 🚨
+                let uniquePdfRecords = {};
+                rawDataArray.forEach(jsonItem => {
+                    try {
+                        let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; 
+                        if (!emp || String(emp.id) !== String(id)) return;
+                        let dToPrint = emp.recordDate || emp.date || "-";
+                        uniquePdfRecords[dToPrint] = emp; 
+                    } catch(e){}
+                });
 
                 let tbody = document.getElementById("searchTableBody");
                 let tableWrapper = tbody.parentElement.parentElement; 
@@ -618,7 +715,7 @@
 
                     if(loopDateObj > todayDateOnly) continue;
 
-                    let empRecord = empData.find(r => r.recordDate === loopDateStr);
+                    let empRecord = uniquePdfRecords[loopDateStr];
 
                     if(empRecord) {
                         printedRowsCount++;
@@ -638,16 +735,16 @@
 
                         monthHTML += `
                         <tr style="background: white;">
-                            <td style="font-weight: bold; color: black;">${loopDateStr}</td>
-                            <td style="color: black;">${id}</td>
-                            <td style="color: black;">${empName}</td>
-                            <td>${statusText}</td>
-                            <td style="color: black;">${empRecord.inTime}</td>
-                            <td style="color: black;">${empRecord.outTime}</td>
-                            <td style="color: black;">${formatTime(empRecord.breakSecs)}</td>
-                            <td style="color: black;">${formatTime(empRecord.trainSecs)}</td>
-                            <td style="background: #f1f8e9; color: black; font-weight:bold;">${excDisplay}</td>
-                            <td style="font-weight:bold; color:${wColor};">${formatTime(tw)}</td>
+                            <td style="font-weight: bold; color: black; border:1px solid black;">${loopDateStr}</td>
+                            <td style="color: black; border:1px solid black;">${id}</td>
+                            <td style="color: black; border:1px solid black;">${empName}</td>
+                            <td style="border:1px solid black;">${statusText}</td>
+                            <td style="color: black; border:1px solid black;">${empRecord.inTime}</td>
+                            <td style="color: black; border:1px solid black;">${empRecord.outTime}</td>
+                            <td style="color: black; border:1px solid black;">${formatTime(empRecord.breakSecs)}</td>
+                            <td style="color: black; border:1px solid black;">${formatTime(empRecord.trainSecs)}</td>
+                            <td style="background: #f1f8e9; color: black; font-weight:bold; border:1px solid black;">${excDisplay}</td>
+                            <td style="font-weight:bold; color:${wColor}; border:1px solid black;">${formatTime(tw)}</td>
                         </tr>`;
                     } else {
                         printedRowsCount++;
@@ -661,8 +758,8 @@
 
                         monthHTML += `
                         <tr style="background: ${rowBgColor};">
-                            <td style="font-weight: bold; color:black;">${loopDateStr}</td>
-                            <td colspan="9" style="text-align:center;">${fillStatusHtml}</td>
+                            <td style="font-weight: bold; color:black; border:1px solid black;">${loopDateStr}</td>
+                            <td colspan="9" style="text-align:center; border:1px solid black;">${fillStatusHtml}</td>
                         </tr>`;
                     }
                 }
@@ -687,7 +784,7 @@
                 let pdfFooter = document.createElement('div'); pdfFooter.id = "tempPdfFooter";
                 pdfFooter.innerHTML = `
                     <div style="margin-top: 30px; padding: 15px; border-top: 1px solid #ccc; font-size: 12px; color: #444; text-align: center; font-weight: bold; background: white;">
-                        * This is an automated official report generated by Quality Education system. In case of any discrepancies, please contact the HR or System Administrator.
+                        * This is an automated official report generated by Quality Education system.
                     </div>`;
 
                 tableWrapper.insertBefore(pdfHeader, tableWrapper.firstChild);
