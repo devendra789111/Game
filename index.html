@@ -61,7 +61,7 @@
             .payroll-box { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
             #salarySlipArea, #salarySlipArea * { visibility: visible; }
             #salarySlipArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; border: none; padding: 0; }
-            .btn-payroll, .payroll-input, label, h3, p { display: none !important; }
+            .btn-payroll, .payroll-input, label, h3, p, .info-box { display: none !important; }
             .slip-table th, .slip-table td { border: 2px solid #000 !important; } 
         }
     </style>
@@ -90,7 +90,6 @@
 
         <h4>All Institute Tasks</h4>
         <button class="btn-primary" style="margin-bottom:10px; background:#4CAF50;" onclick="loadAllTasks()">🔄 Refresh Tasks</button>
-        <button class="btn-primary" style="margin-bottom:10px; margin-left:10px; background:#E91E63;" onclick="forceRunPenalty()">🚨 Test Penalty Engine</button>
         
         <div class="table-responsive">
             <table>
@@ -124,8 +123,8 @@
         <h3>📋 All Active Employees</h3>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>ID</th><th>Name</th><th>Join Date</th><th>Total Penalty</th><th>Total Reward</th><th>Action</th></tr></thead>
-                <tbody id="empTableBody"><tr><td colspan="6" id="empLoadingMsg">Loading Employee List...</td></tr></tbody>
+                <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Join Date</th><th>Total Penalty</th><th>Total Reward</th><th>Action</th></tr></thead>
+                <tbody id="empTableBody"><tr><td colspan="7" id="empLoadingMsg">Loading Employee List...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -223,13 +222,21 @@
     <div id="payrollModal" class="payroll-modal">
         <div class="payroll-box">
             <h3 style="color:#1a237e; margin-top:0; text-align:center;">💼 Salary Calculator</h3>
-            <label style="font-weight:bold;">Employee ID:</label><input type="text" id="payEmpId" class="payroll-input" readonly style="background:#e0e0e0;">
-            <label style="font-weight:bold;">Per Day Salary (₹):</label><input type="number" id="payPerDay" class="payroll-input" placeholder="e.g., 500">
-            <label style="font-weight:bold;">Total Days in Month:</label><input type="number" id="payMonthDays" class="payroll-input" value="30">
-            <label style="font-weight:bold; color:red;">Penalty Deduction Rate (₹ per point):</label><input type="number" id="payPenaltyRate" class="payroll-input" value="10">
+            
+            <div class="info-box" style="background:#e8f5e9; padding:10px; border-radius:5px; margin-bottom:15px; border:1px solid #4CAF50; font-size:13px; color:#2E7D32; text-align:left;">
+                <b>📌 Payroll Rules Applied:</b><br>
+                1. Month days are auto-calculated.<br>
+                2. Every 100 Penalty Points = 1 Day Salary Deduction.
+            </div>
+
+            <label style="font-weight:bold; display:block; text-align:left;">Employee ID:</label>
+            <input type="text" id="payEmpId" class="payroll-input" readonly style="background:#e0e0e0;">
+            
+            <label style="font-weight:bold; display:block; text-align:left;">Per Day Salary (₹):</label>
+            <input type="number" id="payPerDay" class="payroll-input" placeholder="e.g., 500">
             
             <button class="btn-payroll" onclick="generateSalarySlip()">⚙️ Calculate & Generate Slip</button>
-            <button onclick="document.getElementById('payrollModal').style.display='none'" style="width:100%; padding:10px; font-weight:bold; background:#757575; color:white; border:none; border-radius:5px;">❌ Close</button>
+            <button onclick="document.getElementById('payrollModal').style.display='none'" style="width:100%; padding:10px; font-weight:bold; background:#757575; color:white; border:none; border-radius:5px; cursor:pointer;">❌ Close</button>
 
             <div id="salarySlipArea">
                 <div class="slip-header">
@@ -248,9 +255,9 @@
                     <tr><td>Paid Leaves (EL, CL, SL)</td><td id="slipPaidLeaves">0</td><td>Leave Pay</td><td id="slipLeavePay" style="color:green; font-weight:bold;">0</td></tr>
                     <tr><td>Half Days</td><td id="slipHalf">0</td><td>Half Day Deduction</td><td id="slipHalfDeduct" style="color:red; font-weight:bold;">0</td></tr>
                     <tr><td>Absent / LWP</td><td id="slipAbsent">0</td><td>Absent Deduction</td><td id="slipAbsentDeduct" style="color:red; font-weight:bold;">0</td></tr>
-                    <tr><td style="color:red; font-weight:bold;">Discipline Penalties</td><td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td><td style="color:red;">Penalty Deduction</td><td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td></tr>
+                    <tr><td style="color:red; font-weight:bold;">Discipline Penalties</td><td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td><td style="color:red;">Penalty Deduction (100pt=1Day)</td><td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td></tr>
                     <tr class="slip-total"><td colspan="3" style="text-align:right;">Net Payable Salary:</td><td id="slipNetPay" style="color:#1a237e;">0</td></tr>
-             </table>
+                </table>
                 
                 <div style="margin-top:50px; display:flex; justify-content:space-between; text-align:center; font-weight:bold;">
                     <div>______________________<br><br>Employee Signature</div>
@@ -261,7 +268,7 @@
         </div>
     </div>
 
-    <script>
+        <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8VuJmfGWdSEHLlzhyIaJnu_vwjdP00CrEjgdNJSpcHeVxcC3JFG6o1a7F3MyZAMW18Q/exec";
 
         const WEEKLY_OFF_DAY = 1; 
@@ -273,6 +280,7 @@
             if(!s || isNaN(s)) return "00:00:00";
             return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; 
         }
+        
         function cleanDate(isoStr) {
             let d = new Date(isoStr);
             if(isNaN(d)) return isoStr;
@@ -363,6 +371,7 @@
             } else { document.getElementById('eTaskTime').value = ""; }
             document.getElementById('editTaskModal').style.display = 'flex';
         }
+        
         async function saveTaskEdit() {
             let taskId = document.getElementById('eTaskId').innerText;
             let newTime = document.getElementById('eTaskTime').value;
@@ -396,14 +405,6 @@
             } catch(e) { alert("Failed to process action."); }
         }
 
-        async function forceRunPenalty() {
-            if(!confirm("⚠️ Force the hourly Penalty Engine to run right now?")) return;
-            try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forcePenaltyRun" }) });
-                alert("✅ Engine Executed! Missed deadlines penalized."); loadAllTasks(); fetchEmployees();
-            } catch(e) { alert("Failed to run engine."); }
-        }
-
         // --- MANAGE EMPLOYEES & POINTS ---
         async function fetchEmployees() {
             try {
@@ -413,23 +414,25 @@
                 let hasActive = false;
                 for(let id in EMP_LIST) {
                     let emp = EMP_LIST[id]; if(emp.status !== "Active") continue; hasActive = true;
+                    
                     let d = new Date(emp.joinDate); let cleanJDate = isNaN(d) ? emp.joinDate : d.toLocaleDateString('en-IN');
+                    
                     let actionBtn = `<button class="btn-force" style="background:#f44336; margin-bottom:5px;" onclick="deactivateEmp('${id}')">Deactivate</button><br>`;
                     actionBtn += `<button class="btn-exception" style="background:#1a237e;" onclick="openManagePoints('${id}', '${emp.penalty}', '${emp.reward}')">⚖️ Manage Points</button>`;
                     
-                    // Mobile column added back
                     tbody.innerHTML += `<tr><td style="font-weight:bold;">${id}</td><td>${emp.name}</td><td>${emp.mobile || '-'}</td><td>${cleanJDate}</td><td style="color:red; font-weight:bold;">${emp.penalty || 0} pts</td><td style="color:green; font-weight:bold;">${emp.reward || 0} pts</td><td>${actionBtn}</td></tr>`;
                 }
                 if(!hasActive) tbody.innerHTML = `<tr><td colspan="7">No active employees found.</td></tr>`;
             } catch(e) {}
-                }
-        
+        }
+
         function openManagePoints(id, pen, rew) {
             document.getElementById('mpEmpId').innerText = id;
             document.getElementById('mpPenalty').value = pen;
             document.getElementById('mpReward').value = rew;
             document.getElementById('managePointsModal').style.display = 'flex';
         }
+        
         async function saveGlobalPoints() {
             let id = document.getElementById('mpEmpId').innerText;
             let pen = document.getElementById('mpPenalty').value;
@@ -448,7 +451,7 @@
             let joinDate = document.getElementById('regJoinDate').value;
             if(!name || !mobile || !aadhar || !joinDate) return alert("Please fill all required details.");
             if(mobile.length < 10 || aadhar.length < 12) return alert("Please enter valid Mobile and Aadhar numbers.");
-            document.getElementById('empTableBody').innerHTML = `<tr><td colspan="6">Registering... Please wait!</td></tr>`;
+            document.getElementById('empTableBody').innerHTML = `<tr><td colspan="7">Registering... Please wait!</td></tr>`;
             try {
                 let res = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addEmployee", name: name, mobile: mobile, aadhar: aadhar, joinDate: joinDate }) });
                 let data = await res.json();
@@ -464,7 +467,7 @@
             alert("Employee deactivated successfully."); fetchEmployees();
         }
 
-        // --- LIVE STATUS ---
+        // --- 🚨 LIVE STATUS BUG FIXED 🚨 ---
         async function loadLiveStatus() {
             let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
             try {
@@ -474,7 +477,7 @@
                 let activeCount = 0;
                 for(let id in EMP_LIST) {
                     if(EMP_LIST[id].status !== "Active") continue; activeCount++;
-                    // Mode Check Fixed
+                    
                     let status = (data[id] && data[id].mode) ? data[id].mode : "out";
                     let displayStatus, dotClass; let actionBtn = "-";
                     
@@ -484,20 +487,23 @@
                     else if (status === "leave") { displayStatus = "📅 On Leave"; dotClass = "dot-red"; }
                     else if (status === "out") { 
                         displayStatus = "🔴 Punched Out"; dotClass = "dot-red"; 
-                        if(data[id] && data[id].inTime !== "-") { actionBtn = `<button class="btn-force" style="background:#2196F3;" onclick="undoPunchOut('${id}')">🔄 Undo Punch Out</button>`; }
+                        if(data[id] && data[id].inTime && data[id].inTime !== "-") { 
+                            actionBtn = `<button class="btn-force" style="background:#2196F3;" onclick="undoPunchOut('${id}')">🔄 Undo Punch Out</button>`; 
+                        }
                     }
                     
                     tbody.innerHTML += `<tr><td>${id}</td><td>${EMP_LIST[id].name}</td><td>${displayStatus}</td><td>${actionBtn}</td></tr>`;
                 }
                 if(activeCount === 0) tbody.innerHTML = `<tr><td colspan="4">No active employees to show.</td></tr>`;
             } catch(e) {}
-                }
-             
+        }
+        
         async function undoPunchOut(id) {
             if(!confirm(`UNDO Punch Out for ${EMP_LIST[id].name}?`)) return;
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut" }) });
             alert("✅ Command sent!"); loadLiveStatus();
         }
+        
         async function adminPunchOut(id) {
             if(!confirm(`Manually Punch Out ${EMP_LIST[id].name}?`)) return;
             let exactTime = new Date().toLocaleTimeString('en-IN');
@@ -505,6 +511,7 @@
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) });
             alert("✅ Punched out successfully."); loadLiveStatus();
         }
+        
         async function forceCommand(id, type) {
             if(!confirm("Remotely stop training?")) return;
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: type }) });
@@ -536,19 +543,20 @@
             alert(`Marked as ${status}`); loadLeaves('Pending'); 
         }
 
-        // --- SEARCH EMPLOYEE & EXCEPTION ---
-        let uniqueRecordsStore = {}; // For PDF and Payroll
+        // --- 🚨 SEARCH EMPLOYEE (FETCHING BUG FIXED) 🚨 ---
+        let uniqueRecordsStore = {}; 
         async function searchEmployee() {
             let id = document.getElementById("searchId").value; if(!id) return alert("Enter Employee ID.");
-            let tbody = document.getElementById("searchTableBody"); let excSumBox = document.getElementById("exceptionSummary");
-            tbody.innerHTML = `<tr><td colspan="10">Fetching records...</td></tr>`; excSumBox.style.display = "none";
+            let tbody = document.getElementById("searchTableBody"); 
+            tbody.innerHTML = `<tr><td colspan="10">⏳ Fetching records... Please wait.</td></tr>`; 
+            
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getEmpData&id=${id}&nocache=${Date.now()}`); 
                 let rawDataArray = await res.json();
                 tbody.innerHTML = "";
-                if(rawDataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10">No records found.</td></tr>`;
+                if(rawDataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10">No attendance records found.</td></tr>`;
                 
-                let uniqueRecordsStore = {};
+                uniqueRecordsStore = {};
                 rawDataArray.forEach(jsonItem => {
                     try {
                         let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; 
@@ -572,15 +580,14 @@
                         if (!isLeaveOrOff && emp.isPunchedOut) { excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; }
                         let totalDisplay = `<span style="font-weight:bold; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
                         
-                        // Fallback logic for missing times
                         let inT = emp.inTime || "-"; let outT = emp.outTime || "-"; let bT = formatTime(emp.breakSecs); let trT = formatTime(emp.trainSecs);
                         
                         tbody.innerHTML += `<tr><td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td><td>${inT}</td><td>${outT}</td><td>${bT}</td><td>${trT}</td><td style="background:#e1f5fe;">${excHtml}</td><td>${totalDisplay}</td></tr>`;
-                    } catch(e) { console.log("Row skip error"); }
+                    } catch(e) {}
                 });
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data.</td></tr>`; }
-                }
-        
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data. Check connection.</td></tr>`; }
+        }
+
         function openExceptionModal(id, date, name) { currentExcId = id; currentExcDate = date; document.getElementById("exceptionModal").style.display = "flex"; }
         function closeExceptionModal() { document.getElementById("exceptionModal").style.display = "none"; }
         
@@ -595,10 +602,10 @@
             } catch(e) { alert("Failed to add exception."); searchEmployee(); }
         }
 
-        // --- SALARY PAYROLL ---
+        // --- 🚨 SALARY PAYROLL (AUTO MONTH DAYS & 100 PTS = 1 DAY DEDUCTION) 🚨 ---
         function openPayrollModal() {
             let searchedId = document.getElementById("searchId").value.trim();
-            if(!searchedId) return alert("❌ Search Employee ID first!");
+            if(!searchedId) return alert("❌ Please Search Employee ID first!");
             document.getElementById('payEmpId').value = searchedId;
             document.getElementById('payrollModal').style.display = 'flex';
             document.getElementById('salarySlipArea').style.display = 'none'; 
@@ -613,15 +620,14 @@
             let weekOffCount = 0; let holidayCount = 0; let halfDayCount = 0; let absentCount = 0;
 
             let tableRows = document.querySelectorAll("#searchTableBody tr"); 
-            if(tableRows.length === 0 || tableRows[0].innerText.includes("Search an ID")) return alert("❌ No attendance data found!");
+            if(tableRows.length === 0 || tableRows[0].innerText.includes("Search an ID") || tableRows[0].innerText.includes("Fetching")) return alert("❌ No valid attendance data loaded!");
 
             let tableDates = []; let sampleDate = "";
 
             tableRows.forEach(row => {
                 let cells = row.getElementsByTagName("td"); let rowStatus = "";
                 if(cells.length === 10) { tableDates.push(cells[0].innerText.trim()); if(!sampleDate) sampleDate = cells[0].innerText.trim(); rowStatus = cells[3].innerText.trim().toUpperCase(); } 
-                else if(cells.length === 2) { tableDates.push(cells[0].innerText.trim()); if(!sampleDate) sampleDate = cells[0].innerText.trim(); rowStatus = cells[1].innerText.trim().toUpperCase(); }
-
+                
                 if(rowStatus !== "") {
                     if(rowStatus.includes("PRESENT")) presentCount++; else if(rowStatus.includes("SL")) slCount++; else if(rowStatus.includes("CL")) clCount++; else if(rowStatus.includes("EL")) elCount++;
                     else if(rowStatus.includes("WEEKLY OFF")) weekOffCount++; else if(rowStatus.includes("HOLIDAY")) holidayCount++; else if(rowStatus.includes("HALF DAY")) halfDayCount++;
@@ -629,11 +635,10 @@
                 }
             });
 
-            // 🚨 Auto Month Days Logic 🚨
+            // Auto calculate month days based on viewed data
             let tM = new Date().getMonth(); let tY = new Date().getFullYear();
             if(sampleDate.includes('/')) { let parts = sampleDate.split('/'); tM = parseInt(parts[1]) - 1; tY = parseInt(parts[2]); }
             
-            // Us mahine me total kitne din hote hain (auto calculate)
             let monthDays = new Date(tY, tM + 1, 0).getDate(); 
             
             let todayOnly = new Date(); todayOnly.setHours(0,0,0,0);
@@ -653,9 +658,9 @@
             let paidLeaves = slCount + clCount + elCount; let fullPayDays = presentCount + weekOffCount + holidayCount;
             let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); 
             
-            // 🚨 100 POINTS = 1 DAY DEDUCTION LOGIC 🚨
+            // MATH: 100 Penalty Points = 1 Day Deduction
             let totalPenPts = EMP_LIST[empId] ? (parseInt(EMP_LIST[empId].penalty) || 0) : 0;
-            let penaltyDaysToCut = Math.floor(totalPenPts / 100); // 190 pts = 1 day, 200 pts = 2 days
+            let penaltyDaysToCut = Math.floor(totalPenPts / 100); 
             let totalPenDeduct = penaltyDaysToCut * perDay;
             
             let netSalary = (payableDays * perDay) - totalPenDeduct;
@@ -675,9 +680,9 @@
             
             document.getElementById('slipNetPay').innerText = "₹ " + netSalary;
             document.getElementById('salarySlipArea').style.display = 'block';
-                }
-        
-        // --- 🚨 FIXED PDF DOWNLOAD (LIVE DATA + NO DUPLICATES) 🚨 ---
+        }
+
+        // --- PDF DOWNLOAD ---
         async function downloadEmpPDF() {
             let id = document.getElementById("searchId").value.trim();
             if(!id) return alert("❌ Please search an Employee ID first!");
@@ -700,7 +705,6 @@
                 let res = await fetch(`${SCRIPT_URL}?action=getMonthlyLogs&month=${tSuffix}&nocache=${Date.now()}`);
                 let rawDataArray = await res.json();
                 
-                // 🚨 PDF Duplicate/Live Data Fix 🚨
                 let uniquePdfRecords = {};
                 rawDataArray.forEach(jsonItem => {
                     try {
@@ -744,6 +748,7 @@
                         }
                         
                         let excDisplay = exc > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(exc)}</span>` : `-`;
+                        let inT = empRecord.inTime || "-"; let outT = empRecord.outTime || "-";
 
                         monthHTML += `
                         <tr style="background: white;">
@@ -751,8 +756,8 @@
                             <td style="color: black; border:1px solid black;">${id}</td>
                             <td style="color: black; border:1px solid black;">${empName}</td>
                             <td style="border:1px solid black;">${statusText}</td>
-                            <td style="color: black; border:1px solid black;">${empRecord.inTime}</td>
-                            <td style="color: black; border:1px solid black;">${empRecord.outTime}</td>
+                            <td style="color: black; border:1px solid black;">${inT}</td>
+                            <td style="color: black; border:1px solid black;">${outT}</td>
                             <td style="color: black; border:1px solid black;">${formatTime(empRecord.breakSecs)}</td>
                             <td style="color: black; border:1px solid black;">${formatTime(empRecord.trainSecs)}</td>
                             <td style="background: #f1f8e9; color: black; font-weight:bold; border:1px solid black;">${excDisplay}</td>
