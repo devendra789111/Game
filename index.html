@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Quality Education</title>
+    <title>Admin Dashboard - TEST ENVIRONMENT</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-        .header { background: #1a237e; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: #2E7D32; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } 
         .nav-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .nav-tabs button { padding: 10px 15px; font-size: 15px; border: none; background: #ddd; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .nav-tabs button.active { background: #1a237e; color: white; }
+        .nav-tabs button.task-tab { background: #3F51B5; color: white; } 
         .section { display: none; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; }
         .section.active { display: block; }
         
@@ -37,7 +38,6 @@
         
         .exception-summary { background: #e3f2fd; border: 1px solid #90caf9; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; color: #0288D1; margin-bottom: 15px; display: none; }
         
-        /* Modal for Exception */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
 
@@ -53,23 +53,18 @@
         .slip-header h2 { margin: 0; color: #1a237e; font-size: 26px; text-transform: uppercase; }
         .slip-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
         
-        /* 🌟 BORDERS KO DARK AUR SAAF KARNE WALA CODE 🌟 */
         .slip-table th { border: 2px solid #000 !important; padding: 8px; text-align: left; color: #000 !important; background-color: #f0f0f0 !important; }
         .slip-table td { border: 2px solid #000 !important; padding: 8px; text-align: left; color: #000 !important; background-color: #ffffff !important; }
         .slip-total { font-size: 18px; font-weight: bold; background-color: #e0e0e0 !important; color: #000 !important; }
-           
+        
         @media print {
             body * { visibility: hidden; }
-            /* 👇 Yeh magic code browser ko color fika karne se rokega */
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } 
-            
             .payroll-modal { position: absolute; left: 0; top: 0; margin: 0; padding: 0; background: none; overflow: visible; display: block !important;}
             .payroll-box { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
             #salarySlipArea, #salarySlipArea * { visibility: visible; }
             #salarySlipArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; border: none; padding: 0; }
             .btn-payroll, .payroll-input, label, h3, p { display: none !important; }
-            
-            /* Print mein bhi dark borders */
             .slip-table th, .slip-table td { border: 2px solid #000 !important; } 
         }
         /* 🌟 PAYROLL CSS END 🌟 */
@@ -78,7 +73,7 @@
 <body>
 
     <div class="header">
-        <h2>👨‍💼 Admin Dashboard - Quality Education</h2>
+        <h2>👨‍💼 Admin Dashboard - Quality Education (TEST)</h2>
     </div>
 
     <div class="nav-tabs">
@@ -86,7 +81,27 @@
         <button id="tab-manageEmp" onclick="showSection('manageEmp')">👥 Manage Employees</button>
         <button id="tab-leaveRequests" onclick="showSection('leaveRequests')">📅 Leave Requests</button>
         <button id="tab-searchEmp" onclick="showSection('searchEmp')">🔍 Search & PDF</button>
+        <button id="tab-taskMaster" class="task-tab" onclick="showSection('taskMaster')">🎯 Task Master</button>
         <button id="tab-settings" onclick="showSection('settings')">⚙️ Settings</button>
+    </div>
+
+    <div id="taskMaster" class="section">
+        <h3 style="color:#3F51B5; border-bottom:2px solid #eee; padding-bottom:10px;">🎯 Admin Task Master</h3>
+        
+        <div class="form-grid" style="background:#e8eaf6; border-color:#3F51B5;">
+            <div class="form-group"><label>Assign To (Emp ID)</label><input type="text" id="adminTaskTo" placeholder="e.g. QE101"></div>
+            <div class="form-group"><label>Task Description</label><input type="text" id="adminTaskDesc" placeholder="Enter task details..." style="width:350px;"></div>
+            <div class="form-group" style="justify-content: flex-end;"><button class="btn-primary" style="background:#3F51B5; height: 40px; margin-bottom: 10px;" onclick="adminCreateTask()">🚀 Assign New Task</button></div>
+        </div>
+
+        <h4>All Institute Tasks</h4>
+        <button class="btn-primary" style="margin-bottom:10px; background:#4CAF50;" onclick="loadAllTasks()">🔄 Refresh Tasks</button>
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>Task ID / Date</th><th>Chain (From ➡ To)</th><th>Task Details</th><th>Status</th><th>Deadline Time</th><th>Penalty</th><th>Admin Actions</th></tr></thead>
+                <tbody id="adminTaskTableBody"><tr><td colspan="7">Loading all tasks...</td></tr></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="liveStatus" class="section">
@@ -114,7 +129,7 @@
         <div class="table-responsive">
             <table>
                 <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Joining Date</th><th>Status</th><th>Action</th></tr></thead>
-                <tbody id="empTableBody"><tr><td colspan="6" id="empLoadingMsg">Loading Employee List... (Please Check URL if stuck)</td></tr></tbody>
+                <tbody id="empTableBody"><tr><td colspan="6" id="empLoadingMsg">Loading Employee List...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -181,7 +196,7 @@
             <h3 style="color:#0288D1; margin-top:0;">⏱️ Add Exception Time</h3>
             <p id="excEmpInfo" style="font-size:14px; color:#555;"></p>
             <label style="font-weight:bold; font-size:14px;">Additional Time (in Minutes):</label>
-            <input type="number" id="excMinutes" placeholder="e.g. 30 (for half hour)" style="text-align:center; margin-top:10px;">
+            <input type="number" id="excMinutes" placeholder="e.g. 30" style="text-align:center; margin-top:10px;">
             <button class="btn-primary" style="width:100%; margin-top:10px; background:#4CAF50;" onclick="submitException()">✅ Grant Exception</button>
             <button style="width:100%; margin-top:10px; padding:10px; border:none; border-radius:5px; background:#aaa; color:white; font-weight:bold; cursor:pointer;" onclick="closeExceptionModal()">Cancel</button>
         </div>
@@ -190,15 +205,13 @@
     <div id="payrollModal" class="payroll-modal">
         <div class="payroll-box">
             <h3 style="color:#1a237e; margin-top:0; text-align:center;">💼 Salary Calculator</h3>
-            <p style="text-align:center; color:#d32f2f; font-weight:bold; font-size:13px;">(Note: Please Search the Employee ID first to load their attendance data)</p>
+            <p style="text-align:center; color:#d32f2f; font-weight:bold; font-size:13px;">(Note: Search Employee ID first)</p>
             
             <label style="font-weight:bold;">Employee ID:</label>
             <input type="text" id="payEmpId" class="payroll-input" readonly style="background:#e0e0e0;">
-            
             <label style="font-weight:bold;">Per Day Salary (₹):</label>
             <input type="number" id="payPerDay" class="payroll-input" placeholder="e.g., 500">
-            
-            <label style="font-weight:bold;">Total Days in Month (महीने के कुल दिन):</label>
+            <label style="font-weight:bold;">Total Days in Month:</label>
             <input type="number" id="payMonthDays" class="payroll-input" value="30">
             
             <button class="btn-payroll" onclick="generateSalarySlip()">⚙️ Calculate & Generate Slip</button>
@@ -216,7 +229,7 @@
                 </table>
 
                 <table class="slip-table">
-                    <tr style="background:#e0e0e0;"><th>Attendance Details</th><th>Days</th><th>Earnings / Deductions</th><th>Amount (₹)</th></tr>
+                    <tr><th>Attendance Details</th><th>Days</th><th>Earnings / Deductions</th><th>Amount (₹)</th></tr>
                     <tr><td>Present + Week Off + Holiday</td><td id="slipPWH">0</td><td>Basic Salary (Per day: ₹<span id="slipPerDayText"></span>)</td><td id="slipBasic" style="color:green; font-weight:bold;">0</td></tr>
                     <tr><td>Paid Leaves (EL, CL, SL)</td><td id="slipPaidLeaves">0</td><td>Leave Pay</td><td id="slipLeavePay" style="color:green; font-weight:bold;">0</td></tr>
                     <tr><td>Half Days</td><td id="slipHalf">0</td><td>Half Day Deduction</td><td id="slipHalfDeduct" style="color:red; font-weight:bold;">0</td></tr>
@@ -228,14 +241,14 @@
                     <div>______________________<br><br>Employee Signature</div>
                     <div>______________________<br><br>Authorized Signatory</div>
                 </div>
-                
                 <button onclick="window.print()" class="btn-payroll" style="margin-top:30px; background:#D32F2F;" id="printBtn">🖨️ Print / Save as PDF</button>
             </div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4QGYfqyPKpATDwqaFI9eArrH82GuqWBV7_q3PUbl1QiqcaD77wLt1HzojcouT--18Eg/exec";
+        // 🌟 AAPKA TESTING SCRIPT URL 🌟
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8VuJmfGWdSEHLlzhyIaJnu_vwjdP00CrEjgdNJSpcHeVxcC3JFG6o1a7F3MyZAMW18Q/exec";
 
         const WEEKLY_OFF_DAY = 1; // 1 = Monday
         const PUBLIC_HOLIDAYS = { "03/03/2026": "Holi", "04/03/2026": "Holi", "02/10/2026": "Gandhi Jayanti" };
@@ -258,6 +271,7 @@
             if(id === 'liveStatus') loadLiveStatus();
             if(id === 'leaveRequests') loadLeaves('Pending'); 
             if(id === 'manageEmp') fetchEmployees(); 
+            if(id === 'taskMaster') loadAllTasks(); 
         }
 
         window.onload = async () => { 
@@ -267,6 +281,78 @@
             setInterval(loadLiveStatus, 10000); 
         }; 
 
+        // 🌟🌟 TASK MASTER JAVASCRIPT START 🌟🌟
+        async function loadAllTasks() {
+            let tbody = document.getElementById("adminTaskTableBody");
+            tbody.innerHTML = `<tr><td colspan="7">Fetching all institute tasks...</td></tr>`;
+            try {
+                let res = await fetch(`${SCRIPT_URL}?action=getAllTasks&nocache=${Date.now()}`);
+                let tasks = await res.json();
+                tbody.innerHTML = "";
+
+                if(tasks.length === 0) return tbody.innerHTML = `<tr><td colspan="7">No tasks in the system.</td></tr>`;
+
+                tasks.reverse().forEach(t => {
+                    let statusColor = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : '#4CAF50');
+                    let badge = `<span style="background:${statusColor}; color:white; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:11px;">${t.status}</span>`;
+                    
+                    let actions = `<button class="btn-exception" style="background:#f44336;" onclick="adminUpdateTask('${t.taskId}', 'close')">Close Task</button>`;
+                    actions += `<button class="btn-exception" style="background:#1a237e; display:block; margin-top:5px; margin-left:auto; margin-right:auto;" onclick="adminUpdateTask('${t.taskId}', 'edit')">Edit Time/Penalty</button>`;
+
+                    tbody.innerHTML += `<tr>
+                        <td style="font-weight:bold; font-size:11px;">${t.taskId}<br><span style="color:#555;">${t.assignedTime}</span></td>
+                        <td style="color:#1a237e; font-weight:bold;">${t.chain}</td>
+                        <td style="text-align:left;">${t.details}</td>
+                        <td>${badge}</td>
+                        <td style="color:#d32f2f; font-weight:bold;">${t.expectedTime || '-'}</td>
+                        <td style="color:red; font-weight:bold; font-size:14px;">${t.penalty} pts</td>
+                        <td>${actions}</td>
+                    </tr>`;
+                });
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:red;">Error fetching tasks.</td></tr>`; }
+        }
+
+        async function adminCreateTask() {
+            let receiverId = document.getElementById("adminTaskTo").value.trim();
+            let desc = document.getElementById("adminTaskDesc").value.trim();
+
+            if(!receiverId || !desc) return alert("Please enter Emp ID and details!");
+            if(receiverId !== 'ALL' && !EMP_LIST[receiverId]) return alert("Invalid Employee ID!");
+
+            let btn = event.target; btn.innerText = "⏳ Assigning..."; btn.disabled = true;
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "assignTask", assignerId: "ADMIN", receiverId: receiverId, taskDetails: desc })
+                });
+                alert("✅ Admin Task Assigned Successfully!");
+                document.getElementById("adminTaskTo").value = ""; document.getElementById("adminTaskDesc").value = "";
+                loadAllTasks();
+            } catch(e) { alert("Failed to assign task."); }
+            btn.innerText = "🚀 Assign New Task"; btn.disabled = false;
+        }
+
+        async function adminUpdateTask(taskId, type) {
+            let reqBody = { action: "adminUpdateTask", taskId: taskId, updateType: type };
+            
+            if(type === 'close') {
+                if(!confirm(`Are you sure you want to FORCE CLOSE task ${taskId}?`)) return;
+            } else if(type === 'edit') {
+                let newTime = prompt("Enter new Deadline (e.g., '12:00 PM Tomorrow') or leave blank to keep same:");
+                let newPen = prompt("Enter new Penalty Points (number) or leave blank to keep same:");
+                if(newTime) reqBody.newDeadline = newTime;
+                if(newPen !== null && newPen !== "") reqBody.newPenalty = parseInt(newPen);
+                if(!newTime && (newPen === null || newPen === "")) return; 
+            }
+
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(reqBody) });
+                alert("✅ Task Updated Successfully!"); loadAllTasks();
+            } catch(e) { alert("Failed to update task."); }
+        }
+
+        // --- 100% RESTORED ADMIN FUNCTIONS ---
         async function fetchEmployees() {
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getEmployees&nocache=${Date.now()}`);
@@ -279,7 +365,7 @@
                     tbody.innerHTML += `<tr><td style="font-weight:bold;">${id}</td><td>${emp.name}</td><td>${emp.mobile}</td><td>${emp.joinDate}</td><td style="color:green; font-weight:bold;">${emp.status}</td><td>${actionBtn}</td></tr>`;
                 }
                 if(!hasActive) tbody.innerHTML = `<tr><td colspan="6">No active employees found.</td></tr>`;
-            } catch(e) { document.getElementById("empLoadingMsg").innerText = "Error: Failed to fetch data. Check URL."; }
+            } catch(e) {}
         }
 
         async function registerEmployee() {
@@ -298,7 +384,7 @@
                 alert(`✅ Registration Successful!\nNew Employee ID is: ${data.newId}`);
                 document.getElementById('regName').value = ""; document.getElementById('regMobile').value = ""; document.getElementById('regAadhar').value = ""; document.getElementById('regJoinDate').value = "";
                 fetchEmployees(); 
-            } catch(e) { alert("Registration failed. Please check your connection."); }
+            } catch(e) { alert("Registration failed."); }
         }
 
         async function deactivateEmp(id) {
@@ -308,8 +394,7 @@
         }
 
         async function loadLiveStatus() {
-            let today = new Date();
-            let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
+            let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getLiveStatus&date=${dateStr}&nocache=${Date.now()}`);
                 let data = await res.json();
@@ -320,29 +405,12 @@
                     let status = data[id] ? data[id].status : "out";
                     let displayStatus, dotClass; let actionBtn = "-";
                     
-                    if (status === "in" || status === "work") { 
-                        displayStatus = "Punched In (Working)"; dotClass = "dot-green"; 
-                        actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`;
-                    }
-                    else if (status === "break") { 
-                        displayStatus = "☕ On Break"; dotClass = "dot-orange"; 
-                        actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`;
-                    }
-                    else if (status === "train") { 
-                        displayStatus = "💼 In Training"; dotClass = "dot-purple"; 
-                        actionBtn = `<button class="btn-force" style="background:#FF9800; margin-bottom:5px;" onclick="forceCommand('${id}', 'endTrain')">Stop Training</button><br>
-                                     <button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; 
-                    }
-                    else if (status === "leave") { 
-                        displayStatus = "📅 On Leave / Off"; dotClass = "dot-red"; 
-                    }
-                    else if (status === "out") { 
-                        displayStatus = "Punched Out"; dotClass = "dot-red"; 
-                        actionBtn = `<button class="btn-force" style="background:#2196F3; margin-top:3px;" onclick="undoPunchOut('${id}')">🔄 Undo Punch Out</button>`;
-                    }
-                    else { 
-                        displayStatus = "Not Punched In / Out"; dotClass = "dot-red"; 
-                    }
+                    if (status === "in" || status === "work") { displayStatus = "Punched In"; dotClass = "dot-green"; actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
+                    else if (status === "break") { displayStatus = "☕ On Break"; dotClass = "dot-orange"; actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
+                    else if (status === "train") { displayStatus = "💼 In Training"; dotClass = "dot-purple"; actionBtn = `<button class="btn-force" style="background:#FF9800; margin-bottom:5px;" onclick="forceCommand('${id}', 'endTrain')">Stop Training</button><br><button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
+                    else if (status === "leave") { displayStatus = "📅 On Leave"; dotClass = "dot-red"; }
+                    else if (status === "out") { displayStatus = "Punched Out"; dotClass = "dot-red"; actionBtn = `<button class="btn-force" style="background:#2196F3;" onclick="undoPunchOut('${id}')">🔄 Undo Punch Out</button>`; }
+                    else { displayStatus = "Not Punched In"; dotClass = "dot-red"; }
                     
                     tbody.innerHTML += `<tr><td>${id}</td><td>${EMP_LIST[id].name}</td><td><span class="dot ${dotClass}"></span> ${displayStatus}</td><td>${actionBtn}</td></tr>`;
                 }
@@ -351,15 +419,11 @@
         }
 
         async function undoPunchOut(id) {
-            if(!confirm(`क्या आप सच में ${EMP_LIST[id].name} की गलती सुधारना चाहते हैं?\n(उनका Punch-Out हट जाएगा और टाइमर वापस वहीं से शुरू हो जाएगा)`)) return;
-            await fetch(SCRIPT_URL, { 
-                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut" }) 
-            });
-            alert("✅ कमांड भेज दिया गया है! एम्प्लॉई की ऐप कुछ ही सेकंड में टाइमर वापस चालू कर देगी।");
-            loadLiveStatus();
+            if(!confirm(`UNDO Punch Out for ${EMP_LIST[id].name}?`)) return;
+            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut" }) });
+            alert("✅ Command sent!"); loadLiveStatus();
         }
-                  
+
         async function adminPunchOut(id) {
             if(!confirm(`Are you sure you want to manually Punch Out ${EMP_LIST[id].name} (${id})?`)) return;
             let exactTime = new Date().toLocaleTimeString('en-IN');
@@ -370,8 +434,7 @@
                 method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) 
             });
-            alert("✅ Employee punched out successfully.");
-            loadLiveStatus();
+            alert("✅ Employee punched out successfully."); loadLiveStatus();
         }
 
         async function forceCommand(id, type) {
@@ -383,103 +446,59 @@
         async function loadLeaves(filterStatus = 'Pending') {
             document.getElementById('leaveTableTitle').innerText = `Showing: ${filterStatus} Requests`;
             try {
-                let res = await fetch(`${SCRIPT_URL}?action=getPendingLeaves&nocache=${Date.now()}`);
-                let data = await res.json();
+                let res = await fetch(`${SCRIPT_URL}?action=getPendingLeaves&nocache=${Date.now()}`); let data = await res.json();
                 let tbody = document.getElementById("leaveTableBody"); tbody.innerHTML = "";
                 let filteredData = data.filter(req => req.status === filterStatus);
-                
                 if(filteredData.length === 0) return tbody.innerHTML = `<tr><td colspan="8">No ${filterStatus} leaves found.</td></tr>`;
-                
                 filteredData.reverse().forEach(req => {
                     let actionHtml = "";
                     if (req.status === "Pending") actionHtml = `<button class="btn-approve" onclick="updateLeave('${req.reqId}', 'Approved')">Approve</button> <button class="btn-reject" onclick="updateLeave('${req.reqId}', 'Rejected')">Reject</button>`;
                     else if (req.status === "Approved") actionHtml = `<span style="color: green; font-weight: bold;">✅ Approved</span>`;
                     else if (req.status === "Rejected") actionHtml = `<span style="color: red; font-weight: bold;">❌ Rejected</span>`;
-
                     let certHtml = req.hasCert === "Yes" ? `<span style="color:green; font-weight:bold;">✅ Uploaded</span>` : `<span style="color:#555;">No</span>`;
                     tbody.innerHTML += `<tr><td style="font-size: 12px; color: gray;">${req.date}</td><td style="font-weight:bold; color:#1a237e;">${req.leaveDate}</td><td>${req.id}</td><td>${req.name}</td><td>${req.type}</td><td>${req.reason}</td><td>${certHtml}</td><td>${actionHtml}</td></tr>`;
                 });
-            } catch(e) { console.log("Leave fetch error"); }
+            } catch(e) {}
         }
 
         async function updateLeave(reqId, status) {
-            if(!confirm(`Mark this leave request as ${status}?`)) return;
+            if(!confirm(`Mark as ${status}?`)) return;
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updateLeave", reqId: reqId, newStatus: status }) });
-            alert(`Leave marked as ${status} successfully.`); loadLeaves('Pending'); 
+            alert(`Marked as ${status}`); loadLeaves('Pending'); 
         }
 
         async function searchEmployee() {
-            let id = document.getElementById("searchId").value;
-            if(!id) return alert("Please enter an Employee ID first.");
-            let tbody = document.getElementById("searchTableBody");
-            let excSumBox = document.getElementById("exceptionSummary");
-            tbody.innerHTML = `<tr><td colspan="10">Fetching database records...</td></tr>`;
-            excSumBox.style.display = "none";
-            
+            let id = document.getElementById("searchId").value; if(!id) return alert("Enter Employee ID.");
+            let tbody = document.getElementById("searchTableBody"); let excSumBox = document.getElementById("exceptionSummary");
+            tbody.innerHTML = `<tr><td colspan="10">Fetching records...</td></tr>`; excSumBox.style.display = "none";
             try {
-                let res = await fetch(`${SCRIPT_URL}?action=getEmpData&id=${id}&nocache=${Date.now()}`);
-                let rawDataArray = await res.json();
+                let res = await fetch(`${SCRIPT_URL}?action=getEmpData&id=${id}&nocache=${Date.now()}`); let rawDataArray = await res.json();
                 tbody.innerHTML = "";
                 if(rawDataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10">No records found.</td></tr>`;
-                
-                let empName = EMP_LIST[id] ? EMP_LIST[id].name : "Unknown";
-                document.getElementById("pdfTitle").innerText = `Attendance Report - ID: ${id} (${empName})`;
                 let totalExceptionTime = 0;
-
                 rawDataArray.forEach(jsonStr => {
                     try {
                         let emp = JSON.parse(jsonStr); if (!emp) return;
-                        let excSecs = emp.exceptionSecs || 0;
-                        totalExceptionTime += excSecs;
-                        
+                        let excSecs = emp.exceptionSecs || 0; totalExceptionTime += excSecs;
                         let totalWorkSecs = (emp.workSecs || 0) + (emp.trainSecs || 0) + excSecs; 
-                        
                         let wColor = totalWorkSecs >= 28800 ? "green" : "red";
                         let statusHtml = emp.statusText || "Present";
                         let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusHtml.toLowerCase().includes(v));
-
-                        if (!isLeaveOrOff && emp.mode !== "leave") {
-                            if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`;
-                            else statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`;
-                        } else {
-                            statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`;
-                            if(totalWorkSecs === 0) wColor = "black";
-                        }
-
+                        if (!isLeaveOrOff && emp.mode !== "leave") { if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`; else statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`; } 
+                        else { statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`; if(totalWorkSecs === 0) wColor = "black"; }
                         let dateToPrint = emp.recordDate || emp.date || "-";
-                        
-                        let excHtml = excSecs > 0 ? `<span style="color:#0288D1; font-weight:bold; font-size:13px;">+${formatTime(excSecs)}</span>` : `<span style="color:#aaa;">-</span>`;
-                        if (!isLeaveOrOff && emp.isPunchedOut) {
-                            excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`;
-                        }
-
-                        let totalDisplay = `<span style="font-weight:bold; font-size:14px; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
-
-                        tbody.innerHTML += `<tr>
-                            <td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td>
-                            <td>${emp.inTime}</td><td>${emp.outTime}</td>
-                            <td>${formatTime(emp.breakSecs)}</td><td>${formatTime(emp.trainSecs)}</td>
-                            <td style="background:#e1f5fe;">${excHtml}</td>
-                            <td>${totalDisplay}</td>
-                        </tr>`;
+                        let excHtml = excSecs > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(excSecs)}</span>` : `-`;
+                        if (!isLeaveOrOff && emp.isPunchedOut) { excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; }
+                        let totalDisplay = `<span style="font-weight:bold; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
+                        tbody.innerHTML += `<tr><td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td><td>${emp.inTime}</td><td>${emp.outTime}</td><td>${formatTime(emp.breakSecs)}</td><td>${formatTime(emp.trainSecs)}</td><td style="background:#e1f5fe;">${excHtml}</td><td>${totalDisplay}</td></tr>`;
                     } catch(e) {}
                 });
-
-                if(totalExceptionTime > 0) {
-                    excSumBox.innerHTML = `💡 Total Exception granted to this employee (ID: ${id}): <strong>${formatTime(totalExceptionTime)}</strong>.`;
-                    excSumBox.style.display = "block";
-                }
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data. Check connection.</td></tr>`; }
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data.</td></tr>`; }
         }
 
-        function openExceptionModal(id, date, name) {
-            currentExcId = id; currentExcDate = date;
-            document.getElementById("excEmpInfo").innerHTML = `<b>Employee:</b> ${name} (${id})<br><b>Date:</b> ${date}`;
-            document.getElementById("excMinutes").value = "";
-            document.getElementById("exceptionModal").style.display = "flex";
-        }
+        function openExceptionModal(id, date, name) { currentExcId = id; currentExcDate = date; document.getElementById("exceptionModal").style.display = "flex"; }
         function closeExceptionModal() { document.getElementById("exceptionModal").style.display = "none"; }
-
+        
         async function submitException() {
             let mins = document.getElementById("excMinutes").value;
             if(!mins || mins <= 0) return alert("Please enter valid minutes.");
@@ -498,6 +517,68 @@
             } catch(e) { alert("Failed to add exception."); searchEmployee(); }
         }
 
+        function openPayrollModal() {
+            let searchedId = document.getElementById("searchId").value.trim();
+            if(!searchedId) return alert("❌ Search Employee ID first!");
+            document.getElementById('payEmpId').value = searchedId;
+            document.getElementById('payrollModal').style.display = 'flex';
+            document.getElementById('salarySlipArea').style.display = 'none'; 
+        }
+
+        function generateSalarySlip() {
+            let empId = document.getElementById('payEmpId').value.trim();
+            let perDay = parseFloat(document.getElementById('payPerDay').value);
+            let monthDays = parseInt(document.getElementById('payMonthDays').value);
+            
+            if(!empId || !perDay || monthDays <= 0 || isNaN(perDay)) return alert("❌ Enter valid Per Day Salary!");
+
+            let presentCount = 0; let slCount = 0; let clCount = 0; let elCount = 0; 
+            let weekOffCount = 0; let holidayCount = 0; let halfDayCount = 0; let absentCount = 0;
+
+            let tableRows = document.querySelectorAll("#searchTableBody tr"); 
+            if(tableRows.length === 0 || tableRows[0].innerText.includes("Search an ID")) return alert("❌ No attendance data found!");
+
+            let tableDates = []; let sampleDate = "";
+
+            tableRows.forEach(row => {
+                let cells = row.getElementsByTagName("td"); let rowStatus = "";
+                if(cells.length === 10) { tableDates.push(cells[0].innerText.trim()); if(!sampleDate) sampleDate = cells[0].innerText.trim(); rowStatus = cells[3].innerText.trim().toUpperCase(); } 
+                else if(cells.length === 2) { tableDates.push(cells[0].innerText.trim()); if(!sampleDate) sampleDate = cells[0].innerText.trim(); rowStatus = cells[1].innerText.trim().toUpperCase(); }
+
+                if(rowStatus !== "") {
+                    if(rowStatus.includes("PRESENT")) presentCount++; else if(rowStatus.includes("SL")) slCount++; else if(rowStatus.includes("CL")) clCount++; else if(rowStatus.includes("EL")) elCount++;
+                    else if(rowStatus.includes("WEEKLY OFF")) weekOffCount++; else if(rowStatus.includes("HOLIDAY")) holidayCount++; else if(rowStatus.includes("HALF DAY")) halfDayCount++;
+                    else if(rowStatus.includes("ABSENT") || rowStatus.includes("LWP") || rowStatus.includes("LEAVE")) absentCount++;
+                }
+            });
+
+            let tM = new Date().getMonth(); let tY = new Date().getFullYear();
+            if(sampleDate.includes('/')) { let parts = sampleDate.split('/'); tM = parseInt(parts[1]) - 1; tY = parseInt(parts[2]); }
+            let todayOnly = new Date(); todayOnly.setHours(0,0,0,0);
+
+            for(let d = 1; d <= monthDays; d++) {
+                let dateObj = new Date(tY, tM, d); if(dateObj > todayOnly) break;
+                let dateStr = String(d).padStart(2,'0') + "/" + String(tM+1).padStart(2,'0') + "/" + tY;
+                if(!tableDates.includes(dateStr)) {
+                    if(PUBLIC_HOLIDAYS[dateStr]) holidayCount++; else if(dateObj.getDay() === WEEKLY_OFF_DAY) weekOffCount++; else absentCount++;
+                }
+            }
+
+            let paidLeaves = slCount + clCount + elCount; let fullPayDays = presentCount + weekOffCount + holidayCount;
+            let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); let netSalary = payableDays * perDay;
+            let empName = EMP_LIST[empId] ? EMP_LIST[empId].name : "Unknown Employee";
+
+            document.getElementById('slipEmpId').innerText = empId; document.getElementById('slipEmpName').innerText = empName;
+            document.getElementById('slipMonthDays').innerText = monthDays; document.getElementById('slipPerDayText').innerText = perDay;
+            document.getElementById('slipPayableDays').innerText = payableDays;
+            document.getElementById('slipPWH').innerText = fullPayDays; document.getElementById('slipBasic').innerText = fullPayDays * perDay;
+            document.getElementById('slipPaidLeaves').innerText = `${paidLeaves} (SL:${slCount}, CL:${clCount}, EL:${elCount})`; document.getElementById('slipLeavePay').innerText = paidLeaves * perDay;
+            document.getElementById('slipHalf').innerText = halfDayCount; document.getElementById('slipHalfDeduct').innerText = "- " + (halfDayCount * perDay * 0.5); 
+            document.getElementById('slipAbsent').innerText = absentCount; document.getElementById('slipAbsentDeduct').innerText = "- " + (absentCount * perDay);
+            document.getElementById('slipNetPay').innerText = "₹ " + netSalary;
+            document.getElementById('salarySlipArea').style.display = 'block';
+        }
+        
         async function downloadEmpPDF() {
             let id = document.getElementById("searchId").value.trim();
             if(!id) return alert("❌ Please search an Employee ID first!");
@@ -641,129 +722,6 @@
             document.getElementById("passMsg").innerText = "✅ Passwords updated successfully!";
             setTimeout(() => document.getElementById("passMsg").innerText = "", 3000);
             document.getElementById("newAdminPass").value = ""; document.getElementById("newTrainPass").value = "";
-        }
-
-        // 🌟 NAYA PAYROLL & SALARY CALCULATOR LOGIC 🌟
-        function openPayrollModal() {
-            let searchedId = document.getElementById("searchId").value.trim();
-            if(!searchedId) {
-                alert("❌ Please search an Employee ID first to load their attendance data!");
-                return;
-            }
-            document.getElementById('payEmpId').value = searchedId;
-            document.getElementById('payrollModal').style.display = 'flex';
-            document.getElementById('salarySlipArea').style.display = 'none'; 
-        }
-
-        function generateSalarySlip() {
-            let empId = document.getElementById('payEmpId').value.trim();
-            let perDay = parseFloat(document.getElementById('payPerDay').value);
-            let monthDays = parseInt(document.getElementById('payMonthDays').value);
-            
-            if(!empId || !perDay || monthDays <= 0 || isNaN(perDay)) {
-                alert("❌ Please enter a valid Per Day Salary!");
-                return;
-            }
-
-            // Default Zero Setup
-            let presentCount = 0; let slCount = 0; let clCount = 0; let elCount = 0; 
-            let weekOffCount = 0; let holidayCount = 0; let halfDayCount = 0; let absentCount = 0;
-
-            let tableRows = document.querySelectorAll("#searchTableBody tr"); 
-            
-            if(tableRows.length === 0 || tableRows[0].innerText.includes("Search an ID") || tableRows[0].innerText.includes("Fetching")) {
-                alert("❌ No attendance data found! Please wait for the search to complete.");
-                return;
-            }
-
-            let tableDates = []; // 🌟 NAYA: Table ki dates yaad rakhne ke liye
-            let sampleDate = "";
-
-            tableRows.forEach(row => {
-                let cells = row.getElementsByTagName("td");
-                let rowStatus = "";
-                
-                // Date nikalna taaki missing days track ho sakein
-                if(cells.length === 10) { 
-                    tableDates.push(cells[0].innerText.trim());
-                    if(!sampleDate) sampleDate = cells[0].innerText.trim();
-                    rowStatus = cells[3].innerText.trim().toUpperCase(); 
-                } 
-                else if(cells.length === 2) { 
-                    tableDates.push(cells[0].innerText.trim());
-                    if(!sampleDate) sampleDate = cells[0].innerText.trim();
-                    rowStatus = cells[1].innerText.trim().toUpperCase(); 
-                }
-
-                if(rowStatus !== "") {
-                    if(rowStatus.includes("PRESENT")) presentCount++;
-                    else if(rowStatus.includes("SL")) slCount++;
-                    else if(rowStatus.includes("CL")) clCount++;
-                    else if(rowStatus.includes("EL")) elCount++;
-                    else if(rowStatus.includes("WEEKLY OFF")) weekOffCount++;
-                    else if(rowStatus.includes("HOLIDAY")) holidayCount++;
-                    else if(rowStatus.includes("HALF DAY")) halfDayCount++;
-                    else if(rowStatus.includes("ABSENT") || rowStatus.includes("LWP") || rowStatus.includes("LEAVE")) absentCount++;
-                }
-            });
-
-            // 🌟🌟 NAYA LOGIC: Missing Dates ko check karna (Holiday hai ya Week-Off ya Absent)
-            let tM = new Date().getMonth(); let tY = new Date().getFullYear();
-            if(sampleDate.includes('/')) {
-                let parts = sampleDate.split('/');
-                tM = parseInt(parts[1]) - 1; 
-                tY = parseInt(parts[2]);
-            }
-
-            let todayOnly = new Date(); todayOnly.setHours(0,0,0,0);
-
-            for(let d = 1; d <= monthDays; d++) {
-                let dateObj = new Date(tY, tM, d);
-                if(dateObj > todayOnly) break; // Future ki date ko ignore karo
-
-                let dateStr = String(d).padStart(2,'0') + "/" + String(tM+1).padStart(2,'0') + "/" + tY;
-
-                // Agar ye date search wali table me NAHI hai, tab check karo
-                if(!tableDates.includes(dateStr)) {
-                    if(PUBLIC_HOLIDAYS[dateStr]) {
-                        holidayCount++; // Yeh Public Holiday tha
-                    } else if(dateObj.getDay() === WEEKLY_OFF_DAY) {
-                        weekOffCount++; // Yeh Sunday (Week-off) tha
-                    } else {
-                        absentCount++; // Yeh proper Absent hai
-                    }
-                }
-            }
-            // 🌟🌟 LOGIC END
-
-            let paidLeaves = slCount + clCount + elCount;
-            let fullPayDays = presentCount + weekOffCount + holidayCount;
-            let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); 
-
-            let netSalary = payableDays * perDay;
-            let empName = (typeof EMP_LIST !== 'undefined' && EMP_LIST[empId]) ? EMP_LIST[empId].name : "Unknown Employee";
-
-            document.getElementById('slipEmpId').innerText = empId;
-            document.getElementById('slipEmpName').innerText = empName;
-            document.getElementById('slipMonthDays').innerText = monthDays;
-            document.getElementById('slipPerDayText').innerText = perDay;
-            document.getElementById('slipPayableDays').innerText = payableDays;
-            
-            document.getElementById('slipPWH').innerText = fullPayDays;
-            document.getElementById('slipBasic').innerText = fullPayDays * perDay;
-            
-            document.getElementById('slipPaidLeaves').innerText = `${paidLeaves} (SL:${slCount}, CL:${clCount}, EL:${elCount})`;
-            document.getElementById('slipLeavePay').innerText = paidLeaves * perDay;
-            
-            document.getElementById('slipHalf').innerText = halfDayCount;
-            document.getElementById('slipHalfDeduct').innerText = "- " + (halfDayCount * perDay * 0.5); 
-            
-            document.getElementById('slipAbsent').innerText = absentCount;
-            document.getElementById('slipAbsentDeduct').innerText = "- " + (absentCount * perDay);
-            
-            document.getElementById('slipNetPay').innerText = "₹ " + netSalary;
-
-            document.getElementById('salarySlipArea').style.display = 'block';
         }
     </script>
 </body>
