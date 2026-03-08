@@ -501,26 +501,31 @@
             } catch(e) {}
         }
         
-        async function undoPunchOut(id) {
-            if(!confirm(`UNDO Punch Out for ${EMP_LIST[id].name}?`)) return;
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut" }) });
-            alert("✅ Command sent!"); loadLiveStatus();
-        }
-        
         async function adminPunchOut(id) {
             if(!confirm(`Manually Punch Out ${EMP_LIST[id].name}?`)) return;
             let exactTime = new Date().toLocaleTimeString('en-IN');
             let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
+            
+            document.getElementById("liveTableBody").innerHTML = "<tr><td colspan='4'>Applying Force Punch Out...</td></tr>";
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) });
             alert("✅ Punched out successfully."); loadLiveStatus();
+        }
+
+        async function undoPunchOut(id) {
+            if(!confirm(`UNDO Punch Out for ${EMP_LIST[id].name}?`)) return;
+            let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+            
+            document.getElementById("liveTableBody").innerHTML = "<tr><td colspan='4'>Reversing Punch Out...</td></tr>";
+            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut", date: dateStr }) });
+            alert("✅ Command sent & Reverted!"); loadLiveStatus();
         }
         
         async function forceCommand(id, type) {
             if(!confirm("Remotely stop training?")) return;
+            document.getElementById("liveTableBody").innerHTML = "<tr><td colspan='4'>Sending command...</td></tr>";
             await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: type }) });
             alert("Command sent successfully."); loadLiveStatus();
         }
-
         // --- LEAVES ---
         async function loadLeaves(filterStatus = 'Pending') {
             document.getElementById('leaveTableTitle').innerText = `Showing: ${filterStatus} Requests`;
