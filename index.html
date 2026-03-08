@@ -553,7 +553,7 @@
 
         // --- 🚨 SEARCH EMPLOYEE (FETCHING BUG FIXED) 🚨 ---
         let uniqueRecordsStore = {}; 
-        async function searchEmployee() {
+       async function searchEmployee() {
             let id = document.getElementById("searchId").value; if(!id) return alert("Enter Employee ID.");
             let tbody = document.getElementById("searchTableBody"); 
             tbody.innerHTML = `<tr><td colspan="10">⏳ Fetching records... Please wait.</td></tr>`; 
@@ -564,38 +564,37 @@
                 tbody.innerHTML = "";
                 if(rawDataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10">No attendance records found.</td></tr>`;
                 
-                uniqueRecordsStore = {};
+                let uniqueRecordsStore = {};
                 rawDataArray.forEach(jsonItem => {
-                    try {
-                        let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; 
-                        if (!emp || !emp.id) return;
-                        let dToPrint = emp.recordDate || emp.date || "-";
-                        uniqueRecordsStore[dToPrint] = emp; 
-                    } catch(e){}
+                    try { let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; if (!emp || !emp.id) return; let dToPrint = emp.recordDate || emp.date || "-"; uniqueRecordsStore[dToPrint] = emp; } catch(e){}
                 });
 
                 Object.values(uniqueRecordsStore).reverse().forEach(emp => {
                     try {
-                        let excSecs = emp.exceptionSecs || 0; 
-                        let totalWorkSecs = (emp.workSecs || 0) + (emp.trainSecs || 0) + excSecs; 
+                        // 🌟 FIX: parseInt STRICLY APPLIED HERE TO STOP 6000 HOURS BUG 🌟
+                        let excSecs = parseInt(emp.exceptionSecs) || 0; 
+                        let workSecs = parseInt(emp.workSecs) || 0;
+                        let trainSecs = parseInt(emp.trainSecs) || 0;
+                        let totalWorkSecs = workSecs + trainSecs + excSecs; 
+                        
                         let wColor = totalWorkSecs >= 28800 ? "green" : "red";
                         let statusHtml = emp.statusText || "Present";
                         let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusHtml.toLowerCase().includes(v));
                         if (!isLeaveOrOff && emp.mode !== "leave") { if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`; else statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`; } 
                         else { statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`; if(totalWorkSecs === 0) wColor = "black"; }
+                        
                         let dateToPrint = emp.recordDate || emp.date || "-";
                         let excHtml = excSecs > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(excSecs)}</span>` : `-`;
                         if (!isLeaveOrOff && emp.isPunchedOut) { excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; }
                         let totalDisplay = `<span style="font-weight:bold; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
                         
-                        let inT = emp.inTime || "-"; let outT = emp.outTime || "-"; let bT = formatTime(emp.breakSecs); let trT = formatTime(emp.trainSecs);
+                        let inT = emp.inTime || "-"; let outT = emp.outTime || "-"; let bT = formatTime(parseInt(emp.breakSecs)||0); let trT = formatTime(trainSecs);
                         
                         tbody.innerHTML += `<tr><td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td><td>${inT}</td><td>${outT}</td><td>${bT}</td><td>${trT}</td><td style="background:#e1f5fe;">${excHtml}</td><td>${totalDisplay}</td></tr>`;
                     } catch(e) {}
                 });
             } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data. Check connection.</td></tr>`; }
         }
-
         function openExceptionModal(id, date, name) { currentExcId = id; currentExcDate = date; document.getElementById("exceptionModal").style.display = "flex"; }
         function closeExceptionModal() { document.getElementById("exceptionModal").style.display = "none"; }
         
