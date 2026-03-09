@@ -67,7 +67,7 @@
             #salarySlipArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; border: none; padding: 0; }
             .btn-payroll, .payroll-input, label, h3, p, .info-box { display: none !important; }
             .slip-table th, .slip-table td { border: 2px solid #000 !important; } 
-            #adminLoginModal { display: none !important; } /* Hide login shield on print */
+            #adminLoginModal { display: none !important; } 
         }
     </style>
 </head>
@@ -246,7 +246,7 @@
             <div class="info-box" style="background:#e8f5e9; padding:10px; border-radius:5px; margin-bottom:15px; border:1px solid #4CAF50; font-size:13px; color:#2E7D32; text-align:left;">
                 <b>📌 Payroll Rules Applied:</b><br>
                 1. Month days are auto-calculated.<br>
-                2. Every 100 Penalty Points = 1 Day Salary Deduction.
+                2. Every 100 <b>Net Penalty Points</b> (Penalty - Reward) = 1 Day Salary Deduction.
             </div>
 
             <label style="font-weight:bold; display:block; text-align:left;">Employee ID:</label>
@@ -275,7 +275,7 @@
                     <tr><td>Paid Leaves (EL, CL, SL)</td><td id="slipPaidLeaves">0</td><td>Leave Pay</td><td id="slipLeavePay" style="color:green; font-weight:bold;">0</td></tr>
                     <tr><td>Half Days</td><td id="slipHalf">0</td><td>Half Day Deduction</td><td id="slipHalfDeduct" style="color:red; font-weight:bold;">0</td></tr>
                     <tr><td>Absent / LWP</td><td id="slipAbsent">0</td><td>Absent Deduction</td><td id="slipAbsentDeduct" style="color:red; font-weight:bold;">0</td></tr>
-                    <tr><td style="color:red; font-weight:bold;">Discipline Penalties</td><td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td><td style="color:red;">Penalty Deduction (100pt=1Day)</td><td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td></tr>
+                    <tr><td style="color:red; font-weight:bold;">Discipline Penalties</td><td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td><td style="color:red;">Penalty Deduction (100 Net Pts=1Day)</td><td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td></tr>
                     <tr class="slip-total"><td colspan="3" style="text-align:right;">Net Payable Salary:</td><td id="slipNetPay" style="color:#1a237e;">0</td></tr>
                 </table>
                 
@@ -288,25 +288,25 @@
         </div>
     </div>
 
-        <script>
+    <script>
+        // 🚨 UPDATE WITH YOUR SCRIPT URL 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
 
         const WEEKLY_OFF_DAY = 1; 
         const PUBLIC_HOLIDAYS = { "03/03/2026": "Holi", "04/03/2026": "Holi" };
         let EMP_LIST = {}; 
         let currentExcId = ""; let currentExcDate = "";
-        let REAL_ADMIN_PASS = "1234"; // 🌟 DEFAULT ADMIN PASS
+        let REAL_ADMIN_PASS = "1234"; 
 
         // 🌟 1. ADMIN SESSION & LOGIN LOGIC 🌟
         document.addEventListener("DOMContentLoaded", async () => {
-            // Check Session
             if (localStorage.getItem('adminSessionActive') === 'true') {
                 document.getElementById('adminLoginModal').style.display = 'none';
+                loadLiveStatus(); 
             } else {
                 document.getElementById('adminPassInput').focus();
             }
 
-            // Fetch latest passwords in background
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`);
                 let pData = await pRes.json();
@@ -323,7 +323,7 @@
             if (inputPass === REAL_ADMIN_PASS) {
                 localStorage.setItem('adminSessionActive', 'true');
                 document.getElementById('adminLoginModal').style.display = 'none';
-                loadLiveStatus(); // Ensure initial data loads if not already
+                loadLiveStatus(); 
             } else {
                 alert("❌ गलत पासवर्ड! Access Denied.");
                 document.getElementById("adminPassInput").value = "";
@@ -371,7 +371,7 @@
             setInterval(loadLiveStatus, 10000); 
         }; 
 
-        // 🌟🌟 TASK MASTER (UI & LOGIC) 🌟🌟
+        // --- TASK MASTER ---
         async function loadAllTasks() {
             let tbody = document.getElementById("adminTaskTableBody");
             tbody.innerHTML = `<tr><td colspan="7">Fetching all tasks...</td></tr>`;
@@ -379,7 +379,6 @@
                 let res = await fetch(`${SCRIPT_URL}?action=getAllTasks&nocache=${Date.now()}`);
                 let tasks = await res.json();
                 tbody.innerHTML = "";
-
                 if(tasks.length === 0) return tbody.innerHTML = `<tr><td colspan="7">No tasks in the system.</td></tr>`;
 
                 tasks.reverse().forEach(t => {
@@ -413,7 +412,7 @@
                     </tr>`;
                 });
             } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:red;">Error fetching tasks.</td></tr>`; }
-                }
+        }
             
         async function adminCreateTask() {
             let receiverId = document.getElementById("adminTaskTo").value.trim();
@@ -543,6 +542,7 @@
             alert("Employee deactivated successfully."); fetchEmployees();
         }
 
+        // --- LIVE STATUS ---
         async function loadLiveStatus() {
             let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
             try {
@@ -624,7 +624,7 @@
             alert(`Marked as ${status}`); loadLeaves('Pending'); 
         }
 
-        // --- 🚨 SEARCH EMPLOYEE 🚨 ---
+        // --- SEARCH EMPLOYEE ---
         let uniqueRecordsStore = {}; 
         async function searchEmployee() {
             let id = document.getElementById("searchId").value; if(!id) return alert("Enter Employee ID.");
@@ -667,6 +667,7 @@
                 });
             } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data. Check connection.</td></tr>`; }
         }
+
         function openExceptionModal(id, date, name) { currentExcId = id; currentExcDate = date; document.getElementById("exceptionModal").style.display = "flex"; }
         function closeExceptionModal() { document.getElementById("exceptionModal").style.display = "none"; }
         
@@ -681,7 +682,7 @@
             } catch(e) { alert("Failed to add exception."); searchEmployee(); }
         }
 
-        // --- 🚨 SALARY PAYROLL 🚨 ---
+        // --- 🚨 SALARY PAYROLL (NET SCORE LOGIC APPLIED) 🚨 ---
         function openPayrollModal() {
             let searchedId = document.getElementById("searchId").value.trim();
             if(!searchedId) return alert("❌ Please Search Employee ID first!");
@@ -736,8 +737,13 @@
             let paidLeaves = slCount + clCount + elCount; let fullPayDays = presentCount + weekOffCount + holidayCount;
             let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); 
             
+            // 🌟 MATH: NET SCORE PENALTY LOGIC
             let totalPenPts = EMP_LIST[empId] ? (parseInt(EMP_LIST[empId].penalty) || 0) : 0;
-            let penaltyDaysToCut = Math.floor(totalPenPts / 100); 
+            let totalRewPts = EMP_LIST[empId] ? (parseInt(EMP_LIST[empId].reward) || 0) : 0;
+            let netPenPts = totalPenPts - totalRewPts;
+            if (netPenPts < 0) netPenPts = 0; // Agar reward jyada hai to minus deduction nahi hogi
+            
+            let penaltyDaysToCut = Math.floor(netPenPts / 100); 
             let totalPenDeduct = penaltyDaysToCut * perDay;
             
             let netSalary = (payableDays * perDay) - totalPenDeduct;
@@ -751,7 +757,8 @@
             document.getElementById('slipHalf').innerText = halfDayCount; document.getElementById('slipHalfDeduct').innerText = "- " + (halfDayCount * perDay * 0.5); 
             document.getElementById('slipAbsent').innerText = absentCount; document.getElementById('slipAbsentDeduct').innerText = "- " + (absentCount * perDay);
             
-            document.getElementById('slipPenPts').innerHTML = `${totalPenPts} pts <br><small>(${penaltyDaysToCut} Days Cut)</small>`;
+            // 🌟 Update Slip Display with Net Points Breakdown
+            document.getElementById('slipPenPts').innerHTML = `${netPenPts} Net pts <br><small style="color:#555;">(Pen: ${totalPenPts} - Rew: ${totalRewPts})</small><br><small>(${penaltyDaysToCut} Days Cut)</small>`;
             document.getElementById('slipPenDeduct').innerText = "- " + totalPenDeduct;
             
             document.getElementById('slipNetPay').innerText = "₹ " + netSalary;
@@ -811,7 +818,7 @@
 
                     if(empRecord) {
                         printedRowsCount++;
-                        let exc = empRecord.exceptionSecs || 0; let tw = (empRecord.workSecs||0) + (empRecord.trainSecs||0) + exc;
+                        let exc = parseInt(empRecord.exceptionSecs) || 0; let tw = parseInt(empRecord.workSecs||0) + parseInt(empRecord.trainSecs||0) + exc;
                         let wColor = tw >= 28800 ? "green" : "red";
                         
                         let statusText = empRecord.statusText || "Present";
@@ -834,8 +841,8 @@
                             <td style="border:1px solid black;">${statusText}</td>
                             <td style="color: black; border:1px solid black;">${inT}</td>
                             <td style="color: black; border:1px solid black;">${outT}</td>
-                            <td style="color: black; border:1px solid black;">${formatTime(empRecord.breakSecs)}</td>
-                            <td style="color: black; border:1px solid black;">${formatTime(empRecord.trainSecs)}</td>
+                            <td style="color: black; border:1px solid black;">${formatTime(parseInt(empRecord.breakSecs)||0)}</td>
+                            <td style="color: black; border:1px solid black;">${formatTime(parseInt(empRecord.trainSecs)||0)}</td>
                             <td style="background: #f1f8e9; color: black; font-weight:bold; border:1px solid black;">${excDisplay}</td>
                             <td style="font-weight:bold; color:${wColor}; border:1px solid black;">${formatTime(tw)}</td>
                         </tr>`;
@@ -912,8 +919,6 @@
             document.getElementById("passMsg").innerText = "✅ Passwords updated successfully!";
             setTimeout(() => document.getElementById("passMsg").innerText = "", 3000);
             document.getElementById("newAdminPass").value = ""; document.getElementById("newTrainPass").value = "";
-            
-            // Instantly sync the new admin pass locally so we don't get logged out
             if(aPass) REAL_ADMIN_PASS = aPass.trim();
         }
     </script>
