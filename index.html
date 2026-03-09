@@ -64,10 +64,81 @@
             .btn-payroll, .payroll-input, label, h3, p, .info-box { display: none !important; }
             .slip-table th, .slip-table td { border: 2px solid #000 !important; } 
         }
+        /* 🌟 LOGIN PAGE STYLING 🌟 */
+#loginOverlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #1a237e 0%, #2E7D32 100%);
+    display: flex; justify-content: center; align-items: center; z-index: 99999;
+}
+.login-card {
+    background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: center; width: 320px;
+    backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);
+}
+.login-input {
+    width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #ddd;
+    border-radius: 10px; font-size: 16px; outline: none; text-align: center;
+}
+.login-btn {
+    width: 100%; padding: 12px; background: #1a237e; color: white; border: none;
+    border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;
+}
+#mainAppContent { display: none; } /* शुरू में सब छुपा रहेगा */
     </style>
 </head>
 <body>
 
+    <div id="loginOverlay">
+    <div class="login-card">
+        <h2 style="color:#1a237e; margin:0;">Admin Access</h2>
+        <div style="font-size: 50px; margin: 20px 0;">🔐</div>
+        <input type="password" id="adminLoginPass" class="login-input" placeholder="Enter Password" onkeypress="if(event.key === 'Enter') checkAdminLogin()">
+        <button class="login-btn" onclick="checkAdminLogin()">Login ➡</button>
+        <p id="loginError" style="color:red; margin-top:15px; font-weight:bold; display:none;">❌ गलत पासवर्ड!</p>
+    </div>
+</div>
+
+<div id="mainAppContent"> ```
+*(याद रहे: आपके ओरिजिनल कोड का जो आखिरी `</div>` है, उसके बाद एक और `</div>` बंद करना होगा ताकि `mainAppContent` क्लोज हो जाए।)*
+
+---
+
+### स्टेप 3: JavaScript में लॉगिन लॉजिक
+अपने `<script>` सेक्शन में सबसे ऊपर इसे पेस्ट करें:
+
+```javascript
+// 🌟 LOGIN LOGIC 🌟
+async function checkAdminLogin() {
+    let passInput = document.getElementById("adminLoginPass").value;
+    if(!passInput) return alert("कृपया पासवर्ड डालें!");
+
+    try {
+        // यह आपके ओरिजिनल SCRIPT_URL से पासवर्ड उठाएगा
+        let res = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`);
+        let data = await res.json();
+        let correctPass = String(data.adminPass).trim();
+
+        if(passInput === correctPass) {
+            document.getElementById("loginOverlay").style.display = "none";
+            document.getElementById("mainAppContent").style.display = "block";
+            localStorage.setItem("admin_session", "active");
+            // लॉगिन के बाद पुराने डेटा लोड करने वाले फंक्शन कॉल करें
+            fetchEmployees();
+            loadLiveStatus();
+        } else {
+            document.getElementById("loginError").style.display = "block";
+            document.getElementById("adminLoginPass").value = "";
+        }
+    } catch(e) { alert("सर्वर एरर!"); }
+}
+
+// पेज लोड होते ही चेक करें कि पहले से लॉगिन है या नहीं
+window.addEventListener('DOMContentLoaded', (event) => {
+    if(localStorage.getItem("admin_session") === "active") {
+        document.getElementById("loginOverlay").style.display = "none";
+        document.getElementById("mainAppContent").style.display = "block";
+    }
+});
     <div class="header"><h2>👨‍💼 Admin Dashboard - Quality Education (TEST)</h2></div>
 
     <div class="nav-tabs">
