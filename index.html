@@ -417,16 +417,28 @@
                 let hasActive = false;
                 for(let id in EMP_LIST) {
                     let emp = EMP_LIST[id]; if(emp.status !== "Active") continue; hasActive = true;
-                    
                     let d = new Date(emp.joinDate); let cleanJDate = isNaN(d) ? emp.joinDate : d.toLocaleDateString('en-IN');
                     
                     let actionBtn = `<button class="btn-force" style="background:#f44336; margin-bottom:5px;" onclick="deactivateEmp('${id}')">Deactivate</button><br>`;
-                    actionBtn += `<button class="btn-exception" style="background:#1a237e;" onclick="openManagePoints('${id}', '${emp.penalty}', '${emp.reward}')">⚖️ Manage Points</button>`;
+                    actionBtn += `<button class="btn-exception" style="background:#1a237e; margin-bottom:5px;" onclick="openManagePoints('${id}', '${emp.penalty}', '${emp.reward}')">⚖️ Manage Points</button><br>`;
+                    // 🌟 NEW: PASSWORD CHANGE BUTTON
+                    actionBtn += `<button class="btn-exception" style="background:#FF9800;" onclick="changeEmpPass('${id}')">🔑 Change Pass</button>`;
                     
                     tbody.innerHTML += `<tr><td style="font-weight:bold;">${id}</td><td>${emp.name}</td><td>${emp.mobile || '-'}</td><td>${cleanJDate}</td><td style="color:red; font-weight:bold;">${emp.penalty || 0} pts</td><td style="color:green; font-weight:bold;">${emp.reward || 0} pts</td><td>${actionBtn}</td></tr>`;
                 }
                 if(!hasActive) tbody.innerHTML = `<tr><td colspan="7">No active employees found.</td></tr>`;
             } catch(e) {}
+        }
+
+        // 🌟 NEW PASSWORD FUNCTION FOR ADMIN
+        async function changeEmpPass(id) {
+            let newPass = prompt(`Enter NEW Password for ${id}:`);
+            if(newPass && newPass.trim() !== "") {
+                alert("Updating password...");
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updateEmpPassword", empId: id, newPass: newPass.trim() }) });
+                alert("✅ Password changed successfully!");
+                fetchEmployees();
+            }
         }
 
         function openManagePoints(id, pen, rew) {
