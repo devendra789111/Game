@@ -110,10 +110,12 @@
 // 🌟 LOGIN LOGIC 🌟
 async function checkAdminLogin() {
     let passInput = document.getElementById("adminLoginPass").value;
+    let errorMsg = document.getElementById("loginError");
+    
     if(!passInput) return alert("कृपया पासवर्ड डालें!");
 
     try {
-        // यह आपके ओरिजिनल SCRIPT_URL से पासवर्ड उठाएगा
+        // आपके ओरिजिनल SCRIPT_URL से पासवर्ड चेक करना
         let res = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`);
         let data = await res.json();
         let correctPass = String(data.adminPass).trim();
@@ -122,14 +124,25 @@ async function checkAdminLogin() {
             document.getElementById("loginOverlay").style.display = "none";
             document.getElementById("mainAppContent").style.display = "block";
             localStorage.setItem("admin_session", "active");
-            // लॉगिन के बाद पुराने डेटा लोड करने वाले फंक्शन कॉल करें
-            fetchEmployees();
-            loadLiveStatus();
+            
+            // 🌟 सबसे जरूरी: लॉगिन के बाद ओरिजिनल फंक्शंस को शुरू करना
+            if (typeof initApp === "function") {
+                initApp(); 
+            } else {
+                // अगर initApp नहीं है, तो सीधे फंक्शंस कॉल करें
+                fetchEmployees();
+                loadLiveStatus();
+                let savedTab = localStorage.getItem('adminActiveTab') || 'liveStatus';
+                showSection(savedTab);
+            }
         } else {
-            document.getElementById("loginError").style.display = "block";
+            errorMsg.style.display = "block";
             document.getElementById("adminLoginPass").value = "";
         }
-    } catch(e) { alert("सर्वर एरर!"); }
+    } catch(e) {
+        console.error(e);
+        alert("सर्वर एरर! कृपया इंटरनेट चेक करें।");
+    }
 }
 
 // पेज लोड होते ही चेक करें कि पहले से लॉगिन है या नहीं
@@ -927,6 +940,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
             setTimeout(() => document.getElementById("passMsg").innerText = "", 3000);
             document.getElementById("newAdminPass").value = ""; document.getElementById("newTrainPass").value = "";
         }
-    </script>
+    </div> </div> <script>
+    // आपकी जावास्क्रिप्ट यहाँ है...
+</script>
 </body>
 </html>
