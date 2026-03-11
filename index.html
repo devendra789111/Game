@@ -415,16 +415,36 @@
         }
             
         async function adminCreateTask() {
-            let receiverId = document.getElementById("adminTaskTo").value.trim();
+            let receiverId = document.getElementById("adminTaskTo").value.trim().toUpperCase(); // ID को Auto-Capitalize करेगा
             let desc = document.getElementById("adminTaskDesc").value.trim();
+            
             if(!receiverId || !desc) return alert("Please enter Emp ID and details!");
             if(receiverId !== 'ALL' && !EMP_LIST[receiverId]) return alert("Invalid Employee ID!");
 
             let btn = event.target; btn.innerText = "⏳ Assigning..."; btn.disabled = true;
+            
+            // 🌟 FIX: Short Task ID & Correct Backend Keys Matching 🌟
+            let shortId = "TSK_" + Math.floor(Math.random() * 90000 + 10000); 
+            
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "assignTask", assignerId: "ADMIN", receiverId: receiverId, taskDetails: desc }) });
-                alert("✅ Admin Task Assigned Successfully!"); document.getElementById("adminTaskTo").value = ""; document.getElementById("adminTaskDesc").value = ""; loadAllTasks();
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ 
+                        action: "assignTask", 
+                        assignerId: "ADMIN", 
+                        assigneeId: receiverId, 
+                        description: desc, 
+                        password: "ADMIN", // Default password for Admin tasks
+                        taskId: shortId 
+                    }) 
+                });
+                alert("✅ Admin Task Assigned Successfully!"); 
+                document.getElementById("adminTaskTo").value = ""; 
+                document.getElementById("adminTaskDesc").value = ""; 
+                loadAllTasks();
             } catch(e) { alert("Failed to assign task."); }
+            
             btn.innerText = "🚀 Assign New Task"; btn.disabled = false;
         }
 
