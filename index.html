@@ -372,6 +372,7 @@
         }; 
 
         // --- TASK MASTER ---
+        // 🌟 FIX: ACTUAL WORKER RETURN BUG FIXED 🌟
         async function loadAllTasks() {
             let tbody = document.getElementById("adminTaskTableBody");
             tbody.innerHTML = `<tr><td colspan="7">Fetching all tasks...</td></tr>`;
@@ -379,22 +380,29 @@
                 let res = await fetch(`${SCRIPT_URL}?action=getAllTasks&nocache=${Date.now()}`);
                 let tasks = await res.json();
                 tbody.innerHTML = "";
+
                 if(tasks.length === 0) return tbody.innerHTML = `<tr><td colspan="7">No tasks in the system.</td></tr>`;
 
                 tasks.reverse().forEach(t => {
-                    let statusColor = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : (t.status === 'Returned' ? '#f44336' : (t.status === 'Review' ? '#9C27B0' : '#4CAF50')));
+                    let statusColor = t.status === 'Pending Start' ? '#FF9800' : (t.status === 'In Progress' ? '#2196F3' : (t.status === 'Rework' ? '#f44336' : (t.status === 'Review' ? '#9C27B0' : '#4CAF50')));
                     let badge = `<span style="background:${statusColor}; color:white; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:11px;">${t.status}</span>`;
                     
                     let shortId = t.taskId.includes("TSK_") ? "TSK-" + t.taskId.slice(-5) : t.taskId;
                     let displayAssigned = cleanDate(t.assignedTime);
                     let displayDead = t.expectedTime ? cleanDate(t.expectedTime) : "<span style='color:#999;'>Not Set</span>";
-                    let neatChain = t.chain.split("➡").map(s => s.trim() === 'ADMIN' ? '👑 ADMIN' : s.trim()).join(" ➡ ");
+                    
+                    // 🌟 MAIN FIX: Chain में से असली कर्मचारी (Worker) का नाम निकालना
+                    let rawChain = String(t.chain).split("->").map(s => s.trim());
+                    let actualWorker = rawChain[rawChain.length - 1]; // चेन का आख़िरी इंसान (Employee)
+                    
+                    let neatChain = rawChain.map(s => s === 'ADMIN' ? '👑 ADMIN' : s).join(" ➡ ");
 
                     let actions = `<button class="btn-exception" style="background:#1a237e;" onclick="openEditDeadline('${t.taskId}', '${t.expectedTime}')">✏️ Edit Time</button><br>`;
                     
                     if(t.status === 'Review' && t.originalAssigner === 'ADMIN') {
                         actions += `<button class="btn-approve" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'accept', '')">🏆 Accept</button><br>`;
-                        actions += `<button class="btn-reject" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'reject', '${t.currentOwner}')">❌ Return Work</button>`;
+                        // 🌟 यहाँ t.currentOwner की जगह actualWorker पास किया गया है
+                        actions += `<button class="btn-reject" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'reject', '${actualWorker}')">❌ Return Work</button>`;
                     } else if (t.status === 'Closed') {
                         actions += `<button class="btn-reject" style="margin-top:5px; background:#757575;" onclick="adminUpdateTask('${t.taskId}', 'delete')">🗑️ Delete Task</button>`;
                     } else {
