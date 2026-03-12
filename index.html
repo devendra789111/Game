@@ -3,22 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - TEST ENVIRONMENT</title>
+    <title>Admin Dashboard - Quality Education</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-        .header { background: #2E7D32; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; } 
-        .nav-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .nav-tabs button { padding: 10px 15px; font-size: 15px; border: none; background: #ddd; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .nav-tabs button.active { background: #1a237e; color: white; }
-        .nav-tabs button.task-tab { background: #3F51B5; color: white; } 
-        .section { display: none; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; }
-        .section.active { display: block; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f6f9; 
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        /* 🌟 ADMIN SECURITY SHIELD 🌟 */
+        #adminLoginModal { 
+            display: flex; 
+            position: fixed; 
+            z-index: 999999; 
+            left: 0; 
+            top: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: linear-gradient(135deg, #1a237e 0%, #E91E63 100%); 
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(10px); 
+        }
+        .admin-login-box { 
+            background: white; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            text-align: center; 
+            width: 320px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            animation: popIn 0.3s ease-out; 
+        }
+        @keyframes popIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        .header { 
+            background: #2E7D32; 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        } 
+        .header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        /* 🌟 LOGOUT BUTTON 🌟 */
+        .logout-btn { 
+            background: #f44336; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+            transition: 0.3s; 
+        }
+        .logout-btn:hover { background: #d32f2f; }
+
+        .nav-tabs { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        .nav-tabs button { 
+            padding: 10px 15px; 
+            font-size: 15px; 
+            border: none; 
+            background: #ddd; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.3s; 
+        }
+        .nav-tabs button.active { 
+            background: #1a237e; 
+            color: white; 
+        }
+        .nav-tabs button.task-tab { 
+            background: #3F51B5; 
+            color: white; 
+        } 
         
-        .table-responsive { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; }
-        th { background-color: #1a237e; color: white; }
+        .section { 
+            display: none; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            max-width: 1100px; 
+            margin: auto; 
+        }
+        .section.active { 
+            display: block; 
+        }
+        
+        .table-responsive { 
+            overflow-x: auto; 
+            margin-top: 15px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 13px; 
+            background: white; 
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: center; 
+            vertical-align: middle; 
+        }
+        th { 
+            background-color: #1a237e; 
+            color: white; 
+        }
         
         .btn-approve { background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 2px; }
         .btn-reject { background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 2px; }
@@ -26,37 +137,167 @@
         .btn-exception { background: #0288D1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size:11px; margin-top:4px; }
         
         .dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .dot-green { background-color: #4CAF50; } .dot-red { background-color: #f44336; }
-        .dot-orange { background-color: #FF9800; } .dot-purple { background-color: #9C27B0; }
+        .dot-green { background-color: #4CAF50; } 
+        .dot-red { background-color: #f44336; }
+        .dot-orange { background-color: #FF9800; } 
+        .dot-purple { background-color: #9C27B0; }
         
-        input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"] { padding: 10px; width: 100%; max-width: 300px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
-        .btn-primary { background: #1a237e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"] { 
+            padding: 10px; 
+            width: 100%; 
+            max-width: 300px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            margin-bottom: 10px; 
+            box-sizing: border-box; 
+        }
+        .btn-primary { 
+            background: #1a237e; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
         
-        .form-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 1px solid #ddd; align-items: center; }
-        .form-group { display: flex; flex-direction: column; text-align: left; }
-        .form-group label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .form-grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            margin-bottom: 20px; 
+            background: #f5f5f5; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            align-items: center; 
+        }
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+            text-align: left; 
+        }
+        .form-group label { 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: #333; 
+            margin-bottom: 5px; 
+        }
         
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: center; width: 320px; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.7); 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-content { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+            width: 320px; 
+        }
 
         /* 🌟 PAYROLL CSS START 🌟 */
-        .payroll-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; overflow-y: auto; align-items: center; justify-content: center;}
-        .payroll-box { background: white; margin: 40px auto; padding: 25px; border-radius: 10px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .payroll-input { width: 100%; max-width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
-        .btn-payroll { background: #1a237e; color: white; padding: 12px 15px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .payroll-modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            z-index: 2000; 
+            overflow-y: auto; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .payroll-box { 
+            background: white; 
+            margin: 40px auto; 
+            padding: 25px; 
+            border-radius: 10px; 
+            width: 90%; 
+            max-width: 600px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+        }
+        .payroll-input { 
+            width: 100%; 
+            max-width: 100%; 
+            padding: 10px; 
+            margin: 5px 0 15px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+        }
+        .btn-payroll { 
+            background: #1a237e; 
+            color: white; 
+            padding: 12px 15px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: bold; 
+            font-size: 16px; 
+            margin-bottom: 10px; 
+        }
         .btn-payroll:hover { background: #283593; }
         
-        #salarySlipArea { display: none; background: #fff; padding: 30px; border: 2px solid #000; margin-top: 20px; color: #000; text-align: left; }
-        .slip-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .slip-header h2 { margin: 0; color: #1a237e; font-size: 26px; text-transform: uppercase; }
-        .slip-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
-        .slip-table th { border: 2px solid #000 !important; padding: 8px; text-align: left; color: #000 !important; background-color: #f0f0f0 !important; }
-        .slip-table td { border: 2px solid #000 !important; padding: 8px; text-align: left; color: #000 !important; background-color: #ffffff !important; }
-        .slip-total { font-size: 18px; font-weight: bold; background-color: #e0e0e0 !important; color: #000 !important; }
-        
-        /* 🌟 NEW: LOGOUT BUTTON CSS 🌟 */
-        .logout-btn { position: absolute; right: 20px; top: 15px; background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s; }
-        .logout-btn:hover { background: #d32f2f; }
+        #salarySlipArea { 
+            display: none; 
+            background: #fff; 
+            padding: 30px; 
+            border: 2px solid #000; 
+            margin-top: 20px; 
+            color: #000; 
+            text-align: left; 
+        }
+        .slip-header { 
+            text-align: center; 
+            border-bottom: 2px solid #000; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+        }
+        .slip-header h2 { 
+            margin: 0; 
+            color: #1a237e; 
+            font-size: 26px; 
+            text-transform: uppercase; 
+        }
+        .slip-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 20px; 
+            font-size: 14px; 
+        }
+        .slip-table th { 
+            border: 2px solid #000 !important; 
+            padding: 8px; 
+            text-align: left; 
+            color: #000 !important; 
+            background-color: #f0f0f0 !important; 
+        }
+        .slip-table td { 
+            border: 2px solid #000 !important; 
+            padding: 8px; 
+            text-align: left; 
+            color: #000 !important; 
+            background-color: #ffffff !important; 
+        }
+        .slip-total { 
+            font-size: 18px; 
+            font-weight: bold; 
+            background-color: #e0e0e0 !important; 
+            color: #000 !important; 
+        }
 
         @media print {
             body * { visibility: hidden; }
@@ -73,8 +314,8 @@
 </head>
 <body>
 
-    <div id="adminLoginModal" style="display: flex; position: fixed; z-index: 999999; left: 0; top: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #1a237e 0%, #E91E63 100%); justify-content: center; align-items: center; backdrop-filter: blur(10px);">
-        <div style="background: white; padding: 40px 30px; border-radius: 16px; text-align: center; width: 320px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+    <div id="adminLoginModal">
+        <div class="admin-login-box">
             <div style="font-size: 50px; margin-bottom: 10px;">🛡️</div>
             <h2 style="color:#1a237e; margin: 0 0 5px 0; font-family: sans-serif;">Admin Portal</h2>
             <p style="font-size: 13px; color: #666; font-family: sans-serif; margin-bottom: 20px;">कंट्रोल पैनल एक्सेस करने के लिए पासवर्ड डालें</p>
@@ -86,7 +327,7 @@
     </div>
 
     <div class="header">
-        <h2>👨‍💼 Admin Dashboard - Quality Education (TEST)</h2>
+        <h2>👨‍💼 Admin Dashboard - Quality Education</h2>
         <button onclick="adminLogout()" class="logout-btn">Logout 🚪</button>
     </div>
 
@@ -103,9 +344,17 @@
         <h3 style="color:#3F51B5; border-bottom:2px solid #eee; padding-bottom:10px;">🎯 Admin Task Master</h3>
         
         <div class="form-grid" style="background:#e8eaf6; border-color:#3F51B5;">
-            <div class="form-group"><label>Assign To (Emp ID)</label><input type="text" id="adminTaskTo" placeholder="e.g. QE101"></div>
-            <div class="form-group"><label>Task Description</label><input type="text" id="adminTaskDesc" placeholder="Enter task details..." style="width:350px;"></div>
-            <div class="form-group" style="justify-content: flex-end;"><button class="btn-primary" style="background:#3F51B5; height: 40px; margin-bottom: 10px;" onclick="adminCreateTask()">🚀 Assign New Task</button></div>
+            <div class="form-group">
+                <label>Assign To (Emp ID)</label>
+                <input type="text" id="adminTaskTo" placeholder="e.g. QE101">
+            </div>
+            <div class="form-group">
+                <label>Task Description</label>
+                <input type="text" id="adminTaskDesc" placeholder="Enter task details..." style="width:350px;">
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+                <button class="btn-primary" style="background:#3F51B5; height: 40px; margin-bottom: 10px;" onclick="adminCreateTask()">🚀 Assign New Task</button>
+            </div>
         </div>
 
         <h4>All Institute Tasks</h4>
@@ -113,8 +362,20 @@
         
         <div class="table-responsive">
             <table>
-                <thead><tr><th>Task ID & Assign Date</th><th>Chain (From ➡ To)</th><th>Task Details</th><th>Status</th><th>Deadline Time</th><th>Penalty</th><th>Admin Actions</th></tr></thead>
-                <tbody id="adminTaskTableBody"><tr><td colspan="7">Loading all tasks...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>Task ID & Assign Date</th>
+                        <th>Chain (From ➡ To)</th>
+                        <th>Task Details</th>
+                        <th>Status</th>
+                        <th>Deadline Time</th>
+                        <th>Penalty</th>
+                        <th>Admin Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTaskTableBody">
+                    <tr><td colspan="7">Loading all tasks...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -124,8 +385,17 @@
         <button class="btn-primary" onclick="loadLiveStatus()">🔄 Refresh Now</button>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>ID</th><th>Name</th><th>Current Status</th><th>Admin Action</th></tr></thead>
-                <tbody id="liveTableBody"><tr><td colspan="4">Loading Live Data...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Current Status</th>
+                        <th>Admin Action</th>
+                    </tr>
+                </thead>
+                <tbody id="liveTableBody">
+                    <tr><td colspan="4">Loading Live Data...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -133,18 +403,49 @@
     <div id="manageEmp" class="section">
         <h3>📝 Register New Employee</h3>
         <div class="form-grid">
-            <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="e.g. Rahul Kumar" required></div>
-            <div class="form-group"><label>Mobile Number</label><input type="number" id="regMobile" placeholder="10-digit number" required></div>
-            <div class="form-group"><label>Aadhar Number</label><input type="number" id="regAadhar" placeholder="12-digit Aadhar" required></div>
-            <div class="form-group"><label>Joining Date</label><input type="date" id="regJoinDate" required></div>
-            <div class="form-group" style="justify-content: flex-end;"><button class="btn-primary" style="background: #2E7D32; height: 40px; margin-bottom: 10px;" onclick="registerEmployee()">➕ Add Employee</button></div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="e.g. Rahul Kumar" required>
+            </div>
+            <div class="form-group">
+                <label>Designation (पद)</label>
+                <input type="text" id="regDesignation" placeholder="e.g. Telecaller" required>
+            </div>
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="number" id="regMobile" placeholder="10-digit number" required>
+            </div>
+            <div class="form-group">
+                <label>Aadhar Number</label>
+                <input type="number" id="regAadhar" placeholder="12-digit Aadhar" required>
+            </div>
+            <div class="form-group">
+                <label>Joining Date</label>
+                <input type="date" id="regJoinDate" required>
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+                <button class="btn-primary" style="background: #2E7D32; height: 40px; margin-bottom: 10px;" onclick="registerEmployee()">➕ Add Employee</button>
+            </div>
         </div>
 
         <h3>📋 All Active Employees</h3>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Join Date</th><th>Total Penalty</th><th>Total Reward</th><th>Action</th></tr></thead>
-                <tbody id="empTableBody"><tr><td colspan="7" id="empLoadingMsg">Loading Employee List...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Designation</th>
+                        <th>Mobile</th>
+                        <th>Join Date</th>
+                        <th>Total Penalty</th>
+                        <th>Total Reward</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="empTableBody">
+                    <tr><td colspan="8" id="empLoadingMsg">Loading Employee List...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -159,8 +460,21 @@
         <h4 id="leaveTableTitle" style="color: #1a237e; border-bottom: 2px solid #ccc; padding-bottom: 5px; text-align: left;">Showing: Pending Requests</h4>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>Applied On</th><th>Leave Date</th><th>ID</th><th>Name</th><th>Type</th><th>Reason</th><th>Medical Cert?</th><th>Action / Status</th></tr></thead>
-                <tbody id="leaveTableBody"><tr><td colspan="8">Loading Requests...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>Applied On</th>
+                        <th>Leave Date</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th>Medical Cert?</th>
+                        <th>Action / Status</th>
+                    </tr>
+                </thead>
+                <tbody id="leaveTableBody">
+                    <tr><td colspan="8">Loading Requests...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -168,7 +482,7 @@
     <div id="searchEmp" class="section">
         <h3>Search Employee Attendance</h3>
         <div style="margin-bottom: 15px;">
-            <input type="text" id="searchId" placeholder="Enter Employee ID (e.g. QE101)" style="display:inline-block; width:auto;">
+            <input type="text" id="searchId" placeholder="Enter Employee ID (e.g. QE101)" style="display:inline-block; width:auto; text-transform: uppercase;">
             <button class="btn-primary" onclick="searchEmployee()">🔍 Search</button>
             <button class="btn-primary" style="background:#D32F2F;" onclick="downloadEmpPDF()">📄 Download PDF</button>
             <button class="btn-primary" style="background:#00897B; margin-left:5px;" onclick="openPayrollModal()">💸 Generate Salary Slip</button>
@@ -180,8 +494,16 @@
                 <table id="empSearchTable">
                     <thead>
                         <tr>
-                            <th>Date</th><th>ID</th><th>Name</th><th>Status</th><th>In Time</th><th>Out Time</th>
-                            <th>Break Time</th><th>Train Time</th><th>Admin Exception</th><th>Total Working Hrs</th>
+                            <th>Date</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>In Time</th>
+                            <th>Out Time</th>
+                            <th>Break Time</th>
+                            <th>Train Time</th>
+                            <th>Admin Exception</th>
+                            <th>Total Working Hrs</th>
                         </tr>
                     </thead>
                     <tbody id="searchTableBody">
@@ -197,8 +519,10 @@
         <div style="max-width: 400px; margin: auto; text-align: left;">
             <label style="font-weight:bold;">New Admin Password:</label>
             <input type="text" id="newAdminPass" placeholder="Enter New Admin Pass">
+            
             <label style="font-weight:bold; margin-top:15px; display:block;">New Training Password:</label>
             <input type="text" id="newTrainPass" placeholder="Enter New Training Pass">
+            
             <button class="btn-primary" style="width:100%; margin-top: 15px;" onclick="updateSystemPasswords()">💾 Save Passwords</button>
             <p id="passMsg" style="color: green; font-weight: bold; margin-top: 10px; text-align: center;"></p>
         </div>
@@ -265,18 +589,57 @@
                 </div>
                 
                 <table class="slip-table">
-                    <tr><th>Employee ID</th><td id="slipEmpId"></td><th>Name</th><td id="slipEmpName" style="font-weight:bold;"></td></tr>
-                    <tr><th>Month Days</th><td id="slipMonthDays"></td><th>Payable Days</th><td id="slipPayableDays" style="font-weight:bold; color:green;"></td></tr>
+                    <tr>
+                        <th>Employee ID</th><td id="slipEmpId"></td>
+                        <th>Name</th><td id="slipEmpName" style="font-weight:bold;"></td>
+                    </tr>
+                    <tr>
+                        <th>Month Days</th><td id="slipMonthDays"></td>
+                        <th>Payable Days</th><td id="slipPayableDays" style="font-weight:bold; color:green;"></td>
+                    </tr>
                 </table>
 
                 <table class="slip-table">
-                    <tr><th>Attendance Details</th><th>Days / Pts</th><th>Earnings / Deductions</th><th>Amount (₹)</th></tr>
-                    <tr><td>Present + Week Off + Holiday</td><td id="slipPWH">0</td><td>Basic Salary (Per day: ₹<span id="slipPerDayText"></span>)</td><td id="slipBasic" style="color:green; font-weight:bold;">0</td></tr>
-                    <tr><td>Paid Leaves (EL, CL, SL)</td><td id="slipPaidLeaves">0</td><td>Leave Pay</td><td id="slipLeavePay" style="color:green; font-weight:bold;">0</td></tr>
-                    <tr><td>Half Days</td><td id="slipHalf">0</td><td>Half Day Deduction</td><td id="slipHalfDeduct" style="color:red; font-weight:bold;">0</td></tr>
-                    <tr><td>Absent / LWP</td><td id="slipAbsent">0</td><td>Absent Deduction</td><td id="slipAbsentDeduct" style="color:red; font-weight:bold;">0</td></tr>
-                    <tr><td style="color:red; font-weight:bold;">Discipline Penalties</td><td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td><td style="color:red;">Penalty Deduction (100 Net Pts=1Day)</td><td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td></tr>
-                    <tr class="slip-total"><td colspan="3" style="text-align:right;">Net Payable Salary:</td><td id="slipNetPay" style="color:#1a237e;">0</td></tr>
+                    <tr>
+                        <th>Attendance Details</th>
+                        <th>Days / Pts</th>
+                        <th>Earnings / Deductions</th>
+                        <th>Amount (₹)</th>
+                    </tr>
+                    <tr>
+                        <td>Present + Week Off + Holiday</td>
+                        <td id="slipPWH">0</td>
+                        <td>Basic Salary (Per day: ₹<span id="slipPerDayText"></span>)</td>
+                        <td id="slipBasic" style="color:green; font-weight:bold;">0</td>
+                    </tr>
+                    <tr>
+                        <td>Paid Leaves (EL, CL, SL)</td>
+                        <td id="slipPaidLeaves">0</td>
+                        <td>Leave Pay</td>
+                        <td id="slipLeavePay" style="color:green; font-weight:bold;">0</td>
+                    </tr>
+                    <tr>
+                        <td>Half Days</td>
+                        <td id="slipHalf">0</td>
+                        <td>Half Day Deduction</td>
+                        <td id="slipHalfDeduct" style="color:red; font-weight:bold;">0</td>
+                    </tr>
+                    <tr>
+                        <td>Absent / LWP</td>
+                        <td id="slipAbsent">0</td>
+                        <td>Absent Deduction</td>
+                        <td id="slipAbsentDeduct" style="color:red; font-weight:bold;">0</td>
+                    </tr>
+                    <tr>
+                        <td style="color:red; font-weight:bold;">Discipline Penalties</td>
+                        <td id="slipPenPts" style="color:red; font-weight:bold;">0 pts</td>
+                        <td style="color:red;">Penalty Deduction (100 Net Pts=1Day)</td>
+                        <td id="slipPenDeduct" style="color:red; font-weight:bold;">0</td>
+                    </tr>
+                    <tr class="slip-total">
+                        <td colspan="3" style="text-align:right;">Net Payable Salary:</td>
+                        <td id="slipNetPay" style="color:#1a237e;">0</td>
+                    </tr>
                 </table>
                 
                 <div style="margin-top:50px; display:flex; justify-content:space-between; text-align:center; font-weight:bold;">
@@ -289,17 +652,19 @@
     </div>
 
     <script>
-        // 🚨 UPDATE WITH YOUR SCRIPT URL 🚨
+        // 🚨 IMPORTANT: UPDATE WITH YOUR APPS SCRIPT URL 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
 
         const WEEKLY_OFF_DAY = 1; 
         const PUBLIC_HOLIDAYS = { "03/03/2026": "Holi", "04/03/2026": "Holi" };
         let EMP_LIST = {}; 
-        let currentExcId = ""; let currentExcDate = "";
+        let currentExcId = ""; 
+        let currentExcDate = "";
         let REAL_ADMIN_PASS = "1234"; 
 
         // 🌟 1. ADMIN SESSION & LOGIN LOGIC 🌟
         document.addEventListener("DOMContentLoaded", async () => {
+            // Check Session
             if (localStorage.getItem('adminSessionActive') === 'true') {
                 document.getElementById('adminLoginModal').style.display = 'none';
                 loadLiveStatus(); 
@@ -307,6 +672,7 @@
                 document.getElementById('adminPassInput').focus();
             }
 
+            // Fetch latest passwords in background
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`);
                 let pData = await pRes.json();
@@ -314,8 +680,12 @@
                     REAL_ADMIN_PASS = String(pData.adminPass).trim();
                     document.getElementById("setAdminPass").value = REAL_ADMIN_PASS;
                 }
-                if(pData.trainPass) document.getElementById("setTrainPass").value = pData.trainPass;
-            } catch(e) {}
+                if(pData.trainPass) {
+                    document.getElementById("setTrainPass").value = pData.trainPass;
+                }
+            } catch(e) {
+                console.error("Failed to load initial passwords.");
+            }
         });
 
         function verifyAdminLogin() {
@@ -340,6 +710,7 @@
             }
         }
 
+        // --- UTILITY FUNCTIONS ---
         function formatTime(s) {
             if(!s || isNaN(s)) return "00:00:00";
             return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; 
@@ -354,6 +725,7 @@
         function showSection(id) {
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
+            
             document.getElementById(id).classList.add('active');
             document.getElementById('tab-' + id).classList.add('active');
             localStorage.setItem('adminActiveTab', id); 
@@ -372,7 +744,6 @@
         }; 
 
         // --- TASK MASTER ---
-        // 🌟 FIX: ACTUAL WORKER RETURN BUG FIXED 🌟
         async function loadAllTasks() {
             let tbody = document.getElementById("adminTaskTableBody");
             tbody.innerHTML = `<tr><td colspan="7">Fetching all tasks...</td></tr>`;
@@ -381,19 +752,22 @@
                 let tasks = await res.json();
                 tbody.innerHTML = "";
 
-                if(tasks.length === 0) return tbody.innerHTML = `<tr><td colspan="7">No tasks in the system.</td></tr>`;
+                if(tasks.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7">No tasks in the system.</td></tr>`;
+                    return;
+                }
 
                 tasks.reverse().forEach(t => {
                     let statusColor = t.status === 'Pending Start' ? '#FF9800' : (t.status === 'In Progress' ? '#2196F3' : (t.status === 'Rework' ? '#f44336' : (t.status === 'Review' ? '#9C27B0' : '#4CAF50')));
                     let badge = `<span style="background:${statusColor}; color:white; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:11px;">${t.status}</span>`;
                     
-                    let shortId = t.taskId.includes("TSK_") ? "TSK-" + t.taskId.slice(-5) : t.taskId;
+                    let shortId = String(t.taskId).includes("TSK_") ? "TSK-" + String(t.taskId).slice(-5) : t.taskId;
                     let displayAssigned = cleanDate(t.assignedTime);
                     let displayDead = t.expectedTime ? cleanDate(t.expectedTime) : "<span style='color:#999;'>Not Set</span>";
                     
-                    // 🌟 MAIN FIX: Chain में से असली कर्मचारी (Worker) का नाम निकालना
+                    // Actual Worker logic
                     let rawChain = String(t.chain).split("->").map(s => s.trim());
-                    let actualWorker = rawChain[rawChain.length - 1]; // चेन का आख़िरी इंसान (Employee)
+                    let actualWorker = rawChain[rawChain.length - 1]; 
                     
                     let neatChain = rawChain.map(s => s === 'ADMIN' ? '👑 ADMIN' : s).join(" ➡ ");
 
@@ -401,7 +775,6 @@
                     
                     if(t.status === 'Review' && t.originalAssigner === 'ADMIN') {
                         actions += `<button class="btn-approve" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'accept', '')">🏆 Accept</button><br>`;
-                        // 🌟 यहाँ t.currentOwner की जगह actualWorker पास किया गया है
                         actions += `<button class="btn-reject" style="margin-top:5px;" onclick="adminTaskAction('${t.taskId}', 'reject', '${actualWorker}')">❌ Return Work</button>`;
                     } else if (t.status === 'Closed') {
                         actions += `<button class="btn-reject" style="margin-top:5px; background:#757575;" onclick="adminUpdateTask('${t.taskId}', 'delete')">🗑️ Delete Task</button>`;
@@ -419,21 +792,24 @@
                         <td>${actions}</td>
                     </tr>`;
                 });
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:red;">Error fetching tasks.</td></tr>`; }
+            } catch(e) { 
+                tbody.innerHTML = `<tr><td colspan="7" style="color:red;">Error fetching tasks.</td></tr>`; 
+            }
         }
             
         async function adminCreateTask() {
-            let receiverId = document.getElementById("adminTaskTo").value.trim().toUpperCase(); // ID को Auto-Capitalize करेगा
+            let receiverId = document.getElementById("adminTaskTo").value.trim().toUpperCase();
             let desc = document.getElementById("adminTaskDesc").value.trim();
             
             if(!receiverId || !desc) return alert("Please enter Emp ID and details!");
             if(receiverId !== 'ALL' && !EMP_LIST[receiverId]) return alert("Invalid Employee ID!");
 
-            let btn = event.target; btn.innerText = "⏳ Assigning..."; btn.disabled = true;
+            let btn = event.target; 
+            btn.innerText = "⏳ Assigning..."; 
+            btn.disabled = true;
             
-            // 🌟 FIX: Short Task ID & Correct Backend Keys Matching 🌟
             let shortId = "TSK_" + Math.floor(Math.random() * 90000 + 10000); 
-            
+
             try {
                 await fetch(SCRIPT_URL, { 
                     method: "POST", 
@@ -443,7 +819,7 @@
                         assignerId: "ADMIN", 
                         assigneeId: receiverId, 
                         description: desc, 
-                        password: "ADMIN", // Default password for Admin tasks
+                        password: "ADMIN", 
                         taskId: shortId 
                     }) 
                 });
@@ -451,9 +827,11 @@
                 document.getElementById("adminTaskTo").value = ""; 
                 document.getElementById("adminTaskDesc").value = ""; 
                 loadAllTasks();
-            } catch(e) { alert("Failed to assign task."); }
-            
-            btn.innerText = "🚀 Assign New Task"; btn.disabled = false;
+            } catch(e) { 
+                alert("Failed to assign task."); 
+            }
+            btn.innerText = "🚀 Assign New Task"; 
+            btn.disabled = false;
         }
 
         function openEditDeadline(taskId, currentExp) {
@@ -461,7 +839,9 @@
             if(currentExp && currentExp.includes("T")) {
                 let iso = new Date(currentExp).toISOString().slice(0,16);
                 document.getElementById('eTaskTime').value = iso;
-            } else { document.getElementById('eTaskTime').value = ""; }
+            } else { 
+                document.getElementById('eTaskTime').value = ""; 
+            }
             document.getElementById('editTaskModal').style.display = 'flex';
         }
         
@@ -471,17 +851,32 @@
             if(!newTime) return alert("Please select a valid date/time.");
             document.getElementById('editTaskModal').style.display = 'none';
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminUpdateTask", taskId: taskId, updateType: "edit", newDeadline: newTime }) });
-                alert("✅ Deadline Updated!"); loadAllTasks();
-            } catch(e) { alert("Failed to update."); }
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ action: "adminUpdateTask", taskId: taskId, updateType: "edit", newDeadline: newTime }) 
+                });
+                alert("✅ Deadline Updated!"); 
+                loadAllTasks();
+            } catch(e) { 
+                alert("Failed to update."); 
+            }
         }
 
         async function adminUpdateTask(taskId, type) {
             if(type === 'close' && !confirm(`Are you sure you want to FORCE CLOSE task ${taskId}?`)) return;
+            if(type === 'delete' && !confirm(`Are you sure you want to DELETE task ${taskId}?`)) return;
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminUpdateTask", taskId: taskId, updateType: type }) });
-                alert("✅ Task Updated Successfully!"); loadAllTasks();
-            } catch(e) { alert("Failed to update task."); }
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ action: "adminUpdateTask", taskId: taskId, updateType: type }) 
+                });
+                alert("✅ Task Updated Successfully!"); 
+                loadAllTasks();
+            } catch(e) { 
+                alert("Failed to update task."); 
+            }
         }
 
         async function adminTaskAction(taskId, actionType, previousWorker) {
@@ -493,9 +888,16 @@
                 if(!confirm("Accept and Award points to the worker?")) return;
             }
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                alert("✅ Action Processed!"); loadAllTasks();
-            } catch(e) { alert("Failed to process action."); }
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify(payload) 
+                });
+                alert("✅ Action Processed!"); 
+                loadAllTasks();
+            } catch(e) { 
+                alert("Failed to process action."); 
+            }
         }
 
         // --- MANAGE EMPLOYEES & POINTS ---
@@ -503,27 +905,52 @@
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getEmployees&nocache=${Date.now()}`);
                 EMP_LIST = await res.json();
-                let tbody = document.getElementById("empTableBody"); if(!tbody) return; tbody.innerHTML = "";
+                
+                let tbody = document.getElementById("empTableBody"); 
+                if(!tbody) return; 
+                tbody.innerHTML = "";
+                
                 let hasActive = false;
+                
                 for(let id in EMP_LIST) {
-                    let emp = EMP_LIST[id]; if(emp.status !== "Active") continue; hasActive = true;
-                    let d = new Date(emp.joinDate); let cleanJDate = isNaN(d) ? emp.joinDate : d.toLocaleDateString('en-IN');
+                    let emp = EMP_LIST[id]; 
+                    if(emp.status !== "Active") continue; 
+                    hasActive = true;
+                    
+                    let d = new Date(emp.joinDate); 
+                    let cleanJDate = isNaN(d) ? emp.joinDate : d.toLocaleDateString('en-IN');
                     
                     let actionBtn = `<button class="btn-force" style="background:#f44336; margin-bottom:5px;" onclick="deactivateEmp('${id}')">Deactivate</button><br>`;
                     actionBtn += `<button class="btn-exception" style="background:#1a237e; margin-bottom:5px;" onclick="openManagePoints('${id}', '${emp.penalty}', '${emp.reward}')">⚖️ Manage Points</button><br>`;
                     actionBtn += `<button class="btn-exception" style="background:#FF9800;" onclick="changeEmpPass('${id}')">🔑 Change Pass</button>`;
                     
-                    tbody.innerHTML += `<tr><td style="font-weight:bold;">${id}</td><td>${emp.name}</td><td>${emp.mobile || '-'}</td><td>${cleanJDate}</td><td style="color:red; font-weight:bold;">${emp.penalty || 0} pts</td><td style="color:green; font-weight:bold;">${emp.reward || 0} pts</td><td>${actionBtn}</td></tr>`;
+                    tbody.innerHTML += `<tr>
+                        <td style="font-weight:bold;">${id}</td>
+                        <td>${emp.name}</td>
+                        <td style="color:#0288D1; font-weight:bold;">${emp.designation || '-'}</td>
+                        <td>${emp.mobile || '-'}</td>
+                        <td>${cleanJDate}</td>
+                        <td style="color:red; font-weight:bold;">${emp.penalty || 0} pts</td>
+                        <td style="color:green; font-weight:bold;">${emp.reward || 0} pts</td>
+                        <td>${actionBtn}</td>
+                    </tr>`;
                 }
-                if(!hasActive) tbody.innerHTML = `<tr><td colspan="7">No active employees found.</td></tr>`;
-            } catch(e) {}
+                
+                if(!hasActive) tbody.innerHTML = `<tr><td colspan="8">No active employees found.</td></tr>`;
+            } catch(e) {
+                console.error("Error fetching employees.");
+            }
         }
 
         async function changeEmpPass(id) {
             let newPass = prompt(`Enter NEW Password for ${id}:`);
             if(newPass && newPass.trim() !== "") {
                 alert("Updating password...");
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updateEmpPassword", empId: id, newPass: newPass.trim() }) });
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ action: "updateEmpPassword", empId: id, newPass: newPass.trim() }) 
+                });
                 alert("✅ Password changed successfully!");
                 fetchEmployees();
             }
@@ -540,56 +967,115 @@
             let id = document.getElementById('mpEmpId').innerText;
             let pen = document.getElementById('mpPenalty').value;
             let rew = document.getElementById('mpReward').value;
+            
             document.getElementById('managePointsModal').style.display = 'none';
+            
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updateGlobalPointsAdmin", empId: id, penalty: parseInt(pen), reward: parseInt(rew) }) });
-                alert("✅ Profile Updated!"); fetchEmployees();
-            } catch(e) { alert("Failed to update points."); }
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ action: "updateGlobalPointsAdmin", empId: id, penalty: parseInt(pen), reward: parseInt(rew) }) 
+                });
+                alert("✅ Profile Updated!"); 
+                fetchEmployees();
+            } catch(e) { 
+                alert("Failed to update points."); 
+            }
         }
 
         async function registerEmployee() {
             let name = document.getElementById('regName').value.trim();
+            let desig = document.getElementById('regDesignation').value.trim();
             let mobile = document.getElementById('regMobile').value.trim();
             let aadhar = document.getElementById('regAadhar').value.trim();
             let joinDate = document.getElementById('regJoinDate').value;
-            if(!name || !mobile || !aadhar || !joinDate) return alert("Please fill all required details.");
-            if(mobile.length < 10 || aadhar.length < 12) return alert("Please enter valid Mobile and Aadhar numbers.");
-            document.getElementById('empTableBody').innerHTML = `<tr><td colspan="7">Registering... Please wait!</td></tr>`;
+            
+            if(!name || !mobile || !aadhar || !joinDate || !desig) {
+                return alert("Please fill all required details (including Designation).");
+            }
+            if(mobile.length < 10 || aadhar.length < 12) {
+                return alert("Please enter valid Mobile and Aadhar numbers.");
+            }
+            
+            document.getElementById('empTableBody').innerHTML = `<tr><td colspan="8">Registering... Please wait!</td></tr>`;
+            
             try {
-                let res = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addEmployee", name: name, mobile: mobile, aadhar: aadhar, joinDate: joinDate }) });
+                let res = await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ action: "addEmployee", name: name, mobile: mobile, aadhar: aadhar, joinDate: joinDate, designation: desig }) 
+                });
                 let data = await res.json();
                 alert(`✅ Registration Successful!\nNew Employee ID is: ${data.newId}`);
-                document.getElementById('regName').value = ""; document.getElementById('regMobile').value = ""; document.getElementById('regAadhar').value = ""; document.getElementById('regJoinDate').value = "";
+                
+                document.getElementById('regName').value = ""; 
+                document.getElementById('regDesignation').value = ""; 
+                document.getElementById('regMobile').value = ""; 
+                document.getElementById('regAadhar').value = ""; 
+                document.getElementById('regJoinDate').value = "";
+                
                 fetchEmployees(); 
-            } catch(e) { alert("Registration failed."); }
+            } catch(e) { 
+                alert("Registration failed."); 
+            }
         }
 
         async function deactivateEmp(id) {
             if(!confirm(`Are you sure you want to deactivate Employee ID: ${id}?`)) return;
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deactivateEmployee", id: id }) });
-            alert("Employee deactivated successfully."); fetchEmployees();
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ action: "deactivateEmployee", id: id }) 
+            });
+            alert("Employee deactivated successfully."); 
+            fetchEmployees();
         }
 
         // --- LIVE STATUS ---
         async function loadLiveStatus() {
-            let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
+            let today = new Date(); 
+            let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
+            
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getLiveStatus&date=${dateStr}&nocache=${Date.now()}`);
                 let data = await res.json();
-                let tbody = document.getElementById("liveTableBody"); if(!tbody) return; tbody.innerHTML = "";
+                
+                let tbody = document.getElementById("liveTableBody"); 
+                if(!tbody) return; 
+                tbody.innerHTML = "";
+                
                 let activeCount = 0;
+                
                 for(let id in EMP_LIST) {
-                    if(EMP_LIST[id].status !== "Active") continue; activeCount++;
+                    if(EMP_LIST[id].status !== "Active") continue; 
+                    activeCount++;
                     
                     let status = (data[id] && data[id].mode) ? data[id].mode : "out";
-                    let displayStatus, dotClass; let actionBtn = "-";
+                    let displayStatus, dotClass; 
+                    let actionBtn = "-";
                     
-                    if (status === "in" || status === "work") { displayStatus = "🟢 Punched In"; dotClass = "dot-green"; actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
-                    else if (status === "break") { displayStatus = "☕ On Break"; dotClass = "dot-orange"; actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
-                    else if (status === "train") { displayStatus = "💼 In Training"; dotClass = "dot-purple"; actionBtn = `<button class="btn-force" style="background:#FF9800; margin-bottom:5px;" onclick="forceCommand('${id}', 'endTrain')">Stop Training</button><br><button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; }
-                    else if (status === "leave") { displayStatus = "📅 On Leave"; dotClass = "dot-red"; }
+                    if (status === "in" || status === "work") { 
+                        displayStatus = "🟢 Punched In"; 
+                        dotClass = "dot-green"; 
+                        actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; 
+                    }
+                    else if (status === "break") { 
+                        displayStatus = "☕ On Break"; 
+                        dotClass = "dot-orange"; 
+                        actionBtn = `<button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; 
+                    }
+                    else if (status === "train") { 
+                        displayStatus = "💼 In Training"; 
+                        dotClass = "dot-purple"; 
+                        actionBtn = `<button class="btn-force" style="background:#FF9800; margin-bottom:5px;" onclick="forceCommand('${id}', 'endTrain')">Stop Training</button><br><button class="btn-force" style="background:#f44336;" onclick="adminPunchOut('${id}')">Force Punch Out</button>`; 
+                    }
+                    else if (status === "leave") { 
+                        displayStatus = "📅 On Leave"; 
+                        dotClass = "dot-red"; 
+                    }
                     else if (status === "out") { 
-                        displayStatus = "🔴 Punched Out"; dotClass = "dot-red"; 
+                        displayStatus = "🔴 Punched Out"; 
+                        dotClass = "dot-red"; 
                         if(data[id] && data[id].inTime && data[id].inTime !== "-") { 
                             actionBtn = `<button class="btn-force" style="background:#2196F3;" onclick="undoPunchOut('${id}')">🔄 Undo Punch Out</button>`; 
                         }
@@ -597,77 +1083,144 @@
                     
                     tbody.innerHTML += `<tr><td>${id}</td><td>${EMP_LIST[id].name}</td><td>${displayStatus}</td><td>${actionBtn}</td></tr>`;
                 }
+                
                 if(activeCount === 0) tbody.innerHTML = `<tr><td colspan="4">No active employees to show.</td></tr>`;
-            } catch(e) {}
+            } catch(e) {
+                console.error("Error loading live status");
+            }
         }
         
         async function adminPunchOut(id) {
             if(!confirm(`Manually Punch Out ${EMP_LIST[id].name}?`)) return;
             let exactTime = new Date().toLocaleTimeString('en-IN');
-            let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
+            let today = new Date(); 
+            let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`; 
             
             document.getElementById("liveTableBody").innerHTML = "<tr><td colspan='4'>Applying Force Punch Out...</td></tr>";
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) });
-            alert("✅ Punched out successfully."); loadLiveStatus();
+            
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ action: "adminPunchOut", id: id, date: dateStr, outTime: exactTime }) 
+            });
+            alert("✅ Punched out successfully."); 
+            loadLiveStatus();
         }
 
         async function undoPunchOut(id) {
             if(!confirm(`UNDO Punch Out for ${EMP_LIST[id].name}?`)) return;
-            let today = new Date(); let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+            let today = new Date(); 
+            let dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
             
             document.getElementById("liveTableBody").innerHTML = "<tr><td colspan='4'>Reversing Punch Out...</td></tr>";
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut", date: dateStr }) });
-            alert("✅ Command sent & Reverted!"); loadLiveStatus();
+            
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ action: "forceAction", id: id, forceType: "undoPunchOut", date: dateStr }) 
+            });
+            alert("✅ Command sent & Reverted!"); 
+            loadLiveStatus();
         }
         
         async function forceCommand(id, type) {
             if(!confirm("Remotely stop training?")) return;
             document.getElementById("liveTableBody").innerHTML = "<tr><td colspan='4'>Sending command...</td></tr>";
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "forceAction", id: id, forceType: type }) });
-            alert("Command sent successfully."); loadLiveStatus();
+            
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ action: "forceAction", id: id, forceType: type }) 
+            });
+            alert("Command sent successfully."); 
+            loadLiveStatus();
         }
 
         // --- LEAVES ---
         async function loadLeaves(filterStatus = 'Pending') {
             document.getElementById('leaveTableTitle').innerText = `Showing: ${filterStatus} Requests`;
             try {
-                let res = await fetch(`${SCRIPT_URL}?action=getPendingLeaves&nocache=${Date.now()}`); let data = await res.json();
-                let tbody = document.getElementById("leaveTableBody"); tbody.innerHTML = "";
+                let res = await fetch(`${SCRIPT_URL}?action=getPendingLeaves&nocache=${Date.now()}`); 
+                let data = await res.json();
+                
+                let tbody = document.getElementById("leaveTableBody"); 
+                tbody.innerHTML = "";
+                
                 let filteredData = data.filter(req => req.status === filterStatus);
-                if(filteredData.length === 0) return tbody.innerHTML = `<tr><td colspan="8">No ${filterStatus} leaves found.</td></tr>`;
+                
+                if(filteredData.length === 0) {
+                    return tbody.innerHTML = `<tr><td colspan="8">No ${filterStatus} leaves found.</td></tr>`;
+                }
+                
                 filteredData.reverse().forEach(req => {
                     let actionHtml = "";
-                    if (req.status === "Pending") actionHtml = `<button class="btn-approve" onclick="updateLeave('${req.reqId}', 'Approved')">Approve</button> <button class="btn-reject" onclick="updateLeave('${req.reqId}', 'Rejected')">Reject</button>`;
-                    else if (req.status === "Approved") actionHtml = `<span style="color: green; font-weight: bold;">✅ Approved</span>`;
-                    else if (req.status === "Rejected") actionHtml = `<span style="color: red; font-weight: bold;">❌ Rejected</span>`;
+                    if (req.status === "Pending") {
+                        actionHtml = `<button class="btn-approve" onclick="updateLeave('${req.reqId}', 'Approved')">Approve</button> <button class="btn-reject" onclick="updateLeave('${req.reqId}', 'Rejected')">Reject</button>`;
+                    }
+                    else if (req.status === "Approved") {
+                        actionHtml = `<span style="color: green; font-weight: bold;">✅ Approved</span>`;
+                    }
+                    else if (req.status === "Rejected") {
+                        actionHtml = `<span style="color: red; font-weight: bold;">❌ Rejected</span>`;
+                    }
+                    
                     let certHtml = req.hasCert === "Yes" ? `<span style="color:green; font-weight:bold;">✅ Uploaded</span>` : `<span style="color:#555;">No</span>`;
-                    tbody.innerHTML += `<tr><td style="font-size: 12px; color: gray;">${req.date}</td><td style="font-weight:bold; color:#1a237e;">${req.leaveDate}</td><td>${req.id}</td><td>${req.name}</td><td>${req.type}</td><td>${req.reason}</td><td>${certHtml}</td><td>${actionHtml}</td></tr>`;
+                    
+                    tbody.innerHTML += `<tr>
+                        <td style="font-size: 12px; color: gray;">${req.date}</td>
+                        <td style="font-weight:bold; color:#1a237e;">${req.leaveDate}</td>
+                        <td>${req.id}</td>
+                        <td>${req.name}</td>
+                        <td>${req.type}</td>
+                        <td>${req.reason}</td>
+                        <td>${certHtml}</td>
+                        <td>${actionHtml}</td>
+                    </tr>`;
                 });
-            } catch(e) {}
+            } catch(e) {
+                console.error("Error loading leaves.");
+            }
         }
 
         async function updateLeave(reqId, status) {
             if(!confirm(`Mark as ${status}?`)) return;
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updateLeave", reqId: reqId, newStatus: status }) });
-            alert(`Marked as ${status}`); loadLeaves('Pending'); 
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ action: "updateLeave", reqId: reqId, newStatus: status }) 
+            });
+            alert(`Marked as ${status}`); 
+            loadLeaves('Pending'); 
         }
 
-        // --- SEARCH EMPLOYEE ---
+        // --- SEARCH EMPLOYEE & EXCEPTION ---
         let uniqueRecordsStore = {}; 
+        
         async function searchEmployee() {
-            let id = document.getElementById("searchId").value; if(!id) return alert("Enter Employee ID.");
+            let id = document.getElementById("searchId").value.trim().toUpperCase(); 
+            if(!id) return alert("Enter Employee ID.");
+            
             let tbody = document.getElementById("searchTableBody"); 
             tbody.innerHTML = `<tr><td colspan="10">⏳ Fetching records... Please wait.</td></tr>`; 
             
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getEmpData&id=${id}&nocache=${Date.now()}`); 
                 let rawDataArray = await res.json();
+                
                 tbody.innerHTML = "";
-                if(rawDataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10">No attendance records found.</td></tr>`;
+                
+                if(rawDataArray.length === 0) {
+                    return tbody.innerHTML = `<tr><td colspan="10">No attendance records found.</td></tr>`;
+                }
                 
                 let uniqueRecordsStore = {};
                 rawDataArray.forEach(jsonItem => {
-                    try { let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; if (!emp || !emp.id) return; let dToPrint = emp.recordDate || emp.date || "-"; uniqueRecordsStore[dToPrint] = emp; } catch(e){}
+                    try { 
+                        let emp = typeof jsonItem === 'string' ? JSON.parse(jsonItem) : jsonItem; 
+                        if (!emp || !emp.id) return; 
+                        let dToPrint = emp.recordDate || emp.date || "-"; 
+                        uniqueRecordsStore[dToPrint] = emp; 
+                    } catch(e){}
                 });
 
                 Object.values(uniqueRecordsStore).reverse().forEach(emp => {
@@ -680,40 +1233,88 @@
                         let wColor = totalWorkSecs >= 28800 ? "green" : "red";
                         let statusHtml = emp.statusText || "Present";
                         let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusHtml.toLowerCase().includes(v));
-                        if (!isLeaveOrOff && emp.mode !== "leave") { if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`; else statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`; } 
-                        else { statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`; if(totalWorkSecs === 0) wColor = "black"; }
+                        
+                        if (!isLeaveOrOff && emp.mode !== "leave") { 
+                            if (emp.isPunchedOut && totalWorkSecs < 28800 && totalWorkSecs > 0) {
+                                statusHtml = `<span style="color:red; font-weight:bold;">Half Day</span>`; 
+                            } else {
+                                statusHtml = `<span style="color:green; font-weight:bold;">Present</span>`; 
+                            }
+                        } else { 
+                            statusHtml = `<span style="color:red; font-weight:bold;">${statusHtml}</span>`; 
+                            if(totalWorkSecs === 0) wColor = "black"; 
+                        }
                         
                         let dateToPrint = emp.recordDate || emp.date || "-";
                         let excHtml = excSecs > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(excSecs)}</span>` : `-`;
-                        if (!isLeaveOrOff && emp.isPunchedOut) { excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; }
+                        
+                        if (!isLeaveOrOff && emp.isPunchedOut) { 
+                            excHtml += `<br><button class="btn-exception" onclick="openExceptionModal('${emp.id}', '${dateToPrint}', '${emp.name}')">+ Add Exc</button>`; 
+                        }
+                        
                         let totalDisplay = `<span style="font-weight:bold; color:${wColor};">${formatTime(totalWorkSecs)}</span>`;
+                        let inT = emp.inTime || "-"; 
+                        let outT = emp.outTime || "-"; 
+                        let bT = formatTime(parseInt(emp.breakSecs)||0); 
+                        let trT = formatTime(trainSecs);
                         
-                        let inT = emp.inTime || "-"; let outT = emp.outTime || "-"; let bT = formatTime(parseInt(emp.breakSecs)||0); let trT = formatTime(trainSecs);
-                        
-                        tbody.innerHTML += `<tr><td>${dateToPrint}</td><td>${emp.id}</td><td>${emp.name}</td><td>${statusHtml}</td><td>${inT}</td><td>${outT}</td><td>${bT}</td><td>${trT}</td><td style="background:#e1f5fe;">${excHtml}</td><td>${totalDisplay}</td></tr>`;
+                        tbody.innerHTML += `<tr>
+                            <td>${dateToPrint}</td>
+                            <td>${emp.id}</td>
+                            <td>${emp.name}</td>
+                            <td>${statusHtml}</td>
+                            <td>${inT}</td>
+                            <td>${outT}</td>
+                            <td>${bT}</td>
+                            <td>${trT}</td>
+                            <td style="background:#e1f5fe;">${excHtml}</td>
+                            <td>${totalDisplay}</td>
+                        </tr>`;
                     } catch(e) {}
                 });
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data. Check connection.</td></tr>`; }
+            } catch(e) { 
+                tbody.innerHTML = `<tr><td colspan="10" style="color:red;">Error fetching data. Check connection.</td></tr>`; 
+            }
         }
 
-        function openExceptionModal(id, date, name) { currentExcId = id; currentExcDate = date; document.getElementById("exceptionModal").style.display = "flex"; }
-        function closeExceptionModal() { document.getElementById("exceptionModal").style.display = "none"; }
+        function openExceptionModal(id, date, name) { 
+            currentExcId = id; 
+            currentExcDate = date; 
+            document.getElementById("excEmpInfo").innerText = `ID: ${id} | Name: ${name} \n Date: ${date}`;
+            document.getElementById("excMinutes").value = "";
+            document.getElementById("exceptionModal").style.display = "flex"; 
+        }
+
+        function closeExceptionModal() { 
+            document.getElementById("exceptionModal").style.display = "none"; 
+        }
         
         async function submitException() {
             let mins = document.getElementById("excMinutes").value;
             if(!mins || mins <= 0) return alert("Please enter valid minutes.");
+            
             document.getElementById("exceptionModal").style.display = "none";
             document.getElementById("searchTableBody").innerHTML = `<tr><td colspan="10" style="color:green; font-weight:bold;">⏳ Granting exception time...</td></tr>`;
+            
             try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addException", id: currentExcId, date: currentExcDate, exceptionMins: mins }) });
-                alert(`✅ Successfully added ${mins} minutes exception.`); setTimeout(() => { searchEmployee(); }, 2000);
-            } catch(e) { alert("Failed to add exception."); searchEmployee(); }
+                await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify({ action: "addException", id: currentExcId, date: currentExcDate, exceptionMins: mins }) 
+                });
+                alert(`✅ Successfully added ${mins} minutes exception.`); 
+                setTimeout(() => { searchEmployee(); }, 2000);
+            } catch(e) { 
+                alert("Failed to add exception."); 
+                searchEmployee(); 
+            }
         }
 
-        // --- 🚨 SALARY PAYROLL (NET SCORE LOGIC APPLIED) 🚨 ---
+        // --- 🚨 SALARY PAYROLL (NET SCORE LOGIC) 🚨 ---
         function openPayrollModal() {
-            let searchedId = document.getElementById("searchId").value.trim();
+            let searchedId = document.getElementById("searchId").value.trim().toUpperCase();
             if(!searchedId) return alert("❌ Please Search Employee ID first!");
+            
             document.getElementById('payEmpId').value = searchedId;
             document.getElementById('payrollModal').style.display = 'flex';
             document.getElementById('salarySlipArea').style.display = 'none'; 
@@ -722,29 +1323,50 @@
         function generateSalarySlip() {
             let empId = document.getElementById('payEmpId').value.trim();
             let perDay = parseFloat(document.getElementById('payPerDay').value);
+            
             if(!empId || !perDay || isNaN(perDay)) return alert("❌ Enter valid Per Day Salary!");
 
             let presentCount = 0; let slCount = 0; let clCount = 0; let elCount = 0; 
             let weekOffCount = 0; let holidayCount = 0; let halfDayCount = 0; let absentCount = 0;
 
             let tableRows = document.querySelectorAll("#searchTableBody tr"); 
-            if(tableRows.length === 0 || tableRows[0].innerText.includes("Search an ID") || tableRows[0].innerText.includes("Fetching")) return alert("❌ No valid attendance data loaded!");
+            if(tableRows.length === 0 || tableRows[0].innerText.includes("Search an ID") || tableRows[0].innerText.includes("Fetching")) {
+                return alert("❌ No valid attendance data loaded!");
+            }
 
-            let tableDates = []; let sampleDate = "";
+            let tableDates = []; 
+            let sampleDate = "";
 
             tableRows.forEach(row => {
-                let cells = row.getElementsByTagName("td"); let rowStatus = "";
-                if(cells.length === 10) { tableDates.push(cells[0].innerText.trim()); if(!sampleDate) sampleDate = cells[0].innerText.trim(); rowStatus = cells[3].innerText.trim().toUpperCase(); } 
+                let cells = row.getElementsByTagName("td"); 
+                let rowStatus = "";
+                
+                if(cells.length === 10) { 
+                    tableDates.push(cells[0].innerText.trim()); 
+                    if(!sampleDate) sampleDate = cells[0].innerText.trim(); 
+                    rowStatus = cells[3].innerText.trim().toUpperCase(); 
+                } 
                 
                 if(rowStatus !== "") {
-                    if(rowStatus.includes("PRESENT")) presentCount++; else if(rowStatus.includes("SL")) slCount++; else if(rowStatus.includes("CL")) clCount++; else if(rowStatus.includes("EL")) elCount++;
-                    else if(rowStatus.includes("WEEKLY OFF")) weekOffCount++; else if(rowStatus.includes("HOLIDAY")) holidayCount++; else if(rowStatus.includes("HALF DAY")) halfDayCount++;
+                    if(rowStatus.includes("PRESENT")) presentCount++; 
+                    else if(rowStatus.includes("SL")) slCount++; 
+                    else if(rowStatus.includes("CL")) clCount++; 
+                    else if(rowStatus.includes("EL")) elCount++;
+                    else if(rowStatus.includes("WEEKLY OFF")) weekOffCount++; 
+                    else if(rowStatus.includes("HOLIDAY")) holidayCount++; 
+                    else if(rowStatus.includes("HALF DAY")) halfDayCount++;
                     else if(rowStatus.includes("ABSENT") || rowStatus.includes("LWP") || rowStatus.includes("LEAVE")) absentCount++;
                 }
             });
 
-            let tM = new Date().getMonth(); let tY = new Date().getFullYear();
-            if(sampleDate.includes('/')) { let parts = sampleDate.split('/'); tM = parseInt(parts[1]) - 1; tY = parseInt(parts[2]); }
+            let tM = new Date().getMonth(); 
+            let tY = new Date().getFullYear();
+            
+            if(sampleDate.includes('/')) { 
+                let parts = sampleDate.split('/'); 
+                tM = parseInt(parts[1]) - 1; 
+                tY = parseInt(parts[2]); 
+            }
             
             let monthDays = new Date(tY, tM + 1, 0).getDate(); 
             
@@ -755,21 +1377,26 @@
             }
 
             for(let d = 1; d <= daysToLoop; d++) {
-                let dateObj = new Date(tY, tM, d); if(dateObj > todayOnly) break;
+                let dateObj = new Date(tY, tM, d); 
+                if(dateObj > todayOnly) break;
+                
                 let dateStr = String(d).padStart(2,'0') + "/" + String(tM+1).padStart(2,'0') + "/" + tY;
                 if(!tableDates.includes(dateStr)) {
-                    if(PUBLIC_HOLIDAYS[dateStr]) holidayCount++; else if(dateObj.getDay() === WEEKLY_OFF_DAY) weekOffCount++; else absentCount++;
+                    if(PUBLIC_HOLIDAYS[dateStr]) holidayCount++; 
+                    else if(dateObj.getDay() === WEEKLY_OFF_DAY) weekOffCount++; 
+                    else absentCount++;
                 }
             }
 
-            let paidLeaves = slCount + clCount + elCount; let fullPayDays = presentCount + weekOffCount + holidayCount;
+            let paidLeaves = slCount + clCount + elCount; 
+            let fullPayDays = presentCount + weekOffCount + holidayCount;
             let payableDays = fullPayDays + paidLeaves + (halfDayCount * 0.5); 
             
             // 🌟 MATH: NET SCORE PENALTY LOGIC
             let totalPenPts = EMP_LIST[empId] ? (parseInt(EMP_LIST[empId].penalty) || 0) : 0;
             let totalRewPts = EMP_LIST[empId] ? (parseInt(EMP_LIST[empId].reward) || 0) : 0;
             let netPenPts = totalPenPts - totalRewPts;
-            if (netPenPts < 0) netPenPts = 0; // Agar reward jyada hai to minus deduction nahi hogi
+            if (netPenPts < 0) netPenPts = 0; 
             
             let penaltyDaysToCut = Math.floor(netPenPts / 100); 
             let totalPenDeduct = penaltyDaysToCut * perDay;
@@ -777,13 +1404,23 @@
             let netSalary = (payableDays * perDay) - totalPenDeduct;
             let empName = EMP_LIST[empId] ? EMP_LIST[empId].name : "Unknown Employee";
 
-            document.getElementById('slipEmpId').innerText = empId; document.getElementById('slipEmpName').innerText = empName;
-            document.getElementById('slipMonthDays').innerText = monthDays; document.getElementById('slipPerDayText').innerText = perDay;
+            document.getElementById('slipEmpId').innerText = empId; 
+            document.getElementById('slipEmpName').innerText = empName;
+            document.getElementById('slipMonthDays').innerText = monthDays; 
+            document.getElementById('slipPerDayText').innerText = perDay;
             document.getElementById('slipPayableDays').innerText = payableDays;
-            document.getElementById('slipPWH').innerText = fullPayDays; document.getElementById('slipBasic').innerText = fullPayDays * perDay;
-            document.getElementById('slipPaidLeaves').innerText = `${paidLeaves} (SL:${slCount}, CL:${clCount}, EL:${elCount})`; document.getElementById('slipLeavePay').innerText = paidLeaves * perDay;
-            document.getElementById('slipHalf').innerText = halfDayCount; document.getElementById('slipHalfDeduct').innerText = "- " + (halfDayCount * perDay * 0.5); 
-            document.getElementById('slipAbsent').innerText = absentCount; document.getElementById('slipAbsentDeduct').innerText = "- " + (absentCount * perDay);
+            
+            document.getElementById('slipPWH').innerText = fullPayDays; 
+            document.getElementById('slipBasic').innerText = fullPayDays * perDay;
+            
+            document.getElementById('slipPaidLeaves').innerText = `${paidLeaves} (SL:${slCount}, CL:${clCount}, EL:${elCount})`; 
+            document.getElementById('slipLeavePay').innerText = paidLeaves * perDay;
+            
+            document.getElementById('slipHalf').innerText = halfDayCount; 
+            document.getElementById('slipHalfDeduct').innerText = "- " + (halfDayCount * perDay * 0.5); 
+            
+            document.getElementById('slipAbsent').innerText = absentCount; 
+            document.getElementById('slipAbsentDeduct').innerText = "- " + (absentCount * perDay);
             
             // 🌟 Update Slip Display with Net Points Breakdown
             document.getElementById('slipPenPts').innerHTML = `${netPenPts} Net pts <br><small style="color:#555;">(Pen: ${totalPenPts} - Rew: ${totalRewPts})</small><br><small>(${penaltyDaysToCut} Days Cut)</small>`;
@@ -795,7 +1432,7 @@
 
         // --- PDF DOWNLOAD ---
         async function downloadEmpPDF() {
-            let id = document.getElementById("searchId").value.trim();
+            let id = document.getElementById("searchId").value.trim().toUpperCase();
             if(!id) return alert("❌ Please search an Employee ID first!");
 
             let choice = prompt("Select Month for Report:\n1 = Current Month\n2 = Last Month", "1");
@@ -846,11 +1483,13 @@
 
                     if(empRecord) {
                         printedRowsCount++;
-                        let exc = parseInt(empRecord.exceptionSecs) || 0; let tw = parseInt(empRecord.workSecs||0) + parseInt(empRecord.trainSecs||0) + exc;
+                        let exc = parseInt(empRecord.exceptionSecs) || 0; 
+                        let tw = parseInt(empRecord.workSecs||0) + parseInt(empRecord.trainSecs||0) + exc;
                         let wColor = tw >= 28800 ? "green" : "red";
                         
                         let statusText = empRecord.statusText || "Present";
                         let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusText.toLowerCase().includes(v));
+                        
                         if (!isLeaveOrOff && empRecord.mode !== "leave") {
                             if (empRecord.isPunchedOut && tw < 28800 && tw > 0) statusText = "<span style='color:red;font-weight:bold;'>Half Day</span>";
                             else statusText = "<span style='color:green;font-weight:bold;'>Present</span>";
@@ -859,7 +1498,8 @@
                         }
                         
                         let excDisplay = exc > 0 ? `<span style="color:#0288D1; font-weight:bold;">+${formatTime(exc)}</span>` : `-`;
-                        let inT = empRecord.inTime || "-"; let outT = empRecord.outTime || "-";
+                        let inT = empRecord.inTime || "-"; 
+                        let outT = empRecord.outTime || "-";
 
                         monthHTML += `
                         <tr style="background: white;">
@@ -925,7 +1565,14 @@
 
                 window.scrollTo(0,0);
 
-                let opt = { margin: 0.2, filename: `Admin_Report_${empName.replace(' ', '_')}_${monthName.replace(' ', '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 1.5, useCORS: true, scrollY: 0, backgroundColor: "#ffffff", windowWidth: 1200 }, jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } };
+                let opt = { 
+                    margin: 0.2, 
+                    filename: `Admin_Report_${empName.replace(' ', '_')}_${monthName.replace(' ', '_')}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 1.5, useCORS: true, scrollY: 0, backgroundColor: "#ffffff", windowWidth: 1200 }, 
+                    jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }, 
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
+                };
 
                 setTimeout(() => {
                     html2pdf().set(opt).from(tableWrapper).save().then(() => {
@@ -940,13 +1587,24 @@
         }
 
         async function updateSystemPasswords() {
-            let aPass = document.getElementById("newAdminPass").value; let tPass = document.getElementById("newTrainPass").value;
+            let aPass = document.getElementById("newAdminPass").value; 
+            let tPass = document.getElementById("newTrainPass").value;
+            
             if(!aPass && !tPass) return alert("Please enter at least one password to update.");
+            
             document.getElementById("passMsg").innerText = "Updating... Please wait.";
-            await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "updatePasswords", adminPass: aPass, trainPass: tPass }) });
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ action: "updatePasswords", adminPass: aPass, trainPass: tPass }) 
+            });
+            
             document.getElementById("passMsg").innerText = "✅ Passwords updated successfully!";
             setTimeout(() => document.getElementById("passMsg").innerText = "", 3000);
-            document.getElementById("newAdminPass").value = ""; document.getElementById("newTrainPass").value = "";
+            
+            document.getElementById("newAdminPass").value = ""; 
+            document.getElementById("newTrainPass").value = "";
+            
             if(aPass) REAL_ADMIN_PASS = aPass.trim();
         }
     </script>
