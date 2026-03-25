@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Quality Education CRM</title>
+    <title>Admin Dashboard - QE CRM</title>
     <style>
         /* ================= CSS STYLING ================= */
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -11,7 +11,6 @@
         
         .screen { width: 100%; max-width: 1100px; display: flex; flex-direction: column; align-items: center; }
         .hidden { display: none !important; }
-        .error { color: red; font-size: 0.9em; text-align: center; }
         
         /* Cards & Layout */
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; margin-bottom: 20px; }
@@ -31,9 +30,12 @@
         
         .btn-success { background-color: #28a745; }
         .btn-success:hover { background-color: #218838; }
-        
         .logout-btn { background-color: #dc3545; padding: 8px 15px; }
         .logout-btn:hover { background-color: #c82333; }
+
+        /* Filter Section */
+        .filter-section { display: flex; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ddd; align-items: center; flex-wrap: wrap;}
+        .filter-section input, .filter-section select { margin-bottom: 0; flex: 1; min-width: 200px; }
 
         /* Table Styling */
         .table-responsive { overflow-x: auto; width: 100%; }
@@ -45,13 +47,17 @@
 
         .status-pending { color: #dc3545; font-weight: bold; }
         .status-solved { color: #28a745; font-weight: bold; }
-
-        /* Analytics Box */
+        
+        /* Analytics */
         .stat-box { display: flex; justify-content: space-between; background: #eef; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid #007bff; font-size: 1.1em;}
         .stat-box span { font-weight: bold; font-size: 1.2em; color: #007bff; }
 
+        /* Toaster */
+        .toast { padding: 10px; border-radius: 5px; margin-top: 15px; text-align: center; font-weight: bold; display: none; }
+
         @media (max-width: 768px) {
             .admin-grid { grid-template-columns: 1fr; }
+            .filter-section { flex-direction: column; }
         }
     </style>
 </head>
@@ -62,12 +68,10 @@
             <h2 style="text-align: center; color: #343a40;">Admin Login</h2>
             <label>Username</label>
             <input type="text" id="login-username" placeholder="Enter admin username">
-            
             <label>Password</label>
             <input type="password" id="login-password" placeholder="Enter password">
-            
             <button style="width: 100%; margin-top: 10px;" onclick="login()">Login</button>
-            <p id="login-msg" class="error"></p>
+            <div id="login-msg" class="toast"></div>
         </div>
     </div>
 
@@ -80,9 +84,7 @@
         <div class="admin-grid">
             <div class="card">
                 <h3 style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Overview</h3>
-                <div id="analytics-box">
-                    <p>Loading analytics...</p>
-                </div>
+                <div id="analytics-box">Loading analytics...</div>
             </div>
 
             <div class="card">
@@ -98,20 +100,41 @@
 
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="margin: 0;">📋 All Student Complaints</h3>
-                <button class="btn-success" onclick="exportCSV()">📥 Download CSV</button>
+                <h3 style="margin: 0;">📋 Student Complaints</h3>
+                <button class="btn-success" onclick="exportCSV()">📥 Export CSV</button>
+            </div>
+
+            <div class="filter-section">
+                <input type="text" id="search-box" placeholder="🔍 Search Name or Mobile..." onkeyup="applyFilters()">
+                
+                <select id="filter-category" onchange="applyFilters()">
+                    <option value="All">All Categories</option>
+                    <option value="Online Course Related">Online Course Related</option>
+                    <option value="Online Test Series Related">Online Test Series Related</option>
+                    <option value="Offline Test Series Related">Offline Test Series Related</option>
+                    <option value="Notes Related">Notes Related</option>
+                    <option value="App Feedback">App Feedback</option>
+                    <option value="Teacher Feedback">Teacher Feedback</option>
+                    <option value="Others">Others</option>
+                </select>
+
+                <select id="filter-status" onchange="applyFilters()">
+                    <option value="All">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Solved">Solved</option>
+                </select>
             </div>
             
             <div class="table-responsive">
                 <table id="complaints-table">
                     <thead>
                         <tr>
-                            <th>Date & Time</th>
-                            <th>Student Info</th>
-                            <th>Problem & Issue</th>
-                            <th>Telecaller Response</th>
-                            <th>Status</th>
-                            <th>Admin Action</th>
+                            <th width="10%">Date & ID</th>
+                            <th width="15%">Student Info</th>
+                            <th width="30%">Problem & Issue</th>
+                            <th width="20%">Telecaller Response</th>
+                            <th width="10%">Status</th>
+                            <th width="15%">Admin Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,20 +151,17 @@
         
         let currentUser = null;
         let allComplaintsCache = [];
+        let employeesMap = {}; // To store Employee ID to Name mapping
 
         window.onload = () => {
             const savedUser = localStorage.getItem("qei_admin_user");
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
-                if(currentUser.role === "admin") {
-                    showAdminScreen();
-                } else {
-                    logout();
-                }
+                if(currentUser.role === "admin") showAdminScreen();
+                else logout();
             }
         };
 
-        // --- API HELPER ---
         async function apiCall(payload) {
             try {
                 const response = await fetch(API_URL, {
@@ -151,22 +171,19 @@
                 });
                 return await response.json();
             } catch (err) {
-                console.error(err);
                 return { success: false, message: "Network error." };
             }
         }
 
-        // --- LOGIN & LOGOUT ---
         async function login() {
             const user = document.getElementById("login-username").value;
             const pass = document.getElementById("login-password").value;
             const msgBox = document.getElementById("login-msg");
             const btn = document.querySelector("#login-screen button");
             
-            if(!user || !pass) return msgBox.innerText = "Please enter credentials.";
+            if(!user || !pass) return showMsg(msgBox, "Please enter credentials", "red");
 
-            msgBox.style.color = "blue";
-            msgBox.innerText = "Verifying admin...";
+            showMsg(msgBox, "Verifying admin...", "blue");
             btn.disabled = true;
 
             const res = await apiCall({ action: "login", username: user, password: pass });
@@ -176,10 +193,16 @@
                 localStorage.setItem("qei_admin_user", JSON.stringify(currentUser));
                 showAdminScreen();
             } else {
-                msgBox.style.color = "red";
-                msgBox.innerText = res.user?.role !== "admin" ? "Access Denied. Admins only." : (res.message || "Invalid credentials!");
+                showMsg(msgBox, res.user?.role !== "admin" ? "Access Denied. Admins only." : "Invalid credentials!", "red");
             }
             btn.disabled = false;
+        }
+
+        function showMsg(element, text, color) {
+            element.innerText = text;
+            element.style.display = "block";
+            element.style.color = color;
+            element.style.backgroundColor = color === 'red' ? '#f8d7da' : '#d4edda';
         }
 
         function logout() {
@@ -187,9 +210,6 @@
             currentUser = null;
             document.getElementById("admin-screen").classList.add("hidden");
             document.getElementById("login-screen").classList.remove("hidden");
-            document.getElementById("login-msg").innerText = "";
-            document.getElementById("login-username").value = "";
-            document.getElementById("login-password").value = "";
         }
 
         function showAdminScreen() {
@@ -201,14 +221,21 @@
         // --- FETCH & DISPLAY DATA ---
         async function loadDashboardData() {
             const tbody = document.querySelector("#complaints-table tbody");
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Fetching latest data from Google Sheets...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Fetching latest data from database...</td></tr>`;
             
             const res = await apiCall({ action: "getAdminData" });
             
             if (res.success) {
-                allComplaintsCache = res.complaints;
-                renderAnalytics(res.complaints);
-                renderTable(res.complaints);
+                allComplaintsCache = res.complaints.slice().reverse(); // Reverse to show newest first
+                
+                // Create map for Employee Names
+                employeesMap = {};
+                res.employees.forEach(emp => {
+                    employeesMap[emp.employeeId] = emp.name;
+                });
+
+                renderAnalytics(allComplaintsCache);
+                renderTable(allComplaintsCache); // Initial render
             } else {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Failed to load data.</td></tr>`;
             }
@@ -226,46 +253,78 @@
             `;
         }
 
+        // --- FILTER & SEARCH LOGIC ---
+        function applyFilters() {
+            const searchText = document.getElementById("search-box").value.toLowerCase();
+            const category = document.getElementById("filter-category").value;
+            const status = document.getElementById("filter-status").value;
+
+            const filteredData = allComplaintsCache.filter(c => {
+                const matchSearch = c.mobile.includes(searchText) || c.studentName.toLowerCase().includes(searchText);
+                const matchCategory = category === "All" ? true : c.problemType === category;
+                const matchStatus = status === "All" ? true : c.status === status;
+                
+                return matchSearch && matchCategory && matchStatus;
+            });
+
+            renderTable(filteredData);
+        }
+
         function renderTable(complaints) {
             const tbody = document.querySelector("#complaints-table tbody");
             tbody.innerHTML = "";
 
             if (complaints.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No complaints found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No matching records found.</td></tr>`;
                 return;
             }
 
-            // Show newest records first
-            complaints.slice().reverse().forEach(c => {
+            complaints.forEach(c => {
                 let statusClass = c.status === "Pending" ? "status-pending" : "status-solved";
                 
+                // 1. Clean Date (e.g. 25 Mar, 2026)
+                let cleanDate = c.date;
+                try {
+                    let d = new Date(c.date);
+                    if(!isNaN(d)) cleanDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                } catch(e) {}
+
+                // 2. Short ID (Last 3 Digits)
+                let shortId = c.complaintId.slice(-3);
+
+                // 3. Employee Name instead of Code
+                let empName = employeesMap[c.employeeId] || "Unknown Telecaller";
+
                 let actionHTML = "";
                 if (c.status === "Pending") {
                     actionHTML = `
-                        <input type="text" id="admin-cmt-${c.complaintId}" placeholder="Write solution..." style="margin-bottom:5px; padding:6px; font-size:12px;">
+                        <input type="text" id="admin-cmt-${c.complaintId}" placeholder="Write solution (optional)..." style="margin-bottom:5px; padding:6px; font-size:12px;">
                         <button class="btn-success" onclick="markSolved('${c.complaintId}')" style="padding:6px 10px; font-size:12px; width:100%;">Mark as Solved</button>
                     `;
                 } else {
+                    let showComment = c.adminComment ? c.adminComment : "Solved without comment";
                     actionHTML = `
                         <div style="background:#e8f5e9; padding:8px; border-radius:4px; font-size:0.9em;">
-                            <strong>Your Reply:</strong> ${c.adminComment}<br>
-                            <small style="color:gray;">Solved on: ${c.solvedDate}</small>
+                            <strong>Your Reply:</strong> ${showComment}
                         </div>
                     `;
                 }
 
                 tbody.innerHTML += `
                     <tr>
-                        <td style="font-size:0.85em; color:gray;">${c.date}<br><b>ID:</b> ${c.complaintId}</td>
+                        <td style="font-size:0.85em; color:#555;"><b>${cleanDate}</b><br><small style="color:gray">ID: ${shortId}</small></td>
                         <td>
                             <b>${c.studentName}</b><br>
                             📞 ${c.mobile}
                         </td>
                         <td>
-                            <span style="background:#e9ecef; padding:2px 6px; border-radius:3px; font-size:0.85em;">${c.problemType}</span>
+                            <span style="background:#e9ecef; padding:2px 6px; border-radius:3px; font-size:0.85em; font-weight:bold;">${c.problemType}</span>
                             <p style="margin:5px 0 0 0; font-size:0.95em;">${c.issue}</p>
                         </td>
-                        <td style="font-size:0.95em; color:#444;">${c.employeeResponse}<br><small>(By: ${c.employeeId})</small></td>
+                        <td style="font-size:0.95em; color:#444;">
+                            ${c.employeeResponse}<br>
+                            <span style="color:#007bff; font-size:0.85em; font-weight:bold;">(By: ${empName})</span>
+                        </td>
                         <td class="${statusClass}">${c.status}</td>
                         <td>${actionHTML}</td>
                     </tr>
@@ -276,21 +335,23 @@
         // --- ADMIN ACTIONS ---
         async function markSolved(id) {
             const commentInput = document.getElementById(`admin-cmt-${id}`);
-            const comment = commentInput.value;
-            
-            if(!comment) {
-                alert("Please write an Admin Comment/Solution before marking as solved.");
-                return;
-            }
+            // If empty, set default text
+            const comment = commentInput.value.trim() || "Solved by Admin";
 
             commentInput.disabled = true;
+            const btn = commentInput.nextElementSibling;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
             const res = await apiCall({ action: "updateComplaint", complaintId: id, adminComment: comment });
             
             if(res.success) {
-                loadDashboardData(); // Reload table
+                loadDashboardData(); // Reload table data
             } else {
                 alert("Error updating status.");
                 commentInput.disabled = false;
+                btn.innerText = "Mark as Solved";
+                btn.disabled = false;
             }
         }
 
@@ -299,10 +360,11 @@
             const user = document.getElementById("new-emp-user").value;
             const pass = document.getElementById("new-emp-pass").value;
 
-            if(!name || !user || !pass) {
-                alert("Please fill all employee details.");
-                return;
-            }
+            if(!name || !user || !pass) return alert("Please fill all employee details.");
+
+            const btn = document.querySelector(".admin-grid .card:nth-child(2) button");
+            btn.innerText = "Adding...";
+            btn.disabled = true;
 
             const res = await apiCall({ action: "addEmployee", employee: { name, username: user, password: pass } });
             
@@ -311,9 +373,13 @@
                 document.getElementById("new-emp-name").value = "";
                 document.getElementById("new-emp-user").value = "";
                 document.getElementById("new-emp-pass").value = "";
+                // Refresh data to update employeesMap
+                loadDashboardData();
             } else {
                 alert("Failed to add employee.");
             }
+            btn.innerText = "Add Employee";
+            btn.disabled = false;
         }
 
         // --- EXPORT TO CSV ---
@@ -321,16 +387,19 @@
             if (allComplaintsCache.length === 0) return alert("No data available to export.");
             
             let csvContent = "data:text/csv;charset=utf-8,";
-            // CSV Headers
-            csvContent += "Complaint ID,Date,Mobile,Student Name,Problem Type,Issue Description,Telecaller Response,Telecaller ID,Status,Admin Comment,Solved Date\n";
+            csvContent += "Complaint ID,Date,Mobile,Student Name,Problem Type,Issue Description,Telecaller Response,Telecaller Name,Status,Admin Comment\n";
             
             allComplaintsCache.forEach(c => {
-                // Escape quotes and commas
+                let cleanDate = c.date;
+                try { let d = new Date(c.date); if(!isNaN(d)) cleanDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch(e) {}
+                
+                let empName = employeesMap[c.employeeId] || "Unknown";
+                
                 let issue = c.issue ? c.issue.replace(/"/g, '""').replace(/\n/g, ' ') : "";
                 let empResp = c.employeeResponse ? c.employeeResponse.replace(/"/g, '""').replace(/\n/g, ' ') : "";
                 let adminCmt = c.adminComment ? c.adminComment.replace(/"/g, '""').replace(/\n/g, ' ') : "";
 
-                let row = `"${c.complaintId}","${c.date}","${c.mobile}","${c.studentName}","${c.problemType}","${issue}","${empResp}","${c.employeeId}","${c.status}","${adminCmt}","${c.solvedDate || ''}"`;
+                let row = `"${c.complaintId}","${cleanDate}","${c.mobile}","${c.studentName}","${c.problemType}","${issue}","${empResp}","${empName}","${c.status}","${adminCmt}"`;
                 csvContent += row + "\n";
             });
 
