@@ -1,378 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - QE CRM</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
     <style>
-        /* ================= CLEAN MODERN UI ================= */
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; padding: 0; background-color: #f4f6f9; color: #333; }
-        
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #f4f6f9; color: #333; }
         .screen { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
         .active-screen { display: flex; }
-        
-        /* Navbar & Tabs */
-        .navbar { width: 100%; background: #343a40; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .navbar { width: 100%; background: #343a40; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .nav-brand { font-size: 1.2em; font-weight: bold; }
         .tab-menu { display: flex; gap: 10px; }
-        .tab-btn { background: transparent; color: #ccc; border: none; padding: 8px 15px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .tab-btn { background: transparent; color: #ccc; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; transition: 0.3s; }
         .tab-btn:hover { color: white; background: rgba(255,255,255,0.1); }
         .tab-btn.active { background: #007bff; color: white; font-weight: bold; }
-
-        /* Container */
         .container { width: 100%; max-width: 1200px; margin-top: 20px; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .tab-content.active { display: block; }
-
-        /* Cards & Inputs */
+        .tab-content { display: none; } .tab-content.active { display: block; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        input, select { padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 1em; width: 100%; margin-bottom: 10px; outline: none; }
-        input:focus, select:focus { border-color: #80bdff; }
-        
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        input, select, textarea { padding: 10px; border: 1px solid #ced4da; border-radius: 4px; width: 100%; margin-bottom: 10px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #0056b3; }
-        button:disabled { background: #999; cursor: not-allowed; }
-        .btn-success { background: #28a745; } .btn-success:hover { background: #218838; }
-        .btn-danger { background: #dc3545; } .btn-danger:hover { background: #c82333; }
-        
-        /* Filters */
-        .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee; }
-        .filter-row input, .filter-row select { margin-bottom: 0; flex: 1; min-width: 200px; }
-
-        /* Tables */
-        .table-wrapper { overflow-x: auto; border-radius: 6px; border: 1px solid #dee2e6; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; background: white; }
-        th, td { border-bottom: 1px solid #dee2e6; padding: 12px 15px; text-align: left; vertical-align: middle; }
-        th { background: #f8f9fa; color: #495057; font-weight: 600; white-space: nowrap; }
-        tr:hover { background: #f1f3f5; }
-
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .stat-box { background: white; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stat-box h3 { margin: 0 0 10px 0; color: #6c757d; font-size: 1em; }
-        .stat-box span { font-size: 1.8em; font-weight: bold; color: #333; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .tab-menu { flex-direction: column; width: 100%; display: none; background: #343a40; position: absolute; top: 60px; left: 0; padding: 10px; }
-            .tab-menu.open { display: flex; }
-            .mobile-menu-btn { display: block; background: none; border: 1px solid white; color: white; padding: 5px 10px; }
-            .nav-brand { flex: 1; }
-        }
-        @media (min-width: 769px) { .mobile-menu-btn { display: none; } }
+        .btn-success { background: #28a745; } .btn-danger { background: #dc3545; } .btn-warning { background: #ffc107; color: black; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; } th, td { border-bottom: 1px solid #dee2e6; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; } .table-wrapper { overflow-x: auto; border: 1px solid #dee2e6; border-radius: 6px; }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 6px; flex-wrap: wrap; }
+        .filter-row input, .filter-row select { margin:0; flex:1; min-width: 150px;}
+        .stat-box { background: white; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display:inline-block; margin-right: 15px; min-width: 200px;}
     </style>
 </head>
 <body>
-
     <div id="login-screen" class="screen active-screen">
         <div class="card" style="max-width: 400px; margin-top: 10vh; text-align: center;">
-            <h2 style="color: #343a40;">Admin Secure Login</h2>
+            <h2>Admin Login</h2>
             <input type="text" id="login-username" placeholder="Username">
             <input type="password" id="login-password" placeholder="Password">
             <button style="width: 100%;" onclick="login()">Login</button>
-            <p id="login-msg" style="color:red; font-size:0.9em; display:none;"></p>
+            <p id="login-msg" style="color:red; display:none;"></p>
         </div>
     </div>
 
     <div id="admin-screen" class="screen">
-        
         <div class="navbar">
-            <div class="nav-brand">👨‍💼 QEI Admin Panel</div>
-            <button class="mobile-menu-btn" onclick="document.querySelector('.tab-menu').classList.toggle('open')">☰ Menu</button>
+            <div class="nav-brand">👨‍💼 Admin Panel</div>
             <div class="tab-menu">
                 <button class="tab-btn active" onclick="switchTab('tab-dashboard')">📊 Dashboard</button>
                 <button class="tab-btn" onclick="switchTab('tab-complaints')">📋 Complaints</button>
                 <button class="tab-btn" onclick="switchTab('tab-employees')">👥 Employees</button>
-                <button class="tab-btn" style="background: #dc3545; color: white;" onclick="logout()">Logout</button>
+                <button class="tab-btn" onclick="switchTab('tab-messages')">💬 Messages</button>
+                <button class="tab-btn" style="background:#dc3545;" onclick="logout()">Logout</button>
             </div>
         </div>
 
         <div class="container">
             <div id="tab-dashboard" class="tab-content active">
-                <div class="card">
-                    <h2 style="margin-top:0;">Overall Performance</h2>
-                    <div id="analytics-container" class="stat-grid">
-                        <div class="stat-box"><h3>Loading...</h3><span>--</span></div>
-                    </div>
-                </div>
+                <div class="card" id="analytics-container">Loading...</div>
             </div>
 
             <div id="tab-complaints" class="tab-content">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items:center;">
-                        <h2 style="margin:0;">Student Complaints</h2>
-                        <button class="btn-success" onclick="exportCSV()">📥 Download CSV</button>
-                    </div>
-
                     <div class="filter-row">
-                        <input type="text" id="search-box" placeholder="🔍 Search Name or Mobile..." oninput="applyFilters()">
+                        <input type="text" id="search-box" placeholder="Search Name/Mobile..." oninput="applyFilters()">
                         <select id="filter-category" onchange="applyFilters()">
                             <option value="">All Categories</option>
-                            <option value="Online Course Related">Online Course Related</option>
+                            <option value="Online Course Related">Online Course</option>
                             <option value="Online Test Series Related">Online Test Series</option>
-                            <option value="Offline Test Series Related">Offline Test Series</option>
-                            <option value="Notes Related">Notes Related</option>
-                            <option value="App Feedback">App Feedback</option>
-                            <option value="Teacher Feedback">Teacher Feedback</option>
                             <option value="Others">Others</option>
                         </select>
                         <select id="filter-status" onchange="applyFilters()">
-                            <option value="">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Solved">Solved</option>
+                            <option value="">All Status</option><option value="Pending">Pending</option><option value="Solved">Solved</option>
                         </select>
                     </div>
-
                     <div class="table-wrapper">
                         <table id="complaints-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & ID</th>
-                                    <th>Student Details</th>
-                                    <th>Problem & Issue</th>
-                                    <th>Telecaller Response</th>
-                                    <th>Status</th>
-                                    <th>Admin Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody><tr><td colspan="6" align="center">Loading data...</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-employees" class="tab-content">
-                <div class="admin-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
-                    <div class="card">
-                        <h3 style="margin-top:0;">Add Telecaller</h3>
-                        <input type="text" id="new-emp-name" placeholder="Full Name">
-                        <input type="text" id="new-emp-user" placeholder="Username">
-                        <input type="text" id="new-emp-pass" placeholder="Password">
-                        <button style="width:100%" onclick="addNewEmployee()">+ Add Employee</button>
-                    </div>
-                    <div class="card table-wrapper" style="margin-bottom:0;">
-                        <h3 style="margin-top:0;">Manage Passwords</h3>
-                        <table id="employees-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Username</th>
-                                    <th>Password</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Date & ID</th><th>Student</th><th>Problem</th><th>Telecaller Response</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
+            <div id="tab-employees" class="tab-content">
+                <div style="display: flex; gap:20px; flex-wrap:wrap;">
+                    <div class="card" style="flex:1; min-width:300px;">
+                        <h3>Add Employee</h3>
+                        <input type="text" id="new-emp-name" placeholder="Full Name">
+                        <input type="text" id="new-emp-user" placeholder="Username">
+                        <input type="text" id="new-emp-pass" placeholder="Password">
+                        <button style="width:100%" onclick="addNewEmployee()">Add Employee</button>
+                    </div>
+                    <div class="card table-wrapper" style="flex:2; min-width:300px;">
+                        <h3>Manage Employees</h3>
+                        <table id="employees-table">
+                            <thead><tr><th>Name</th><th>Username</th><th>Password</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-messages" class="tab-content">
+                <div style="display: flex; gap:20px; flex-wrap:wrap;">
+                    <div class="card" style="flex:1; min-width:300px;">
+                        <h3 id="msg-form-title">Add New Message</h3>
+                        <input type="hidden" id="msg-id">
+                        <input type="text" id="msg-title" placeholder="Message Title (e.g. Welcome Message)">
+                        <textarea id="msg-content" rows="6" placeholder="Write WhatsApp message here..."></textarea>
+                        <button style="width:100%" onclick="saveMessage()">Save Message</button>
+                        <button style="width:100%; margin-top:10px; display:none;" id="msg-cancel-btn" class="btn-warning" onclick="resetMsgForm()">Cancel Edit</button>
+                    </div>
+                    <div class="card table-wrapper" style="flex:2; min-width:300px;">
+                        <h3>Saved Messages</h3>
+                        <table id="messages-table">
+                            <thead><tr><th>Title</th><th>Message Preview</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // 🛑 PASTE YOUR NEW APP SCRIPT URL HERE
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         
-        let currentUser = null;
-        let allComplaintsCache = [];
-        let employeesCache = [];
-        let employeesMap = {}; 
+        let allComplaints = [], employeesMap = {}, messagesCache = [];
 
-        window.onload = () => {
-            if (localStorage.getItem("qei_admin_user")) {
-                currentUser = JSON.parse(localStorage.getItem("qei_admin_user"));
-                showScreen("admin-screen");
-                loadDashboardData();
-            }
-        };
+        window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); loadMessages(); } };
 
         async function apiCall(payload) {
-            try {
-                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                return await response.json();
-            } catch (err) { return { success: false, message: "Network error." }; }
+            try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); return await res.json(); } 
+            catch { return { success: false }; }
         }
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById(screenId).classList.add('active-screen');
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-            
-            // Close mobile menu if open
-            document.querySelector('.tab-menu').classList.remove('open');
-        }
-
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
+        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
+        
         async function login() {
-            const user = document.getElementById("login-username").value;
-            const pass = document.getElementById("login-password").value;
-            const msg = document.getElementById("login-msg");
-            
-            if(!user || !pass) { msg.style.display="block"; msg.innerText="Enter details"; return; }
-            msg.style.display="block"; msg.style.color="blue"; msg.innerText="Loading...";
-            
+            const user = document.getElementById("login-username").value, pass = document.getElementById("login-password").value;
             const res = await apiCall({ action: "login", username: user, password: pass });
-            if (res.success && res.user.role === "admin") {
-                localStorage.setItem("qei_admin_user", JSON.stringify(res.user));
-                window.location.reload();
-            } else {
-                msg.style.color="red"; msg.innerText="Access Denied. Admins only.";
-            }
+            if (res.success && res.user.role === "admin") { localStorage.setItem("qei_admin", "yes"); location.reload(); } else { alert("Login Failed!"); }
         }
+        function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
 
-        function logout() { localStorage.removeItem("qei_admin_user"); window.location.reload(); }
-
-        // --- FETCH DATA ---
-        async function loadDashboardData() {
+        async function loadData() {
             const res = await apiCall({ action: "getAdminData" });
             if (res.success) {
-                allComplaintsCache = res.complaints.slice().reverse();
-                employeesCache = res.employees;
-                
-                employeesMap = {};
-                res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
-
-                renderAnalytics();
-                applyFilters(); // Renders Table
-                renderEmployees();
+                allComplaints = res.complaints.slice().reverse();
+                employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
+                document.getElementById("analytics-container").innerHTML = `<div class="stat-box">Total: <b>${allComplaints.length}</b></div>`;
+                applyFilters(); renderEmployees(res.employees);
             }
         }
 
-        function renderAnalytics() {
-            let total = allComplaintsCache.length;
-            let solved = allComplaintsCache.filter(c => c.status === "Solved").length;
-            
-            document.getElementById("analytics-container").innerHTML = `
-                <div class="stat-box"><h3>Total Entries</h3><span>${total}</span></div>
-                <div class="stat-box" style="border-color:#dc3545"><h3>Pending</h3><span style="color:#dc3545">${total - solved}</span></div>
-                <div class="stat-box" style="border-color:#28a745"><h3>Solved</h3><span style="color:#28a745">${solved}</span></div>
-            `;
-        }
-
-        // --- SMART INDEPENDENT FILTER ---
         function applyFilters() {
-            const searchVal = document.getElementById("search-box").value.toLowerCase().trim();
-            const catVal = document.getElementById("filter-category").value;
-            const statusVal = document.getElementById("filter-status").value;
-
-            const filteredData = allComplaintsCache.filter(c => {
-                // If filter is empty (""), it automatically passes (independent)
-                const matchSearch = searchVal === "" || c.mobile.includes(searchVal) || c.studentName.toLowerCase().includes(searchVal);
-                const matchCat = catVal === "" || c.problemType === catVal;
-                const matchStatus = statusVal === "" || c.status === statusVal;
-                
-                return matchSearch && matchCat && matchStatus;
-            });
-            renderTable(filteredData);
+            const search = document.getElementById("search-box").value.toLowerCase(), cat = document.getElementById("filter-category").value, stat = document.getElementById("filter-status").value;
+            const filtered = allComplaints.filter(c => (search==="" || c.mobile.includes(search) || c.studentName.toLowerCase().includes(search)) && (cat==="" || c.problemType===cat) && (stat==="" || c.status===stat));
+            document.querySelector("#complaints-table tbody").innerHTML = filtered.map(c => `<tr>
+                <td><small>${new Date(c.date).toLocaleDateString()}</small><br>ID:${c.complaintId.slice(-3)}</td>
+                <td><b>${c.studentName}</b><br>${c.mobile}</td>
+                <td><b>${c.problemType}</b><br>${c.issue}</td>
+                <td>${c.employeeResponse}<br><b style="color:blue">By: ${employeesMap[c.employeeId]||'N/A'}</b></td>
+                <td style="color:${c.status=='Pending'?'red':'green'}"><b>${c.status}</b></td>
+                <td>
+                    ${c.status=='Pending' ? `<button class="btn-success" onclick="markSolved('${c.complaintId}')">✔️ Solve</button>` : c.adminComment}
+                    <button class="btn-danger" style="padding:5px;margin-top:5px" onclick="deleteComplaint('${c.complaintId}')">🗑️</button>
+                </td></tr>`).join('');
         }
 
-        function renderTable(data) {
-            const tbody = document.querySelector("#complaints-table tbody");
-            if (data.length === 0) return tbody.innerHTML = `<tr><td colspan="6" align="center">No records found.</td></tr>`;
-            
-            tbody.innerHTML = data.map(c => {
-                let d = new Date(c.date);
-                let cleanDate = isNaN(d) ? c.date : d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-                let empName = employeesMap[c.employeeId] || "Unknown";
-                let actionHTML = "";
+        async function markSolved(id) { await apiCall({ action: "updateComplaint", complaintId: id, adminComment: "Solved by Admin" }); loadData(); }
+        async function deleteComplaint(id) { if(confirm("Delete forever?")) { await apiCall({ action: "deleteComplaint", complaintId: id }); loadData(); } }
 
-                if (c.status === "Pending") {
-                    actionHTML = `
-                        <input type="text" id="cmt-${c.complaintId}" placeholder="Admin Comment (optional)" style="font-size:12px; padding:6px; margin-bottom:5px;">
-                        <div style="display:flex; gap:5px;">
-                            <button class="btn-success" onclick="markSolved('${c.complaintId}')" style="font-size:12px; padding:5px; flex:1;">✔️ Solve</button>
-                            <button class="btn-danger" onclick="deleteEntry('${c.complaintId}')" style="font-size:12px; padding:5px;">🗑️</button>
-                        </div>
-                    `;
-                } else {
-                    actionHTML = `
-                        <div style="color:green; font-size:0.9em; margin-bottom:5px;"><b>Replied:</b> ${c.adminComment || 'Solved by Admin'}</div>
-                        <button class="btn-danger" onclick="deleteEntry('${c.complaintId}')" style="font-size:12px; padding:4px 8px;">🗑️ Delete</button>
-                    `;
-                }
-
-                return `<tr>
-                    <td style="color:#666; font-size:0.9em;"><b>${cleanDate}</b><br><small>ID: ${c.complaintId.slice(-3)}</small></td>
-                    <td><b>${c.studentName}</b><br>📞 ${c.mobile}</td>
-                    <td><span style="background:#e9ecef; padding:2px 6px; border-radius:3px; font-size:0.8em;">${c.problemType}</span><div style="font-size:0.9em; margin-top:5px;">${c.issue}</div></td>
-                    <td style="font-size:0.9em; color:#444;">${c.employeeResponse}<br><b style="color:#007bff">By: ${empName}</b></td>
-                    <td><span style="color:${c.status==='Pending'?'red':'green'}; font-weight:bold;">${c.status}</span></td>
-                    <td>${actionHTML}</td>
-                </tr>`;
-            }).join('');
+        // --- EMPLOYEE FUNCTIONS ---
+        function renderEmployees(emps) {
+            document.querySelector("#employees-table tbody").innerHTML = emps.filter(e => e.username !== 'admin').map(e => `<tr>
+                <td><b>${e.name}</b></td><td>${e.username}</td>
+                <td><input type="text" id="p-${e.employeeId}" value="${e.password}" style="width:100px;margin:0;"><button onclick="updatePass('${e.employeeId}')" style="padding:5px">Save</button></td>
+                <td><button class="btn-danger" onclick="deleteEmp('${e.employeeId}')">🗑️ Delete</button></td>
+            </tr>`).join('');
         }
-
-        // --- ACTIONS ---
-        async function markSolved(id) {
-            const input = document.getElementById(`cmt-${id}`);
-            const comment = input.value.trim() || "Solved by Admin"; // Auto text if empty
-            input.disabled = true;
-            await apiCall({ action: "updateComplaint", complaintId: id, adminComment: comment });
-            loadDashboardData();
-        }
-
-        async function deleteEntry(id) {
-            if(!confirm("Are you sure you want to delete this entry forever?")) return;
-            await apiCall({ action: "deleteComplaint", complaintId: id });
-            loadDashboardData();
-        }
-
-        // --- EMPLOYEE MANAGEMENT ---
-        function renderEmployees() {
-            const tbody = document.querySelector("#employees-table tbody");
-            tbody.innerHTML = employeesCache.filter(e => e.username !== 'admin').map(e => `
-                <tr>
-                    <td><b>${e.name}</b></td>
-                    <td>${e.username}</td>
-                    <td>
-                        <input type="text" id="pass-${e.employeeId}" value="${e.password}" style="padding:5px; margin:0; width:120px;">
-                    </td>
-                    <td><button onclick="changePass('${e.employeeId}')" style="padding:5px 10px; font-size:12px;">Update</button></td>
-                </tr>
-            `).join('');
-        }
-
-        async function changePass(empId) {
-            const newPass = document.getElementById(`pass-${empId}`).value.trim();
-            if(!newPass) return alert("Password cannot be empty");
-            const res = await apiCall({ action: "updatePassword", empId: empId, newPass: newPass });
-            if(res.success) alert("Password Updated Successfully!");
-        }
-
         async function addNewEmployee() {
-            const name = document.getElementById("new-emp-name").value;
-            const user = document.getElementById("new-emp-user").value;
-            const pass = document.getElementById("new-emp-pass").value;
-            if(!name || !user || !pass) return alert("Fill all details");
-            
-            await apiCall({ action: "addEmployee", employee: { name, username: user, password: pass } });
-            document.getElementById("new-emp-name").value = "";
-            document.getElementById("new-emp-user").value = "";
-            document.getElementById("new-emp-pass").value = "";
-            loadDashboardData();
+            const n = document.getElementById("new-emp-name").value, u = document.getElementById("new-emp-user").value, p = document.getElementById("new-emp-pass").value;
+            if(!n||!u||!p) return alert("Fill all!"); await apiCall({ action: "addEmployee", employee: {name:n, username:u, password:p} }); loadData();
         }
+        async function updatePass(id) { await apiCall({ action: "updatePassword", empId: id, newPass: document.getElementById(`p-${id}`).value }); alert("Password updated"); }
+        async function deleteEmp(id) { if(confirm("Are you sure you want to delete this employee?")) { await apiCall({ action: "deleteEmployee", empId: id }); loadData(); } }
 
-        function exportCSV() {
-            let csv = "ID,Date,Mobile,Name,Problem,Issue,Telecaller Response,By,Status,Admin Comment\n";
-            allComplaintsCache.forEach(c => {
-                let cleanDate = new Date(c.date); cleanDate = isNaN(cleanDate) ? c.date : cleanDate.toLocaleDateString('en-IN');
-                let empName = employeesMap[c.employeeId] || "Unknown";
-                csv += `"${c.complaintId.slice(-3)}","${cleanDate}","${c.mobile}","${c.studentName}","${c.problemType}","${c.issue.replace(/"/g,'""')}","${c.employeeResponse.replace(/"/g,'""')}","${empName}","${c.status}","${c.adminComment}"\n`;
-            });
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + csv));
-            link.setAttribute("download", `QEI_Data_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link); link.click();
+        // --- WHATSAPP MESSAGES FUNCTIONS ---
+        async function loadMessages() {
+            const res = await apiCall({ action: "getMessages" });
+            if(res.success) {
+                messagesCache = res.messages;
+                document.querySelector("#messages-table tbody").innerHTML = messagesCache.map(m => `<tr>
+                    <td><b>${m.title}</b></td>
+                    <td><small>${m.content.substring(0, 50)}...</small></td>
+                    <td><button onclick="editMsg('${m.msgId}')" class="btn-warning">✏️ Edit</button> <button class="btn-danger" onclick="deleteMsg('${m.msgId}')">🗑️</button></td>
+                </tr>`).join('');
+            }
         }
+        async function saveMessage() {
+            const id = document.getElementById("msg-id").value, t = document.getElementById("msg-title").value, c = document.getElementById("msg-content").value;
+            if(!t || !c) return alert("Enter title and content");
+            await apiCall({ action: "saveMessage", message: { msgId: id, title: t, content: c } });
+            resetMsgForm(); loadMessages();
+        }
+        function editMsg(id) {
+            const m = messagesCache.find(x => x.msgId == id);
+            document.getElementById("msg-id").value = m.msgId; document.getElementById("msg-title").value = m.title; document.getElementById("msg-content").value = m.content;
+            document.getElementById("msg-form-title").innerText = "Edit Message"; document.getElementById("msg-cancel-btn").style.display = "block";
+        }
+        function resetMsgForm() { document.getElementById("msg-id").value = ""; document.getElementById("msg-title").value = ""; document.getElementById("msg-content").value = ""; document.getElementById("msg-form-title").innerText = "Add New Message"; document.getElementById("msg-cancel-btn").style.display = "none"; }
+        async function deleteMsg(id) { if(confirm("Delete this message template?")) { await apiCall({ action: "deleteMessage", msgId: id }); loadMessages(); } }
     </script>
 </body>
 </html>
