@@ -19,11 +19,12 @@
         .container { width: 100%; max-width: 1200px; margin-top: 10px; }
         .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
         input, select, textarea { padding: 10px 15px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; width: 100%; margin-bottom: 15px; outline: none; background: rgba(255, 255, 255, 0.7); transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
         button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
+        .btn-wa { background: #25D366; color: white; }
         .table-wrapper { overflow-x: auto; border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.3); }
@@ -189,6 +190,12 @@
         function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
         function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
 
+        function safeDate(dStr) {
+            if (!dStr) return "N/A";
+            let d = new Date(dStr);
+            return isNaN(d.getTime()) ? dStr : d.toLocaleDateString();
+        }
+
         window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); } };
         
         async function apiCall(p) { 
@@ -228,7 +235,7 @@
                 }
                 
                 document.querySelector("#complaints-table tbody").innerHTML = allComplaints.map(x=>`<tr>
-                    <td><small>${new Date(x.date).toLocaleDateString()}</small><br>ID: ${x.complaintId.slice(-3)}</td>
+                    <td><small>${safeDate(x.date)}</small><br>ID: ${String(x.complaintId||'').slice(-3)}</td>
                     <td><b>${x.studentName}</b><br>📞 ${x.mobile}</td>
                     <td><span style="color:#0984e3; font-weight:bold">${x.problemType}</span><br>${x.issue}</td>
                     <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId] || 'Unknown'}</b></td>
@@ -280,20 +287,24 @@
                 document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='4'>No books available. Add your first book!</td></tr>"; return;
             }
             document.querySelector("#books-table tbody").innerHTML = books.map(b=>{
-                let eStockSel = `<select onchange="updateStock('${b.bookId}', this.value, '${b.apnaStock}')" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.examStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.examStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.examStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
-                let aStockSel = `<select onchange="updateStock('${b.bookId}', '${b.examStock}', this.value)" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.apnaStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.apnaStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.apnaStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
+                let eStockSel = `<select onchange="updateStock('${b.bookId}', this.value, '${b.apnaStock||'Available'}')" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.examStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.examStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.examStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
+                let aStockSel = `<select onchange="updateStock('${b.bookId}', '${b.examStock||'Available'}', this.value)" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.apnaStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.apnaStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.apnaStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
                 
+                let encName = encodeURIComponent(b.name || '');
+                let encExamLink = encodeURIComponent(b.examLink || '');
+                let encApnaLink = encodeURIComponent(b.apnaLink || '');
+
                 return `<tr>
                     <td><b style="color:#1e3c72;">${b.name || 'Unnamed'}</b></td>
                     <td>
                         ₹${b.examPrice || '0'} <small>(+₹${b.examDelivery || '0'} Del)</small><br>
-                        <a href="${b.examLink||'#'}" target="_blank" style="font-size:12px;">URL</a><br>
-                        ${eStockSel}
+                        ${eStockSel}<br>
+                        <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send WA</button>
                     </td>
                     <td>
                         ₹${b.apnaPrice || '0'} <small>(+₹${b.apnaDelivery || '0'} Del)</small><br>
-                        <a href="${b.apnaLink||'#'}" target="_blank" style="font-size:12px;">URL</a><br>
-                        ${aStockSel}
+                        ${aStockSel}<br>
+                        <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send WA</button>
                     </td>
                     <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`;
             }).join('');
@@ -313,7 +324,7 @@
         function renderAssignedCalls(calls) {
             if(!calls || calls.length === 0) { document.querySelector("#calls-table tbody").innerHTML = "<tr><td colspan='6'>No assigned calls yet.</td></tr>"; return; }
             document.querySelector("#calls-table tbody").innerHTML = calls.slice().reverse().map(c=>`<tr>
-                <td><small>${new Date(c.date).toLocaleDateString()}</small></td><td><b>${employeesMap[c.employeeId] || 'Unknown'}</b></td>
+                <td><small>${safeDate(c.date)}</small></td><td><b>${employeesMap[c.employeeId] || 'Unknown'}</b></td>
                 <td>${c.name}<br>📞 ${c.number}</td><td>${c.title}</td><td style="color:${c.status=='Pending'?'red':'green'}"><b>${c.status}</b></td>
                 <td><button class="btn-danger" style="padding:5px" onclick="deleteACall('${c.callId}')">🗑️</button></td></tr>`).join('');
         }
@@ -346,6 +357,16 @@
             if(id) payload.message.msgId = id; 
             showLoader(); await apiCall(payload); closeTemplateModal(); loadData(); 
         }
+        
+        function sendBookLink(encName, encLink) {
+            let bookName = decodeURIComponent(encName);
+            let link = decodeURIComponent(encLink);
+            if(!link || link.trim() === '' || link === '#' || link === 'undefined') { alert(`Is book ka link available nahi hai!`); return; }
+            let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
+            let num = prompt("Student ka 10-digit WhatsApp number dalein:");
+            if(num && num.trim() !== "") window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
+        }
+        
         async function deleteMsg(id) { if(confirm("Delete Template?")){ showLoader(); await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
     </script>
 </body>
