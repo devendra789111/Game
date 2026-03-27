@@ -5,224 +5,299 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Education - Admin Panel</title>
     <style>
-        /* ================= PREMIUM GLASSMORPHISM UI ================= */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; padding: 0; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); background-attachment: fixed; color: #2c3e50; min-height: 100vh; }
-        .screen { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; animation: fadeIn 0.4s ease; }
-        .active-screen { display: flex; }
-        .glass-panel { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
-        .navbar { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.5); }
-        .nav-brand { font-size: 1.4em; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 10px; }
-        .tab-menu { display: flex; gap: 10px; flex-wrap: wrap; }
-        .tab-btn { background: transparent; color: #555; border: none; padding: 8px 15px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.3s; }
-        .tab-btn:hover { background: rgba(255,255,255,0.5); color: #007bff; }
-        .tab-btn.active { background: #007bff; color: white; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
-        .container { width: 100%; max-width: 1200px; margin-top: 10px; }
-        .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
-        .card { padding: 25px; margin-bottom: 25px; }
-        input, select, textarea { padding: 10px 15px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; width: 100%; margin-bottom: 15px; outline: none; background: rgba(255, 255, 255, 0.7); transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
-        button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
-        .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
-        .btn-primary:hover, .btn-success:hover, .btn-danger:hover { transform: translateY(-2px); opacity: 0.9; }
-        .table-wrapper { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.3); }
-        th { background: rgba(255, 255, 255, 0.6); color: #333; font-weight: 600; }
-        tr:hover { background: rgba(255, 255, 255, 0.3); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .filter-row input, .filter-row select { margin:0; flex:1; min-width: 150px;}
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .header { background: #007bff; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .section-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        input[type="text"], select, textarea, input[type="file"] {
+            width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;
+        }
+        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-size: 15px; font-weight: bold; margin-top: 5px; }
+        button:hover { background-color: #218838; }
+        .btn-secondary { background-color: #17a2b8; }
+        .btn-secondary:hover { background-color: #138496; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .action-links a { text-decoration: none; font-weight: bold; margin-right: 15px; }
+        .flex-container { display: flex; gap: 10px; align-items: center; }
+        .flex-container input { margin: 0; flex-grow: 1; }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="screen active-screen">
-        <div class="glass-panel card" style="max-width: 400px; margin-top: 15vh; text-align: center;">
-            <div style="font-size: 3em; margin-bottom: 10px;">🎓</div>
-            <h2 style="color: #1e3c72; margin-top: 0;">Quality Education</h2>
-            <input type="text" id="login-username" placeholder="Admin Username">
-            <input type="password" id="login-password" placeholder="Password">
-            <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="login()">Login</button>
-            <p id="login-msg" style="color:#d63031; display:none;"></p>
-        </div>
+
+    <div class="header">
+        <h2>Admin Dashboard</h2>
+        <p>Welcome Admin: Devendra Kumar | Quality Education</p>
     </div>
 
-    <div id="admin-screen" class="screen">
-        <div class="navbar">
-            <div class="nav-brand">🎓 Quality Education Admin</div>
-            <div class="tab-menu">
-                <button class="tab-btn active" onclick="switchTab('tab-complaints')">📋 Complaints</button>
-                <button class="tab-btn" onclick="switchTab('tab-calls')">📞 Assign Calls</button>
-                <button class="tab-btn" onclick="switchTab('tab-books')">📚 Books Info</button>
-                <button class="tab-btn" onclick="switchTab('tab-employees')">👥 Team</button>
-                <button class="tab-btn" onclick="switchTab('tab-messages')">💬 WhatsApp</button>
-                <button class="tab-btn" style="color: #d63031;" onclick="logout()">🚪 Logout</button>
-            </div>
+    <div class="section-card">
+        <h3>1. Bulk Assign Calls</h3>
+        <input type="text" id="batchTitle" placeholder="Call Batch Title (e.g., New Leads - March)">
+        
+        <select id="selectEmployeeBulk">
+            <option value="">Select Employee to Assign Calls...</option>
+            <option value="Emp01">Rahul (Telecaller)</option>
+            <option value="Emp02">Pooja (Telecaller)</option>
+        </select>
+
+        <p><b>Option 1:</b> Fetch directly from your Google Sheet Link</p>
+        <div class="flex-container">
+            <input type="text" id="sheetLinkCalls" value="https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec" placeholder="Paste Google Apps Script Link here...">
+            <button class="btn-secondary" onclick="fetchFromAPI('sheetLinkCalls', 'bulkCallData')">Fetch Data</button>
         </div>
 
-        <div class="container">
-            <div id="tab-complaints" class="tab-content active">
-                <div class="glass-panel card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <h2 style="margin:0; color:#1e3c72;">Student Complaints</h2>
-                    </div>
-                    <div class="filter-row">
-                        <input type="text" id="search-box" placeholder="🔍 Search..." oninput="applyFilters()">
-                        <select id="filter-category" onchange="applyFilters()"><option value="">All Categories</option><option value="Online Course Related">Online Course</option><option value="Online Test Series Related">Test Series</option><option value="Others">Others</option></select>
-                        <select id="filter-status" onchange="applyFilters()"><option value="">All Status</option><option value="Pending">Pending</option><option value="Solved">Solved</option></select>
-                    </div>
-                    <div class="table-wrapper">
-                        <table id="complaints-table">
-                            <thead><tr><th>Date & ID</th><th>Student</th><th>Problem</th><th>Telecaller Reply</th><th>Admin Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <p><b>Option 2:</b> Copy-Paste Text OR Upload CSV File:</p>
+        <input type="file" id="csvCallFile" accept=".csv" onchange="handleCSVUpload(event, 'bulkCallData')">
+        
+        <textarea id="bulkCallData" rows="6" placeholder="Name, Number&#10;Amit, 9876543210&#10;Sunil, 9988776655"></textarea>
+        
+        <button onclick="submitBulkCalls()">Assign All Calls</button>
+    </div>
 
-            <div id="tab-calls" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📞 Assign New Call</h3>
-                        <select id="assign-emp"><option value="">Select Telecaller...</option></select>
-                        <input type="text" id="assign-name" placeholder="Student Name">
-                        <input type="number" id="assign-number" placeholder="10-digit Mobile">
-                        <input type="text" id="assign-title" placeholder="Reason (e.g. Course Renewal)">
-                        <button class="btn-primary" style="width:100%" onclick="assignCall()">Assign Call</button>
-                    </div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📋 Assigned Leads</h3>
-                        <table id="calls-table">
-                            <thead><tr><th>Date</th><th>Assigned To</th><th>Student</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-books" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📚 Add Book Details</h3>
-                        <input type="text" id="bk-name" placeholder="Book Name">
-                        <input type="number" id="bk-price" placeholder="Price (₹)">
-                        <input type="number" id="bk-delivery" placeholder="Delivery Charge (₹)">
-                        <input type="text" id="bk-website" placeholder="Website / Purchase Link">
-                        <select id="bk-stock"><option value="In Stock">✅ In Stock</option><option value="Out of Stock">❌ Out of Stock</option></select>
-                        <button class="btn-primary" style="width:100%" onclick="saveBook()">Save Book</button>
-                    </div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
-                        <table id="books-table">
-                            <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Website</th><th>Stock</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-employees" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">➕ Add Telecaller</h3><input type="text" id="new-emp-name" placeholder="Name"><input type="text" id="new-emp-user" placeholder="Username"><input type="text" id="new-emp-pass" placeholder="Password"><button class="btn-primary" style="width:100%" onclick="addNewEmployee()">Create</button></div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">👥 Team</h3><table id="employees-table"><thead><tr><th>Name</th><th>Username</th><th>Password</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-                </div>
-            </div>
-
-            <div id="tab-messages" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">📝 Create Template</h3><input type="hidden" id="msg-id"><input type="text" id="msg-title" placeholder="Title"><textarea id="msg-content" rows="4" placeholder="Message content..."></textarea><button class="btn-primary" style="width:100%" onclick="saveMessage()">Save Template</button></div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">💬 Saved Templates</h3><table id="messages-table"><thead><tr><th>Title</th><th>Preview</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-                </div>
-            </div>
+    <div class="section-card">
+        <h3>2. Bulk Add Books</h3>
+        
+        <p><b>Option 1:</b> Fetch directly from your Google Sheet Link</p>
+        <div class="flex-container">
+            <input type="text" id="sheetLinkBooks" placeholder="Paste Google Apps Script Link here for Books...">
+            <button class="btn-secondary" onclick="fetchFromAPI('sheetLinkBooks', 'bulkBookData')">Fetch Data</button>
         </div>
+
+        <p><b>Option 2:</b> Copy-Paste Data (Book Name, Author, Subject, Price) OR Upload CSV:</p>
+        <input type="file" id="csvBookFile" accept=".csv" onchange="handleCSVUpload(event, 'bulkBookData')">
+        
+        <textarea id="bulkBookData" rows="5" placeholder="Maths Magic, R.K Sharma, Math, 250&#10;Rajasthan GK, S.Singh, History, 150"></textarea>
+        
+        <button onclick="submitBulkBooks()">Add All Books</button>
+    </div>
+
+    <div class="section-card">
+        <h3>3. Student Complaints Management</h3>
+        
+        <label for="categoryFilter"><b>Filter by Category:</b></label>
+        <select id="categoryFilter" onchange="displayComplaints()">
+            <option value="all">All Categories</option>
+            </select>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Contact & Actions</th>
+                    <th>Category</th>
+                    <th>Complaint Message</th>
+                </tr>
+            </thead>
+            <tbody id="complaintTableBody">
+                </tbody>
+        </table>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
-        let allComplaints = [], employeesMap = {}, adminData = {};
+        // --- Fetch Data from Google Apps Script Web App Link ---
+        async function fetchFromAPI(inputId, textareaId) {
+            let apiUrl = document.getElementById(inputId).value;
+            if (!apiUrl) return alert("Please provide a valid Google Script link!");
 
-        window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); } };
-        async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
-        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
-        async function login() { const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; const r=await apiCall({action:"login", username:u, password:p}); if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid"); } }
-        function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
+            document.getElementById(textareaId).value = "Fetching data... Please wait a few seconds.";
+            
+            try {
+                // Fetch data from the web app
+                let response = await fetch(apiUrl);
+                let data = await response.json(); 
+                
+                let textData = "";
+                
+                // Agar data array of objects format mein hai
+                if (Array.isArray(data)) {
+                    data.forEach(row => {
+                        let rowValues = Object.values(row);
+                        // Khali rows ko ignore karne ke liye
+                        if(rowValues.join("").trim() !== "") {
+                            textData += rowValues.join(", ") + "\n";
+                        }
+                    });
+                } 
+                // Agar data { data: [...] } format mein hai
+                else if (data && data.data && Array.isArray(data.data)) {
+                    data.data.forEach(row => {
+                        let rowValues = Object.values(row);
+                        if(rowValues.join("").trim() !== "") {
+                            textData += rowValues.join(", ") + "\n";
+                        }
+                    });
+                } else {
+                    // Agar koi aur format hai toh direct text print kar do
+                    textData = JSON.stringify(data, null, 2);
+                }
 
-        async function loadData() {
-            const res = await apiCall({ action: "getAdminData" });
-            if (res.success) {
-                adminData = res; allComplaints = res.complaints.slice().reverse();
-                employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
-                applyFilters(); renderEmployees(res.employees); renderBooks(res.books); renderAssignedCalls(res.assignedCalls);
-                
-                // Load Employees in Select Dropdown
-                const empSelect = document.getElementById("assign-emp");
-                empSelect.innerHTML = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
-                
-                // Load Messages Tab
-                const msgRes = await apiCall({ action: "getMessages" });
-                if(msgRes.success) document.querySelector("#messages-table tbody").innerHTML = msgRes.messages.map(m=>`<tr><td>${m.title}</td><td>${m.content.substring(0,30)}...</td><td><button class="btn-danger" onclick="deleteMsg('${m.msgId}')">🗑️</button></td></tr>`).join('');
+                document.getElementById(textareaId).value = textData;
+                alert("Data fetched successfully! Ab aap ise check karke Submit kar sakte hain.");
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById(textareaId).value = "";
+                alert("Error: Data fetch nahi ho paya. Please check if the Google Apps Script link is correct and deployed as 'Anyone'.");
             }
         }
 
-        function applyFilters() {
-            const s=document.getElementById("search-box").value.toLowerCase(), c=document.getElementById("filter-category").value, st=document.getElementById("filter-status").value;
-            const f = allComplaints.filter(x=>(s===""||x.mobile.includes(s)||x.studentName.toLowerCase().includes(s)) && (c===""||x.problemType===c) && (st===""||x.status===st));
-            document.querySelector("#complaints-table tbody").innerHTML = f.map(x=>`<tr>
-                <td><small>${new Date(x.date).toLocaleDateString()}</small><br>ID: ${x.complaintId.slice(-3)}</td>
-                <td><b>${x.studentName}</b><br>📞 ${x.mobile}</td>
-                <td><span style="color:#0984e3; font-weight:bold">${x.problemType}</span><br>${x.issue}</td>
-                <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId]}</b></td>
-                <td>${x.status=='Pending'?`<textarea id="rep-${x.complaintId}" rows="1" placeholder="Reply..." style="margin-bottom:5px;"></textarea><button class="btn-success" style="padding:5px;" onclick="markSolved('${x.complaintId}')">✔️ Solve</button>` : `<b style="color:green">✅ Solved</b><br><small>${x.adminComment}</small>`}
-                <button class="btn-danger" style="padding:5px; margin-top:5px;" onclick="deleteComplaint('${x.complaintId}')">🗑️</button></td></tr>`).join('');
+        // --- CSV Upload Handler ---
+        function handleCSVUpload(event, textareaId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(textareaId).value = e.target.result;
+            };
+            reader.readAsText(file);
         }
-        async function markSolved(id) { await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
-        async function deleteComplaint(id) { if(confirm("Delete?")){ await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
 
-        // BOOKS LOGIC
-        async function saveBook() {
-            const n=document.getElementById("bk-name").value, p=document.getElementById("bk-price").value, d=document.getElementById("bk-delivery").value, w=document.getElementById("bk-website").value, s=document.getElementById("bk-stock").value;
-            if(!n) return alert("Enter book name");
-            await apiCall({action:"saveBook", book:{name:n, price:p, delivery:d, website:w, stock:s}});
-            document.getElementById("bk-name").value=""; document.getElementById("bk-price").value=""; document.getElementById("bk-delivery").value=""; document.getElementById("bk-website").value="";
-            loadData();
-        }
-        function renderBooks(books) {
-            document.querySelector("#books-table tbody").innerHTML = books.map(b=>`<tr>
-                <td><b>${b.name}</b></td><td>₹${b.price} <small>(+₹${b.delivery} Del)</small></td>
-                <td><a href="${b.website}" target="_blank">Link</a></td><td style="color:${b.stock=='In Stock'?'green':'red'}"><b>${b.stock}</b></td>
-                <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`).join('');
-        }
-        async function deleteBk(id) { if(confirm("Delete Book?")){ await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
+        // --- Bulk Calls Submit ---
+        function submitBulkCalls() {
+            const title = document.getElementById('batchTitle').value;
+            const employeeId = document.getElementById('selectEmployeeBulk').value;
+            const data = document.getElementById('bulkCallData').value;
 
-        // ASSIGN CALLS LOGIC
-        async function assignCall() {
-            const e=document.getElementById("assign-emp").value, n=document.getElementById("assign-name").value, m=document.getElementById("assign-number").value, t=document.getElementById("assign-title").value;
-            if(!e||!n||!m) return alert("Select Emp, Name, Number!");
-            await apiCall({action:"assignCall", callData:{employeeId:e, name:n, number:m, title:t}});
-            document.getElementById("assign-name").value=""; document.getElementById("assign-number").value=""; document.getElementById("assign-title").value="";
-            loadData();
-        }
-        function renderAssignedCalls(calls) {
-            document.querySelector("#calls-table tbody").innerHTML = calls.slice().reverse().map(c=>`<tr>
-                <td><small>${new Date(c.date).toLocaleDateString()}</small></td>
-                <td><b>${employeesMap[c.employeeId]}</b></td>
-                <td>${c.name}<br>📞 ${c.number}</td><td>${c.title}</td>
-                <td style="color:${c.status=='Pending'?'red':'green'}"><b>${c.status}</b></td>
-                <td><button class="btn-danger" style="padding:5px" onclick="deleteACall('${c.callId}')">🗑️</button></td></tr>`).join('');
-        }
-        async function deleteACall(id) { if(confirm("Delete Assigned Call?")){ await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
+            if (!title || !employeeId || !data) {
+                alert("Please fill Title, select Employee and provide Data!");
+                return;
+            }
 
-        // TEAM & MSGS
-        function renderEmployees(emps) { document.querySelector("#employees-table tbody").innerHTML = emps.filter(e=>e.username!=='admin').map(e=>`<tr><td><b>${e.name}</b></td><td>${e.username}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); }
-        async function addNewEmployee() { const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; if(!n||!u||!p)return; await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); loadData(); }
-        async function updatePass(id) { await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); alert("Updated"); }
-        async function deleteEmp(id) { if(confirm("Remove?")){ await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
-        async function saveMessage() { const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value; if(!t||!c)return; await apiCall({action:"saveMessage", message:{title:t, content:c}}); loadData(); }
-        async function deleteMsg(id) { if(confirm("Delete Template?")){ await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
+            const rows = data.split('\n');
+            let callsArray = JSON.parse(localStorage.getItem('assignedCalls')) || [];
+            let addedCount = 0;
+
+            rows.forEach((row, index) => {
+                if(row.trim() === '' || row.toLowerCase().includes("name,number")) return;
+
+                let columns = row.split(/[\t,]+/); // Tab ya Comma se split
+                if (columns.length >= 2) {
+                    let name = columns[0].trim();
+                    let number = columns[1].trim();
+                    if (name && number) {
+                        callsArray.push({
+                            id: 'Call_' + Date.now() + index,
+                            title: title, 
+                            employee: employeeId, 
+                            studentName: name, 
+                            studentNumber: number, 
+                            status: 'Pending', 
+                            dateAssigned: new Date().toLocaleDateString()
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            if(addedCount > 0){
+                localStorage.setItem('assignedCalls', JSON.stringify(callsArray));
+                alert(`${addedCount} Calls Assigned Successfully!`);
+                document.getElementById('bulkCallData').value = '';
+                document.getElementById('batchTitle').value = '';
+            } else {
+                alert("No valid data found to assign.");
+            }
+        }
+
+        // --- Bulk Books Submit ---
+        function submitBulkBooks() {
+            const data = document.getElementById('bulkBookData').value;
+            if (!data) return alert("Please provide Book Data!");
+
+            const rows = data.split('\n');
+            let booksArray = JSON.parse(localStorage.getItem('booksList')) || [];
+            let addedCount = 0;
+
+            rows.forEach((row, index) => {
+                if(row.trim() === '' || row.toLowerCase().includes("book name")) return;
+
+                let columns = row.split(/[\t,]+/);
+                if (columns.length >= 4) {
+                    booksArray.push({
+                        id: 'Book_' + Date.now() + index,
+                        bookName: columns[0].trim(), 
+                        author: columns[1].trim(), 
+                        subject: columns[2].trim(), 
+                        price: columns[3].trim()
+                    });
+                    addedCount++;
+                }
+            });
+
+            if(addedCount > 0){
+                localStorage.setItem('booksList', JSON.stringify(booksArray));
+                alert(`${addedCount} Books Added Successfully!`);
+                document.getElementById('bulkBookData').value = '';
+            } else {
+                alert("No valid book data found.");
+            }
+        }
+
+        // --- Load Complaint Filters dynamically ---
+        function loadComplaintFilters(complaints) {
+            let filterDropdown = document.getElementById('categoryFilter');
+            let currentValue = filterDropdown.value; 
+            
+            let uniqueCategories = [...new Set(complaints.map(item => item.category))];
+            
+            filterDropdown.innerHTML = '<option value="all">All Categories</option>';
+            uniqueCategories.forEach(category => {
+                if (category && category.trim() !== "") {
+                    filterDropdown.innerHTML += `<option value="${category}">${category}</option>`;
+                }
+            });
+
+            if([...filterDropdown.options].some(opt => opt.value === currentValue)) {
+                filterDropdown.value = currentValue;
+            }
+        }
+
+        // --- Display Complaints with WhatsApp & Telegram Links ---
+        function displayComplaints() {
+            let storedComplaints = JSON.parse(localStorage.getItem('complaintsList'));
+            
+            let complaints = storedComplaints || [
+                { studentName: "Rohan", studentNumber: "9876543210", category: "App Issue", message: "Mock test load nahi ho raha." },
+                { studentName: "Priya", studentNumber: "9988776655", category: "Payment", message: "Fees update nahi hui." },
+                { studentName: "Sita", studentNumber: "8877665544", category: "App Issue", message: "Video play nahi ho rahi." },
+                { studentName: "Vikram", studentNumber: "7766554433", category: "Course Material", message: "PDF notes download nahi ho rahe." }
+            ];
+
+            loadComplaintFilters(complaints); 
+
+            let selectedCategory = document.getElementById('categoryFilter').value;
+            let tbody = document.getElementById('complaintTableBody');
+            tbody.innerHTML = '';
+
+            let filteredComplaints = complaints.filter(c => selectedCategory === 'all' || c.category === selectedCategory);
+
+            filteredComplaints.forEach(complaint => {
+                let number = complaint.studentNumber; 
+                // 91 add kiya gaya hai India ke numbers ke liye
+                let whatsappLink = `https://wa.me/91${number}`;
+                let telegramLink = `https://t.me/+91${number}`;
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${complaint.studentName}</td>
+                    <td class="action-links">
+                        ${number} <br><br>
+                        <a href="${whatsappLink}" target="_blank" style="color: #25D366; border: 1px solid #25D366; padding: 2px 5px; border-radius: 4px;">WhatsApp</a> 
+                        <a href="${telegramLink}" target="_blank" style="color: #0088cc; border: 1px solid #0088cc; padding: 2px 5px; border-radius: 4px;">Telegram</a>
+                    </td>
+                    <td><span style="background:#eee; padding:5px 10px; border-radius:15px; font-size:13px; font-weight:bold;">${complaint.category}</span></td>
+                    <td>${complaint.message}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Jab page load ho toh complaint table show ho ---
+        window.onload = function() {
+            displayComplaints();
+        };
     </script>
 </body>
 </html>
