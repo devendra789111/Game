@@ -32,9 +32,20 @@
         .modal-content { width: 100%; max-width: 450px; background: white; padding: 20px; border-radius: 10px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .flex-row { display: flex; gap: 10px; margin-bottom: 5px;}
+        
+        /* NEW GLOBAL LOADER */
+        #global-loader { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter:blur(5px); }
+        .spinner { font-size: 40px; animation: spin 1s linear infinite; margin-bottom:10px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+    <div id="global-loader">
+        <div class="spinner">⏳</div>
+        <h3 style="color:#1e3c72; margin:0;">Processing... Please wait</h3>
+    </div>
+
     <div id="login-screen" class="screen active-screen">
         <div class="glass-panel" style="max-width: 400px; margin-top: 15vh; text-align: center;">
             <div style="font-size: 3em; margin-bottom: 10px;">🎓</div>
@@ -175,66 +186,106 @@
     </div>
 
     <script>
-        // ADMIN SCRIPT
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let allComplaints = [], employeesMap = {};
 
+        // Loading Controls
+        function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
+        function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
+
         window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); } };
-        async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
+        
+        async function apiCall(p) { 
+            try { 
+                const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); 
+                return await r.json(); 
+            } catch { 
+                return {success:false, message:"Network Error"}; 
+            } 
+        }
+
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
-        async function login() { const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; const r=await apiCall({action:"login", username:u, password:p}); if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid"); } }
+        
+        async function login() { 
+            const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; 
+            showLoader();
+            const r = await apiCall({action:"login", username:u, password:p}); 
+            hideLoader();
+            if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid Login Credentials!"); } 
+        }
+        
         function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
 
         async function loadData() {
+            showLoader(); // Shows Processing UI
             const res = await apiCall({ action: "getAdminData" });
+            hideLoader(); // Hides Processing UI
+            
             if (res.success) {
-                allComplaints = res.complaints.slice().reverse();
-                employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
+                allComplaints = res.complaints ? res.complaints.slice().reverse() : [];
+                employeesMap = {}; 
+                
+                if(res.employees && res.employees.length > 0) {
+                    res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
+                    const empOptions = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>(e.username||'').toLowerCase() !== 'admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
+                    document.getElementById("assign-emp").innerHTML = empOptions;
+                    renderEmployees(res.employees);
+                } else {
+                    document.querySelector("#employees-table tbody").innerHTML = "<tr><td colspan='4'>No employees found. Add one above.</td></tr>";
+                }
                 
                 document.querySelector("#complaints-table tbody").innerHTML = allComplaints.map(x=>`<tr>
                     <td><small>${new Date(x.date).toLocaleDateString()}</small><br>ID: ${x.complaintId.slice(-3)}</td>
                     <td><b>${x.studentName}</b><br>📞 ${x.mobile}</td>
                     <td><span style="color:#0984e3; font-weight:bold">${x.problemType}</span><br>${x.issue}</td>
-                    <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId]}</b></td>
+                    <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId] || 'Unknown'}</b></td>
                     <td>${x.status=='Pending'?`<textarea id="rep-${x.complaintId}" rows="1" placeholder="Reply..."></textarea><button class="btn-success" onclick="markSolved('${x.complaintId}')">Solve</button>` : `<b style="color:green">✅ Solved</b>`}
                     <button class="btn-danger" onclick="deleteComplaint('${x.complaintId}')">🗑️</button></td></tr>`).join('');
 
-                const empOptions = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
-                document.getElementById("assign-emp").innerHTML = empOptions;
-                
-                renderBooks(res.books);
-                renderAssignedCalls(res.assignedCalls);
+                renderBooks(res.books || []);
+                renderAssignedCalls(res.assignedCalls || []);
 
-                if(res.messages) {
+                if(res.messages && res.messages.length > 0) {
                     document.querySelector("#messages-table tbody").innerHTML = res.messages.map(m=>`<tr>
-                        <td><b>${m.title}</b></td><td>${m.content.substring(0,35)}...</td>
-                        <td><button class="btn-primary" onclick="editTemplateModal('${m.msgId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.content)}')">✏️</button>
+                        <td><b>${m.title || 'Untitled'}</b></td><td>${(m.content || '').substring(0,35)}...</td>
+                        <td><button class="btn-primary" onclick="editTemplateModal('${m.msgId}', '${encodeURIComponent(m.title||'')}', '${encodeURIComponent(m.content||'')}')">✏️</button>
                         <button class="btn-danger" onclick="deleteMsg('${m.msgId}')">🗑️</button></td></tr>`).join('');
+                } else {
+                    document.querySelector("#messages-table tbody").innerHTML = "<tr><td colspan='3'>No templates found. Add one above.</td></tr>";
                 }
             }
         }
 
-        async function markSolved(id) { await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
-        async function deleteComplaint(id) { if(confirm("Delete?")){ await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
+        async function markSolved(id) { 
+            showLoader();
+            await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); 
+            loadData(); 
+        }
+        async function deleteComplaint(id) { 
+            if(confirm("Delete this complaint permanently?")){ 
+                showLoader(); await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); 
+            } 
+        }
 
-        // ================= BOOKS LOGIC =================
+        // ================= BOOKS LOGIC (Fixed Undefined variables) =================
         async function saveBook() {
             const n=document.getElementById("bk-name").value;
             if(!n) return alert("Enter book name");
             
             let payload = {
                 name: n,
-                examPrice: document.getElementById("bk-exam-price").value,
-                examDelivery: document.getElementById("bk-exam-del").value,
-                examLink: document.getElementById("bk-exam-link").value,
-                examStock: document.getElementById("bk-exam-stock").value,
-                apnaPrice: document.getElementById("bk-apna-price").value,
-                apnaDelivery: document.getElementById("bk-apna-del").value,
-                apnaLink: document.getElementById("bk-apna-link").value,
-                apnaStock: document.getElementById("bk-apna-stock").value
+                examPrice: document.getElementById("bk-exam-price").value || '0',
+                examDelivery: document.getElementById("bk-exam-del").value || '0',
+                examLink: document.getElementById("bk-exam-link").value || '',
+                examStock: document.getElementById("bk-exam-stock").value || 'Available',
+                apnaPrice: document.getElementById("bk-apna-price").value || '0',
+                apnaDelivery: document.getElementById("bk-apna-del").value || '0',
+                apnaLink: document.getElementById("bk-apna-link").value || '',
+                apnaStock: document.getElementById("bk-apna-stock").value || 'Available'
             };
             
+            showLoader();
             await apiCall({action:"saveBook", book: payload});
             
             document.querySelectorAll('#tab-books input[type="text"], #tab-books input[type="number"]').forEach(i => i.value='');
@@ -242,19 +293,29 @@
         }
 
         function renderBooks(books) {
+            if(!books || books.length === 0) {
+                document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='4'>No books available. Add your first book!</td></tr>";
+                return;
+            }
             document.querySelector("#books-table tbody").innerHTML = books.map(b=>{
+                // Using fallbacks to prevent undefined
+                let ePrice = b.examPrice !== undefined ? b.examPrice : (b.price || '0');
+                let eDel = b.examDelivery !== undefined ? b.examDelivery : (b.delivery || '0');
+                let aPrice = b.apnaPrice !== undefined ? b.apnaPrice : (b.price || '0');
+                let aDel = b.apnaDelivery !== undefined ? b.apnaDelivery : (b.delivery || '0');
+                
                 let eStockSel = `<select onchange="updateStock('${b.bookId}', this.value, '${b.apnaStock}')" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.examStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.examStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.examStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
                 let aStockSel = `<select onchange="updateStock('${b.bookId}', '${b.examStock}', this.value)" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.apnaStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.apnaStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.apnaStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
                 
                 return `<tr>
-                    <td><b style="color:#1e3c72;">${b.name}</b></td>
+                    <td><b style="color:#1e3c72;">${b.name || 'Unnamed Book'}</b></td>
                     <td>
-                        ₹${b.examPrice} <small>(+₹${b.examDelivery} Del)</small><br>
+                        ₹${ePrice} <small>(+₹${eDel} Del)</small><br>
                         <a href="${b.examLink||'#'}" target="_blank" style="font-size:12px;">URL</a><br>
                         ${eStockSel}
                     </td>
                     <td>
-                        ₹${b.apnaPrice} <small>(+₹${b.apnaDelivery} Del)</small><br>
+                        ₹${aPrice} <small>(+₹${aDel} Del)</small><br>
                         <a href="${b.apnaLink||'#'}" target="_blank" style="font-size:12px;">URL</a><br>
                         ${aStockSel}
                     </td>
@@ -263,36 +324,69 @@
         }
 
         async function updateStock(id, eStock, aStock) {
+            showLoader();
             await apiCall({action: "updateBookStock", bookId: id, examStock: eStock, apnaStock: aStock});
-            // Automatically saves without reloading the whole page for better experience
+            hideLoader(); // Stock updates quickly, so we just hide the loader, no need to reload the entire screen
         }
-        async function deleteBk(id) { if(confirm("Delete Book?")){ await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
+        async function deleteBk(id) { if(confirm("Delete Book?")){ showLoader(); await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
 
         // ================= CALLS & TEAM =================
         async function assignCall() {
             const e=document.getElementById("assign-emp").value, n=document.getElementById("assign-name").value, m=document.getElementById("assign-number").value, t=document.getElementById("assign-title").value;
             if(!e||!n||!m) return alert("Select Emp, Name, Number!");
+            showLoader();
             await apiCall({action:"assignCall", callData:{employeeId:e, name:n, number:m, title:t}});
-            document.getElementById("assign-name").value=""; document.getElementById("assign-number").value=""; document.getElementById("assign-title").value=""; loadData();
+            document.getElementById("assign-name").value=""; document.getElementById("assign-number").value=""; document.getElementById("assign-title").value=""; 
+            loadData();
         }
+        
         function renderAssignedCalls(calls) {
+            if(!calls || calls.length === 0) {
+                document.querySelector("#calls-table tbody").innerHTML = "<tr><td colspan='6'>No assigned calls yet.</td></tr>"; return;
+            }
             document.querySelector("#calls-table tbody").innerHTML = calls.slice().reverse().map(c=>`<tr>
-                <td><small>${new Date(c.date).toLocaleDateString()}</small></td><td><b>${employeesMap[c.employeeId]}</b></td>
+                <td><small>${new Date(c.date).toLocaleDateString()}</small></td><td><b>${employeesMap[c.employeeId] || 'Unknown'}</b></td>
                 <td>${c.name}<br>📞 ${c.number}</td><td>${c.title}</td><td style="color:${c.status=='Pending'?'red':'green'}"><b>${c.status}</b></td>
                 <td><button class="btn-danger" style="padding:5px" onclick="deleteACall('${c.callId}')">🗑️</button></td></tr>`).join('');
         }
-        async function deleteACall(id) { if(confirm("Delete Call?")){ await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
+        async function deleteACall(id) { if(confirm("Delete Call?")){ showLoader(); await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
 
-        function renderEmployees(emps) { document.querySelector("#employees-table tbody").innerHTML = emps.filter(e=>e.username!=='admin').map(e=>`<tr><td><b>${e.name}</b></td><td>${e.username}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); }
-        async function addNewEmployee() { const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; if(!n||!u||!p)return; await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); loadData(); }
-        async function updatePass(id) { await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); alert("Updated"); }
-        async function deleteEmp(id) { if(confirm("Remove?")){ await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
+        function renderEmployees(emps) { 
+            let validEmps = emps.filter(e=>(e.username||'').toLowerCase() !== 'admin');
+            if(validEmps.length === 0) return; // Managed in LoadData
+
+            document.querySelector("#employees-table tbody").innerHTML = validEmps.map(e=>`<tr><td><b>${e.name||'Unnamed'}</b></td><td>${e.username||'No Username'}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password||''}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); 
+        }
+
+        async function addNewEmployee() { 
+            const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; 
+            if(!n||!u||!p) return alert("All fields required!");
+            showLoader(); 
+            await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); 
+            document.getElementById("new-emp-name").value = ""; document.getElementById("new-emp-user").value = ""; document.getElementById("new-emp-pass").value = "";
+            loadData(); 
+        }
+
+        async function updatePass(id) { showLoader(); await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); hideLoader(); alert("Password Updated Successfully!"); }
+        async function deleteEmp(id) { if(confirm("Remove this Telecaller?")){ showLoader(); await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
         
+        // ================= TEMPLATES =================
         function openTemplateModal() { document.getElementById("msg-id").value = ""; document.getElementById("msg-title").value = ""; document.getElementById("msg-content").value = ""; document.getElementById("modal-heading").innerText = "📝 Create Template"; document.getElementById("templateModal").style.display = "flex"; }
         function editTemplateModal(id, title, content) { document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(title); document.getElementById("msg-content").value = decodeURIComponent(content); document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex"; }
         function closeTemplateModal() { document.getElementById("templateModal").style.display = "none"; }
-        async function saveMessage() { const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value, id=document.getElementById("msg-id").value; if(!t||!c) return alert("Title and Content required"); let payload = {action:"saveMessage", message:{title:t, content:c}}; if(id) payload.message.msgId = id; await apiCall(payload); closeTemplateModal(); loadData(); }
-        async function deleteMsg(id) { if(confirm("Delete Template?")){ await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
+        
+        async function saveMessage() { 
+            const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value, id=document.getElementById("msg-id").value; 
+            if(!t||!c) return alert("Title and Content required"); 
+            let payload = {action:"saveMessage", message:{title:t, content:c}}; 
+            if(id) payload.message.msgId = id; 
+            
+            showLoader();
+            await apiCall(payload); 
+            closeTemplateModal(); 
+            loadData(); 
+        }
+        async function deleteMsg(id) { if(confirm("Delete Template?")){ showLoader(); await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
     </script>
 </body>
 </html>
