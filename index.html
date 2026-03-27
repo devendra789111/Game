@@ -36,10 +36,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row input, .filter-row select { margin:0; flex:1; min-width: 150px;}
-        /* Chat Buttons style */
-        .chat-btn { text-decoration: none; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; display: inline-block; margin-top: 5px; margin-right: 5px; }
-        .btn-wa { background: #25D366; }
-        .btn-tg { background: #0088cc; }
     </style>
 </head>
 <body>
@@ -75,14 +71,8 @@
                     </div>
                     <div class="filter-row">
                         <input type="text" id="search-box" placeholder="🔍 Search..." oninput="applyFilters()">
-                        <select id="filter-category" onchange="applyFilters()">
-                            <option value="">All Categories</option>
-                            </select>
-                        <select id="filter-status" onchange="applyFilters()">
-                            <option value="">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Solved">Solved</option>
-                        </select>
+                        <select id="filter-category" onchange="applyFilters()"><option value="">All Categories</option><option value="Online Course Related">Online Course</option><option value="Online Test Series Related">Test Series</option><option value="Others">Others</option></select>
+                        <select id="filter-status" onchange="applyFilters()"><option value="">All Status</option><option value="Pending">Pending</option><option value="Solved">Solved</option></select>
                     </div>
                     <div class="table-wrapper">
                         <table id="complaints-table">
@@ -96,37 +86,27 @@
             <div id="tab-calls" class="tab-content">
                 <div style="display: flex; gap:20px; flex-wrap:wrap;">
                     <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📞 Assign Single Call</h3>
+                        <h3 style="color:#1e3c72; margin-top:0;">📞 Assign New Call</h3>
                         <select id="assign-emp"><option value="">Select Telecaller...</option></select>
                         <input type="text" id="assign-name" placeholder="Student Name">
                         <input type="number" id="assign-number" placeholder="10-digit Mobile">
                         <input type="text" id="assign-title" placeholder="Reason (e.g. Course Renewal)">
                         <button class="btn-primary" style="width:100%" onclick="assignCall()">Assign Call</button>
                     </div>
-
-                    <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📂 Bulk Assign Calls</h3>
-                        <input type="text" id="bulk-sheet-url" value="https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec" placeholder="Google Sheet URL">
-                        <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="fetchBulkCalls()">⬇️ Fetch from Sheet</button>
-                        <textarea id="bulk-calls-data" rows="3" placeholder="Or Paste Data Here... Format: Name, Number, Reason"></textarea>
-                        <select id="bulk-assign-emp"><option value="">Select Telecaller for Bulk...</option></select>
-                        <button class="btn-success" style="width:100%" onclick="saveBulkCalls()">✅ Assign Bulk Calls</button>
+                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">📋 Assigned Leads</h3>
+                        <table id="calls-table">
+                            <thead><tr><th>Date</th><th>Assigned To</th><th>Student</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
-                </div>
-
-                <div class="glass-panel card table-wrapper" style="margin-top:20px;">
-                    <h3 style="color:#1e3c72; margin-top:0;">📋 Assigned Leads Summary</h3>
-                    <table id="calls-table">
-                        <thead><tr><th>Date</th><th>Assigned To</th><th>Student</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
                 </div>
             </div>
 
             <div id="tab-books" class="tab-content">
                 <div style="display: flex; gap:20px; flex-wrap:wrap;">
                     <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📚 Add Single Book</h3>
+                        <h3 style="color:#1e3c72; margin-top:0;">📚 Add Book Details</h3>
                         <input type="text" id="bk-name" placeholder="Book Name">
                         <input type="number" id="bk-price" placeholder="Price (₹)">
                         <input type="number" id="bk-delivery" placeholder="Delivery Charge (₹)">
@@ -134,20 +114,13 @@
                         <select id="bk-stock"><option value="In Stock">✅ In Stock</option><option value="Out of Stock">❌ Out of Stock</option></select>
                         <button class="btn-primary" style="width:100%" onclick="saveBook()">Save Book</button>
                     </div>
-
-                    <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📖 Bulk Add Books</h3>
-                        <textarea id="bulk-books-data" rows="7" placeholder="Paste Multiple Books Data Here...&#10;Format: Book Name, Price, Delivery, Website Link, Stock Status"></textarea>
-                        <button class="btn-success" style="width:100%" onclick="saveBulkBooks()">✅ Save Multiple Books</button>
+                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
+                        <table id="books-table">
+                            <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Website</th><th>Stock</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
-                </div>
-
-                <div class="glass-panel card table-wrapper" style="margin-top:20px;">
-                    <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
-                    <table id="books-table">
-                        <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Website</th><th>Stock</th><th>Action</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
                 </div>
             </div>
 
@@ -168,14 +141,13 @@
     </div>
 
     <script>
-        const API_URL = "YOUR_WEB_APP_URL_HERE"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let allComplaints = [], employeesMap = {}, adminData = {};
 
         window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); } };
         async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
-        
         async function login() { const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; const r=await apiCall({action:"login", username:u, password:p}); if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid"); } }
         function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
 
@@ -184,19 +156,11 @@
             if (res.success) {
                 adminData = res; allComplaints = res.complaints.slice().reverse();
                 employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
-                
-                // NEW UPDATE: Dynamic Complaint Categories Load karna
-                const categories = [...new Set(allComplaints.map(c => c.problemType).filter(Boolean))];
-                let filterCatHTML = '<option value="">All Categories</option>';
-                categories.forEach(cat => { filterCatHTML += `<option value="${cat}">${cat}</option>`; });
-                document.getElementById("filter-category").innerHTML = filterCatHTML;
-
                 applyFilters(); renderEmployees(res.employees); renderBooks(res.books); renderAssignedCalls(res.assignedCalls);
                 
-                // Load Employees in Select Dropdowns (Single + Bulk)
-                const empOptions = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
-                document.getElementById("assign-emp").innerHTML = empOptions;
-                document.getElementById("bulk-assign-emp").innerHTML = empOptions;
+                // Load Employees in Select Dropdown
+                const empSelect = document.getElementById("assign-emp");
+                empSelect.innerHTML = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
                 
                 // Load Messages Tab
                 const msgRes = await apiCall({ action: "getMessages" });
@@ -207,21 +171,14 @@
         function applyFilters() {
             const s=document.getElementById("search-box").value.toLowerCase(), c=document.getElementById("filter-category").value, st=document.getElementById("filter-status").value;
             const f = allComplaints.filter(x=>(s===""||x.mobile.includes(s)||x.studentName.toLowerCase().includes(s)) && (c===""||x.problemType===c) && (st===""||x.status===st));
-            
-            // NEW UPDATE: Student Name ke niche WhatsApp aur Telegram button add kiye
             document.querySelector("#complaints-table tbody").innerHTML = f.map(x=>`<tr>
                 <td><small>${new Date(x.date).toLocaleDateString()}</small><br>ID: ${x.complaintId.slice(-3)}</td>
-                <td>
-                    <b>${x.studentName}</b><br>📞 ${x.mobile}<br>
-                    <a href="https://wa.me/91${x.mobile}" target="_blank" class="chat-btn btn-wa">WA Message</a>
-                    <a href="https://t.me/+91${x.mobile}" target="_blank" class="chat-btn btn-tg">Telegram</a>
-                </td>
+                <td><b>${x.studentName}</b><br>📞 ${x.mobile}</td>
                 <td><span style="color:#0984e3; font-weight:bold">${x.problemType}</span><br>${x.issue}</td>
                 <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId]}</b></td>
                 <td>${x.status=='Pending'?`<textarea id="rep-${x.complaintId}" rows="1" placeholder="Reply..." style="margin-bottom:5px;"></textarea><button class="btn-success" style="padding:5px;" onclick="markSolved('${x.complaintId}')">✔️ Solve</button>` : `<b style="color:green">✅ Solved</b><br><small>${x.adminComment}</small>`}
                 <button class="btn-danger" style="padding:5px; margin-top:5px;" onclick="deleteComplaint('${x.complaintId}')">🗑️</button></td></tr>`).join('');
         }
-        
         async function markSolved(id) { await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
         async function deleteComplaint(id) { if(confirm("Delete?")){ await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
 
@@ -233,32 +190,6 @@
             document.getElementById("bk-name").value=""; document.getElementById("bk-price").value=""; document.getElementById("bk-delivery").value=""; document.getElementById("bk-website").value="";
             loadData();
         }
-
-        // NEW UPDATE: Bulk Add Books
-        async function saveBulkBooks() {
-            const data = document.getElementById("bulk-books-data").value;
-            if(!data) return alert("Please paste book data first!");
-            const rows = data.split('\n');
-            let count = 0;
-            document.getElementById("bulk-books-data").value = "Processing and Saving... Please wait.";
-            for(let row of rows) {
-                let cols = row.split(/[\t,]+/);
-                if(cols.length >= 2) {
-                    await apiCall({action:"saveBook", book:{
-                        name: cols[0] ? cols[0].trim() : "",
-                        price: cols[1] ? cols[1].trim() : "0",
-                        delivery: cols[2] ? cols[2].trim() : "0",
-                        website: cols[3] ? cols[3].trim() : "",
-                        stock: cols[4] ? cols[4].trim() : "In Stock"
-                    }});
-                    count++;
-                }
-            }
-            alert(`✅ ${count} Books Added Successfully!`);
-            document.getElementById("bulk-books-data").value = "";
-            loadData();
-        }
-
         function renderBooks(books) {
             document.querySelector("#books-table tbody").innerHTML = books.map(b=>`<tr>
                 <td><b>${b.name}</b></td><td>₹${b.price} <small>(+₹${b.delivery} Del)</small></td>
@@ -275,55 +206,6 @@
             document.getElementById("assign-name").value=""; document.getElementById("assign-number").value=""; document.getElementById("assign-title").value="";
             loadData();
         }
-
-        // NEW UPDATE: Fetch Calls From Sheet
-        async function fetchBulkCalls() {
-            const url = document.getElementById("bulk-sheet-url").value;
-            const textarea = document.getElementById("bulk-calls-data");
-            textarea.value = "Fetching data... please wait.";
-            try {
-                let res = await fetch(url);
-                let data = await res.json();
-                let dataArray = Array.isArray(data) ? data : (data.data || []);
-                let text = "";
-                dataArray.forEach(row => {
-                    let vals = Object.values(row);
-                    if(vals.join("").trim() !== "") text += vals.join(", ") + "\n";
-                });
-                textarea.value = text;
-            } catch (err) {
-                textarea.value = "";
-                alert("Fetch Error! Please check sheet link permissions.");
-            }
-        }
-
-        // NEW UPDATE: Save Bulk Calls
-        async function saveBulkCalls() {
-            const emp = document.getElementById("bulk-assign-emp").value;
-            const data = document.getElementById("bulk-calls-data").value;
-            if(!emp || !data) return alert("Please select Employee and provide Data!");
-            
-            const rows = data.split('\n');
-            let count = 0;
-            document.getElementById("bulk-calls-data").value = "Assigning to Telecaller... Please wait.";
-            
-            for(let row of rows) {
-                let cols = row.split(/[\t,]+/);
-                if(cols.length >= 2 && cols[0].trim() !== "" && cols[1].trim() !== "") {
-                    await apiCall({action:"assignCall", callData:{
-                        employeeId: emp,
-                        name: cols[0].trim(),
-                        number: cols[1].trim(),
-                        title: cols[2] ? cols[2].trim() : "Bulk Lead"
-                    }});
-                    count++;
-                }
-            }
-            alert(`✅ ${count} Calls Assigned Successfully!`);
-            document.getElementById("bulk-calls-data").value = "";
-            loadData();
-        }
-
         function renderAssignedCalls(calls) {
             document.querySelector("#calls-table tbody").innerHTML = calls.slice().reverse().map(c=>`<tr>
                 <td><small>${new Date(c.date).toLocaleDateString()}</small></td>
