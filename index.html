@@ -5,89 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Education - Admin Panel</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px; }
-        .header { background: #007bff; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        .section-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-        input[type="text"], select, textarea, input[type="file"] {
-            width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;
-        }
-        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-size: 15px; font-weight: bold; margin-top: 5px; }
-        button:hover { background-color: #218838; }
-        .btn-secondary { background-color: #17a2b8; }
-        .btn-secondary:hover { background-color: #138496; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        table, th, td { border: 1px solid #ddd; }
-        th, td { padding: 12px; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        .action-links a { text-decoration: none; font-weight: bold; margin-right: 15px; }
-        .flex-container { display: flex; gap: 10px; align-items: center; }
-        .flex-container input { margin: 0; flex-grow: 1; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .admin-container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; margin-top: 0; }
+        h3 { color: #333; margin-top: 25px; background: #e8f0fe; padding: 10px; border-radius: 4px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
+        input[type="text"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-size: 14px; margin-top: 5px; }
+        .btn-blue { background-color: #1a73e8; }
+        .btn-blue:hover { background-color: #1557b0; }
+        .btn-green { background-color: #34a853; }
+        .btn-green:hover { background-color: #2b803f; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #1a73e8; color: white; }
+        .action-btn { text-decoration: none; padding: 6px 12px; color: white; border-radius: 4px; font-size: 13px; margin-right: 8px; display: inline-block; font-weight: bold; }
+        .wa-btn { background-color: #25D366; }
+        .tg-btn { background-color: #0088cc; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>Admin Dashboard</h2>
-        <p>Welcome Admin: Devendra Kumar | Quality Education</p>
-    </div>
+<div class="admin-container">
+    <h2>Admin Dashboard - Devendra Kumar</h2>
 
-    <div class="section-card">
-        <h3>1. Bulk Assign Calls</h3>
-        <input type="text" id="batchTitle" placeholder="Call Batch Title (e.g., New Leads - March)">
+    <div class="section">
+        <h3>1. Bulk Assign Calls (Telecalling)</h3>
         
-        <select id="selectEmployeeBulk">
-            <option value="">Select Employee to Assign Calls...</option>
-            <option value="Emp01">Rahul (Telecaller)</option>
-            <option value="Emp02">Pooja (Telecaller)</option>
-        </select>
-
-        <p><b>Option 1:</b> Fetch directly from your Google Sheet Link</p>
-        <div class="flex-container">
-            <input type="text" id="sheetLinkCalls" value="https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec" placeholder="Paste Google Apps Script Link here...">
-            <button class="btn-secondary" onclick="fetchFromAPI('sheetLinkCalls', 'bulkCallData')">Fetch Data</button>
+        <div class="form-group">
+            <label>1. Fetch Data from Google Apps Script:</label>
+            <input type="hidden" id="sheetLinkCalls" value="https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec">
+            <button class="btn btn-blue" onclick="fetchCallsData()">⬇️ Click to Fetch Data</button>
         </div>
-
-        <p><b>Option 2:</b> Copy-Paste Text OR Upload CSV File:</p>
-        <input type="file" id="csvCallFile" accept=".csv" onchange="handleCSVUpload(event, 'bulkCallData')">
         
-        <textarea id="bulkCallData" rows="6" placeholder="Name, Number&#10;Amit, 9876543210&#10;Sunil, 9988776655"></textarea>
-        
-        <button onclick="submitBulkCalls()">Assign All Calls</button>
-    </div>
-
-    <div class="section-card">
-        <h3>2. Bulk Add Books</h3>
-        
-        <p><b>Option 1:</b> Fetch directly from your Google Sheet Link</p>
-        <div class="flex-container">
-            <input type="text" id="sheetLinkBooks" placeholder="Paste Google Apps Script Link here for Books...">
-            <button class="btn-secondary" onclick="fetchFromAPI('sheetLinkBooks', 'bulkBookData')">Fetch Data</button>
+        <div class="form-group">
+            <label>2. Call Data (Name, Number) - Fetched data will appear here:</label>
+            <textarea id="bulkCallData" rows="6" placeholder="Example: Amit, 9876543210"></textarea>
         </div>
-
-        <p><b>Option 2:</b> Copy-Paste Data (Book Name, Author, Subject, Price) OR Upload CSV:</p>
-        <input type="file" id="csvBookFile" accept=".csv" onchange="handleCSVUpload(event, 'bulkBookData')">
         
-        <textarea id="bulkBookData" rows="5" placeholder="Maths Magic, R.K Sharma, Math, 250&#10;Rajasthan GK, S.Singh, History, 150"></textarea>
-        
-        <button onclick="submitBulkBooks()">Add All Books</button>
-    </div>
-
-    <div class="section-card">
-        <h3>3. Student Complaints Management</h3>
-        
-        <label for="categoryFilter"><b>Filter by Category:</b></label>
-        <select id="categoryFilter" onchange="displayComplaints()">
-            <option value="all">All Categories</option>
+        <div class="form-group">
+            <label>3. Assign To Employee:</label>
+            <select id="selectEmployeeBulk">
+                <option value="">-- Select Telecaller --</option>
+                <option value="Telecaller 1">Telecaller 1</option>
+                <option value="Telecaller 2">Telecaller 2</option>
             </select>
+        </div>
+        
+        <button class="btn btn-green" onclick="assignBulkCalls()">✅ Assign All Calls Now</button>
+    </div>
 
+    <div class="section">
+        <h3>2. Bulk Add Books Information</h3>
+        <div class="form-group">
+            <label>Paste Book Data (Format: Book Name, Author, Subject, Price):</label>
+            <textarea id="bulkBookData" rows="5" placeholder="Maths Magic, R.K Sharma, Math, 250"></textarea>
+        </div>
+        <button class="btn btn-green" onclick="addBulkBooks()">📚 Add All Books to Database</button>
+    </div>
+
+    <div class="section">
+        <h3>3. Student Complaints & Support</h3>
+        <div class="form-group">
+            <label>Filter by Category:</label>
+            <select id="categoryFilter" onchange="loadComplaintsTable()">
+                <option value="all">Show All Categories</option>
+                </select>
+        </div>
         <table>
             <thead>
                 <tr>
                     <th>Student Name</th>
                     <th>Contact & Actions</th>
                     <th>Category</th>
-                    <th>Complaint Message</th>
+                    <th>Complaint Details</th>
                 </tr>
             </thead>
             <tbody id="complaintTableBody">
@@ -95,209 +87,183 @@
         </table>
     </div>
 
-    <script>
-        // --- Fetch Data from Google Apps Script Web App Link ---
-        async function fetchFromAPI(inputId, textareaId) {
-            let apiUrl = document.getElementById(inputId).value;
-            if (!apiUrl) return alert("Please provide a valid Google Script link!");
+</div>
 
-            document.getElementById(textareaId).value = "Fetching data... Please wait a few seconds.";
+<script>
+    // --- 1. FETCH GOOGLE SHEET DATA ---
+    async function fetchCallsData() {
+        const url = document.getElementById('sheetLinkCalls').value;
+        const textarea = document.getElementById('bulkCallData');
+        
+        textarea.value = "Data fetch ho raha hai... Kripya thoda wait karein.";
+        
+        try {
+            let response = await fetch(url);
+            let data = await response.json();
+            let textResult = "";
             
-            try {
-                // Fetch data from the web app
-                let response = await fetch(apiUrl);
-                let data = await response.json(); 
-                
-                let textData = "";
-                
-                // Agar data array of objects format mein hai
-                if (Array.isArray(data)) {
-                    data.forEach(row => {
-                        let rowValues = Object.values(row);
-                        // Khali rows ko ignore karne ke liye
-                        if(rowValues.join("").trim() !== "") {
-                            textData += rowValues.join(", ") + "\n";
-                        }
-                    });
-                } 
-                // Agar data { data: [...] } format mein hai
-                else if (data && data.data && Array.isArray(data.data)) {
-                    data.data.forEach(row => {
-                        let rowValues = Object.values(row);
-                        if(rowValues.join("").trim() !== "") {
-                            textData += rowValues.join(", ") + "\n";
-                        }
-                    });
-                } else {
-                    // Agar koi aur format hai toh direct text print kar do
-                    textData = JSON.stringify(data, null, 2);
-                }
-
-                document.getElementById(textareaId).value = textData;
-                alert("Data fetched successfully! Ab aap ise check karke Submit kar sakte hain.");
-
-            } catch (error) {
-                console.error(error);
-                document.getElementById(textareaId).value = "";
-                alert("Error: Data fetch nahi ho paya. Please check if the Google Apps Script link is correct and deployed as 'Anyone'.");
-            }
-        }
-
-        // --- CSV Upload Handler ---
-        function handleCSVUpload(event, textareaId) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById(textareaId).value = e.target.result;
-            };
-            reader.readAsText(file);
-        }
-
-        // --- Bulk Calls Submit ---
-        function submitBulkCalls() {
-            const title = document.getElementById('batchTitle').value;
-            const employeeId = document.getElementById('selectEmployeeBulk').value;
-            const data = document.getElementById('bulkCallData').value;
-
-            if (!title || !employeeId || !data) {
-                alert("Please fill Title, select Employee and provide Data!");
-                return;
-            }
-
-            const rows = data.split('\n');
-            let callsArray = JSON.parse(localStorage.getItem('assignedCalls')) || [];
-            let addedCount = 0;
-
-            rows.forEach((row, index) => {
-                if(row.trim() === '' || row.toLowerCase().includes("name,number")) return;
-
-                let columns = row.split(/[\t,]+/); // Tab ya Comma se split
-                if (columns.length >= 2) {
-                    let name = columns[0].trim();
-                    let number = columns[1].trim();
-                    if (name && number) {
-                        callsArray.push({
-                            id: 'Call_' + Date.now() + index,
-                            title: title, 
-                            employee: employeeId, 
-                            studentName: name, 
-                            studentNumber: number, 
-                            status: 'Pending', 
-                            dateAssigned: new Date().toLocaleDateString()
-                        });
-                        addedCount++;
-                    }
+            // Handle different JSON structures returned by Apps Script
+            let dataArray = Array.isArray(data) ? data : (data.data || []);
+            
+            dataArray.forEach(row => {
+                let values = Object.values(row);
+                // Sirf non-empty rows add karein
+                if(values.join("").trim() !== "") {
+                    textResult += values.join(", ") + "\n";
                 }
             });
+            
+            textarea.value = textResult;
+            alert("✅ Google Sheet se data safaltapurvak aa gaya hai!");
+        } catch (error) {
+            textarea.value = "";
+            alert("❌ Data lane mein error aayi. Check karein ki Google Script ka 'Who has access' => 'Anyone' par set hai.");
+            console.error(error);
+        }
+    }
 
-            if(addedCount > 0){
-                localStorage.setItem('assignedCalls', JSON.stringify(callsArray));
-                alert(`${addedCount} Calls Assigned Successfully!`);
-                document.getElementById('bulkCallData').value = '';
-                document.getElementById('batchTitle').value = '';
-            } else {
-                alert("No valid data found to assign.");
-            }
+    // --- 2. ASSIGN BULK CALLS ---
+    function assignBulkCalls() {
+        let data = document.getElementById('bulkCallData').value;
+        let employee = document.getElementById('selectEmployeeBulk').value;
+        
+        if(!data || !employee) {
+            alert("Kripya Data fetch karein aur Employee select karein!");
+            return;
         }
 
-        // --- Bulk Books Submit ---
-        function submitBulkBooks() {
-            const data = document.getElementById('bulkBookData').value;
-            if (!data) return alert("Please provide Book Data!");
+        let callsArray = JSON.parse(localStorage.getItem('assignedCalls')) || [];
+        let rows = data.split('\n');
+        let count = 0;
 
-            const rows = data.split('\n');
-            let booksArray = JSON.parse(localStorage.getItem('booksList')) || [];
-            let addedCount = 0;
-
-            rows.forEach((row, index) => {
-                if(row.trim() === '' || row.toLowerCase().includes("book name")) return;
-
-                let columns = row.split(/[\t,]+/);
-                if (columns.length >= 4) {
-                    booksArray.push({
-                        id: 'Book_' + Date.now() + index,
-                        bookName: columns[0].trim(), 
-                        author: columns[1].trim(), 
-                        subject: columns[2].trim(), 
-                        price: columns[3].trim()
-                    });
-                    addedCount++;
-                }
-            });
-
-            if(addedCount > 0){
-                localStorage.setItem('booksList', JSON.stringify(booksArray));
-                alert(`${addedCount} Books Added Successfully!`);
-                document.getElementById('bulkBookData').value = '';
-            } else {
-                alert("No valid book data found.");
+        rows.forEach(row => {
+            let cols = row.split(/[\t,]+/); // Tab ya Comma dono se split karega
+            if(cols.length >= 2 && cols[0].trim() !== "" && cols[1].trim() !== "") {
+                callsArray.push({
+                    studentName: cols[0].trim(),
+                    studentNumber: cols[1].trim(),
+                    assignedTo: employee,
+                    status: "Pending",
+                    date: new Date().toLocaleDateString()
+                });
+                count++;
             }
+        });
+
+        if(count > 0) {
+            localStorage.setItem('assignedCalls', JSON.stringify(callsArray));
+            alert(`✅ ${count} Calls successfully assign ho gayi hain!`);
+            document.getElementById('bulkCallData').value = "";
+            document.getElementById('selectEmployeeBulk').value = "";
+        } else {
+            alert("Koi sahi data nahi mila assign karne ke liye.");
+        }
+    }
+
+    // --- 3. ADD BULK BOOKS ---
+    function addBulkBooks() {
+        let data = document.getElementById('bulkBookData').value;
+        if(!data) {
+            alert("Kripya Books ka data dalein!");
+            return;
         }
 
-        // --- Load Complaint Filters dynamically ---
-        function loadComplaintFilters(complaints) {
-            let filterDropdown = document.getElementById('categoryFilter');
-            let currentValue = filterDropdown.value; 
-            
-            let uniqueCategories = [...new Set(complaints.map(item => item.category))];
-            
-            filterDropdown.innerHTML = '<option value="all">All Categories</option>';
-            uniqueCategories.forEach(category => {
-                if (category && category.trim() !== "") {
-                    filterDropdown.innerHTML += `<option value="${category}">${category}</option>`;
-                }
-            });
+        let booksArray = JSON.parse(localStorage.getItem('booksList')) || [];
+        let rows = data.split('\n');
+        let count = 0;
 
-            if([...filterDropdown.options].some(opt => opt.value === currentValue)) {
-                filterDropdown.value = currentValue;
+        rows.forEach(row => {
+            let cols = row.split(/[\t,]+/);
+            if(cols.length >= 4) {
+                booksArray.push({
+                    name: cols[0].trim(),
+                    author: cols[1].trim(),
+                    subject: cols[2].trim(),
+                    price: cols[3].trim()
+                });
+                count++;
             }
-        }
+        });
 
-        // --- Display Complaints with WhatsApp & Telegram Links ---
-        function displayComplaints() {
-            let storedComplaints = JSON.parse(localStorage.getItem('complaintsList'));
-            
-            let complaints = storedComplaints || [
-                { studentName: "Rohan", studentNumber: "9876543210", category: "App Issue", message: "Mock test load nahi ho raha." },
-                { studentName: "Priya", studentNumber: "9988776655", category: "Payment", message: "Fees update nahi hui." },
-                { studentName: "Sita", studentNumber: "8877665544", category: "App Issue", message: "Video play nahi ho rahi." },
-                { studentName: "Vikram", studentNumber: "7766554433", category: "Course Material", message: "PDF notes download nahi ho rahe." }
+        if(count > 0) {
+            localStorage.setItem('booksList', JSON.stringify(booksArray));
+            alert(`📚 ${count} Books successfully database mein add ho gayi hain!`);
+            document.getElementById('bulkBookData').value = "";
+        }
+    }
+
+    // --- 4. COMPLAINTS SYSTEM (Filter & Table) ---
+    function initComplaints() {
+        // Agar system naya hai, toh demo data daal dete hain taaki table khali na dikhe
+        if(!localStorage.getItem('complaintsList')) {
+            let dummyData = [
+                { studentName: "Rohan Kumar", studentNumber: "9876543210", category: "App Login Issue", text: "Mock test load hone ke baad app close ho jati hai." },
+                { studentName: "Neha Sharma", studentNumber: "9988776655", category: "Fee Payment", text: "Payment cut gaya par course active nahi hua." },
+                { studentName: "Vikram Singh", studentNumber: "8877665544", category: "App Login Issue", text: "OTP nahi aa raha login karte time." },
+                { studentName: "Priya", studentNumber: "7766554433", category: "Study Material", text: "Geography ki PDF open nahi ho rahi." }
             ];
+            localStorage.setItem('complaintsList', JSON.stringify(dummyData));
+        }
+        
+        populateCategoryFilter();
+        loadComplaintsTable();
+    }
 
-            loadComplaintFilters(complaints); 
+    function populateCategoryFilter() {
+        let complaints = JSON.parse(localStorage.getItem('complaintsList')) || [];
+        let filterSelect = document.getElementById('categoryFilter');
+        let currentSelection = filterSelect.value;
+        
+        // Sabhi categories ko ek array mein nikal kar Set se duplicates hatana
+        let categories = [...new Set(complaints.map(c => c.category))];
+        
+        filterSelect.innerHTML = '<option value="all">Show All Categories</option>';
+        categories.forEach(cat => {
+            if(cat && cat.trim() !== "") {
+                filterSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            }
+        });
+        
+        // Dropdown update hone ke baad purani selection barkarar rakhna
+        if([...filterSelect.options].some(opt => opt.value === currentSelection)) {
+            filterSelect.value = currentSelection;
+        }
+    }
 
-            let selectedCategory = document.getElementById('categoryFilter').value;
-            let tbody = document.getElementById('complaintTableBody');
-            tbody.innerHTML = '';
-
-            let filteredComplaints = complaints.filter(c => selectedCategory === 'all' || c.category === selectedCategory);
-
-            filteredComplaints.forEach(complaint => {
-                let number = complaint.studentNumber; 
-                // 91 add kiya gaya hai India ke numbers ke liye
-                let whatsappLink = `https://wa.me/91${number}`;
-                let telegramLink = `https://t.me/+91${number}`;
-
+    function loadComplaintsTable() {
+        let complaints = JSON.parse(localStorage.getItem('complaintsList')) || [];
+        let filterValue = document.getElementById('categoryFilter').value;
+        let tbody = document.getElementById('complaintTableBody');
+        
+        tbody.innerHTML = "";
+        
+        complaints.forEach(c => {
+            if(filterValue === "all" || c.category === filterValue) {
                 let tr = document.createElement('tr');
+                
+                // India code 91 ke sath WhatsApp aur Telegram ke links
+                let waLink = `https://wa.me/91${c.studentNumber}`;
+                let tgLink = `https://t.me/+91${c.studentNumber}`;
+                
                 tr.innerHTML = `
-                    <td>${complaint.studentName}</td>
-                    <td class="action-links">
-                        ${number} <br><br>
-                        <a href="${whatsappLink}" target="_blank" style="color: #25D366; border: 1px solid #25D366; padding: 2px 5px; border-radius: 4px;">WhatsApp</a> 
-                        <a href="${telegramLink}" target="_blank" style="color: #0088cc; border: 1px solid #0088cc; padding: 2px 5px; border-radius: 4px;">Telegram</a>
+                    <td><strong>${c.studentName}</strong></td>
+                    <td>
+                        ${c.studentNumber}<br><br>
+                        <a href="${waLink}" target="_blank" class="action-btn wa-btn">🟢 WhatsApp</a>
+                        <a href="${tgLink}" target="_blank" class="action-btn tg-btn">🔵 Telegram</a>
                     </td>
-                    <td><span style="background:#eee; padding:5px 10px; border-radius:15px; font-size:13px; font-weight:bold;">${complaint.category}</span></td>
-                    <td>${complaint.message}</td>
+                    <td><span style="background: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 13px;">${c.category}</span></td>
+                    <td>${c.text}</td>
                 `;
                 tbody.appendChild(tr);
-            });
-        }
+            }
+        });
+    }
 
-        // --- Jab page load ho toh complaint table show ho ---
-        window.onload = function() {
-            displayComplaints();
-        };
-    </script>
+    // Page load hone par functions automatically chalenge
+    window.onload = function() {
+        initComplaints();
+    };
+</script>
 </body>
 </html>
