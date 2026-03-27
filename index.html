@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Education - Admin Panel</title>
     <style>
-        /* ================= PREMIUM GLASSMORPHISM UI ================= */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; padding: 0; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); background-attachment: fixed; color: #2c3e50; min-height: 100vh; }
         .screen { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; animation: fadeIn 0.4s ease; }
         .active-screen { display: flex; }
-        .glass-panel { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+        .glass-panel { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
         .navbar { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.5); }
         .nav-brand { font-size: 1.4em; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 10px; }
         .tab-menu { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -27,19 +26,17 @@
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
-        .btn-primary:hover, .btn-success:hover, .btn-danger:hover { transform: translateY(-2px); opacity: 0.9; }
         .table-wrapper { overflow-x: auto; border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.3); }
         th { background: rgba(255, 255, 255, 0.6); color: #333; font-weight: 600; }
-        tr:hover { background: rgba(255, 255, 255, 0.3); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { width: 100%; max-width: 450px; background: white; padding: 20px; border-radius: 10px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row input, .filter-row select { margin:0; flex:1; min-width: 150px;}
-        
-        /* Modal Overlay CSS for Template Editor */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { width: 100%; max-width: 450px; }
+        .chat-btn { text-decoration: none; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; display: inline-block; margin-top: 5px; margin-right: 5px; }
+        .btn-wa { background: #25D366; } .btn-tg { background: #0088cc; }
     </style>
 </head>
 <body>
@@ -70,12 +67,10 @@
         <div class="container">
             <div id="tab-complaints" class="tab-content active">
                 <div class="glass-panel card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <h2 style="margin:0; color:#1e3c72;">Student Complaints</h2>
-                    </div>
+                    <h2 style="margin:0 0 15px 0; color:#1e3c72;">Student Complaints</h2>
                     <div class="filter-row">
                         <input type="text" id="search-box" placeholder="🔍 Search..." oninput="applyFilters()">
-                        <select id="filter-category" onchange="applyFilters()"><option value="">All Categories</option><option value="Online Course Related">Online Course</option><option value="Online Test Series Related">Test Series</option><option value="Others">Others</option></select>
+                        <select id="filter-category" onchange="applyFilters()"><option value="">All Categories</option></select>
                         <select id="filter-status" onchange="applyFilters()"><option value="">All Status</option><option value="Pending">Pending</option><option value="Solved">Solved</option></select>
                     </div>
                     <div class="table-wrapper">
@@ -90,20 +85,28 @@
             <div id="tab-calls" class="tab-content">
                 <div style="display: flex; gap:20px; flex-wrap:wrap;">
                     <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📞 Assign New Call</h3>
+                        <h3 style="color:#1e3c72; margin-top:0;">📞 Assign Single Call</h3>
                         <select id="assign-emp"><option value="">Select Telecaller...</option></select>
                         <input type="text" id="assign-name" placeholder="Student Name">
                         <input type="number" id="assign-number" placeholder="10-digit Mobile">
                         <input type="text" id="assign-title" placeholder="Reason (e.g. Course Renewal)">
                         <button class="btn-primary" style="width:100%" onclick="assignCall()">Assign Call</button>
                     </div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📋 Assigned Leads</h3>
-                        <table id="calls-table">
-                            <thead><tr><th>Date</th><th>Assigned To</th><th>Student</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
+                    <div class="glass-panel card" style="flex:1; min-width:300px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">📂 Bulk Assign Calls</h3>
+                        <input type="text" id="bulk-sheet-url" value="https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec" placeholder="Google Sheet URL">
+                        <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="fetchBulkCalls()">⬇️ Fetch from Sheet</button>
+                        <textarea id="bulk-calls-data" rows="3" placeholder="Format: Name, Number, Reason"></textarea>
+                        <select id="bulk-assign-emp"><option value="">Select Telecaller for Bulk...</option></select>
+                        <button class="btn-success" style="width:100%" onclick="saveBulkCalls()">✅ Assign Bulk Calls</button>
                     </div>
+                </div>
+                <div class="glass-panel card table-wrapper" style="margin-top:20px;">
+                    <h3 style="color:#1e3c72; margin-top:0;">📋 Assigned Leads Summary</h3>
+                    <table id="calls-table">
+                        <thead><tr><th>Date</th><th>Assigned To</th><th>Student</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -112,20 +115,36 @@
                     <div class="glass-panel card" style="flex:1; min-width:300px;">
                         <h3 style="color:#1e3c72; margin-top:0;">📚 Add Book Details</h3>
                         <input type="text" id="bk-name" placeholder="Book Name">
-                        <input type="number" id="bk-price" placeholder="Price (₹)">
-                        <input type="number" id="bk-delivery" placeholder="Delivery Charge (₹)">
+                        <select id="bk-stock"><option value="In Stock">✅ In Stock</option><option value="Out of Stock">❌ Out of Stock</option><option value="Upcoming">⏳ Upcoming</option></select>
+                        
+                        <h4 style="margin:5px 0; color:#555; font-size:14px;">📘 Exampustak Details</h4>
+                        <div style="display:flex; gap:10px;">
+                            <input type="number" id="bk-exam-price" placeholder="Price (₹)">
+                            <input type="number" id="bk-exam-del" placeholder="Delivery (₹)">
+                        </div>
                         <input type="text" id="bk-exampustak" placeholder="Exampustak Link">
+
+                        <h4 style="margin:5px 0; color:#555; font-size:14px;">📗 ApnaBookStore Details</h4>
+                        <div style="display:flex; gap:10px;">
+                            <input type="number" id="bk-apna-price" placeholder="Price (₹)">
+                            <input type="number" id="bk-apna-del" placeholder="Delivery (₹)">
+                        </div>
                         <input type="text" id="bk-apnabookstore" placeholder="ApnaBookStore Link">
-                        <select id="bk-stock"><option value="In Stock">✅ In Stock</option><option value="Out of Stock">❌ Out of Stock</option></select>
-                        <button class="btn-primary" style="width:100%" onclick="saveBook()">Save Book</button>
+
+                        <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="saveBook()">Save Book Data</button>
                     </div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
-                        <table id="books-table">
-                            <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Send Links (WhatsApp)</th><th>Stock</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
+                    <div class="glass-panel card" style="flex:1; min-width:300px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">📖 Bulk Add Books</h3>
+                        <textarea id="bulk-books-data" rows="10" placeholder="Format: Name, ExamPrice, ExamDel, ExamLink, ApnaPrice, ApnaDel, ApnaLink, Stock"></textarea>
+                        <button class="btn-success" style="width:100%" onclick="saveBulkBooks()">✅ Save Multiple Books</button>
                     </div>
+                </div>
+                <div class="glass-panel card table-wrapper" style="margin-top:20px;">
+                    <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
+                    <table id="books-table">
+                        <thead><tr><th>Book Name</th><th>Exampustak (Price+Del)</th><th>ApnaBookStore (Price+Del)</th><th>Stock</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -152,7 +171,7 @@
     </div>
 
     <div id="templateModal" class="modal-overlay">
-        <div class="glass-panel card modal-content">
+        <div class="modal-content">
             <h3 id="modal-heading" style="color:#1e3c72; margin-top:0;">📝 Create/Edit Template</h3>
             <input type="hidden" id="msg-id">
             <input type="text" id="msg-title" placeholder="Title">
@@ -172,6 +191,7 @@
         async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
+        
         async function login() { const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; const r=await apiCall({action:"login", username:u, password:p}); if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid"); } }
         function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
 
@@ -180,12 +200,18 @@
             if (res.success) {
                 adminData = res; allComplaints = res.complaints.slice().reverse();
                 employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
+                
+                const categories = [...new Set(allComplaints.map(c => c.problemType).filter(Boolean))];
+                let filterCatHTML = '<option value="">All Categories</option>';
+                categories.forEach(cat => { filterCatHTML += `<option value="${cat}">${cat}</option>`; });
+                document.getElementById("filter-category").innerHTML = filterCatHTML;
+
                 applyFilters(); renderEmployees(res.employees); renderBooks(res.books); renderAssignedCalls(res.assignedCalls);
                 
-                const empSelect = document.getElementById("assign-emp");
-                empSelect.innerHTML = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
+                const empOptions = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
+                document.getElementById("assign-emp").innerHTML = empOptions;
+                document.getElementById("bulk-assign-emp").innerHTML = empOptions;
                 
-                // Load Messages Tab
                 const msgRes = await apiCall({ action: "getMessages" });
                 if(msgRes.success) {
                     document.querySelector("#messages-table tbody").innerHTML = msgRes.messages.map(m=>`<tr>
@@ -204,54 +230,80 @@
         function applyFilters() {
             const s=document.getElementById("search-box").value.toLowerCase(), c=document.getElementById("filter-category").value, st=document.getElementById("filter-status").value;
             const f = allComplaints.filter(x=>(s===""||x.mobile.includes(s)||x.studentName.toLowerCase().includes(s)) && (c===""||x.problemType===c) && (st===""||x.status===st));
+            
             document.querySelector("#complaints-table tbody").innerHTML = f.map(x=>`<tr>
                 <td><small>${new Date(x.date).toLocaleDateString()}</small><br>ID: ${x.complaintId.slice(-3)}</td>
-                <td><b>${x.studentName}</b><br>📞 ${x.mobile}</td>
+                <td>
+                    <b>${x.studentName}</b><br>📞 ${x.mobile}<br>
+                    <a href="https://wa.me/91${x.mobile}" target="_blank" class="chat-btn btn-wa">WA Message</a>
+                    <a href="https://t.me/+91${x.mobile}" target="_blank" class="chat-btn btn-tg">Telegram</a>
+                </td>
                 <td><span style="color:#0984e3; font-weight:bold">${x.problemType}</span><br>${x.issue}</td>
                 <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId]}</b></td>
                 <td>${x.status=='Pending'?`<textarea id="rep-${x.complaintId}" rows="1" placeholder="Reply..." style="margin-bottom:5px;"></textarea><button class="btn-success" style="padding:5px;" onclick="markSolved('${x.complaintId}')">✔️ Solve</button>` : `<b style="color:green">✅ Solved</b><br><small>${x.adminComment}</small>`}
                 <button class="btn-danger" style="padding:5px; margin-top:5px;" onclick="deleteComplaint('${x.complaintId}')">🗑️</button></td></tr>`).join('');
         }
+        
         async function markSolved(id) { await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
         async function deleteComplaint(id) { if(confirm("Delete?")){ await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
 
-        // ================= UPDATED BOOKS LOGIC =================
+        // ================= UPDATED BOOKS LOGIC (Admin) =================
         async function saveBook() {
-            const n=document.getElementById("bk-name").value, p=document.getElementById("bk-price").value, d=document.getElementById("bk-delivery").value, 
-                  exam=document.getElementById("bk-exampustak").value, apna=document.getElementById("bk-apnabookstore").value, s=document.getElementById("bk-stock").value;
+            const n=document.getElementById("bk-name").value;
+            const ep=document.getElementById("bk-exam-price").value;
+            const ed=document.getElementById("bk-exam-del").value;
+            const exam=document.getElementById("bk-exampustak").value;
+            const ap=document.getElementById("bk-apna-price").value;
+            const ad=document.getElementById("bk-apna-del").value;
+            const apna=document.getElementById("bk-apnabookstore").value;
+            const s=document.getElementById("bk-stock").value;
+            
             if(!n) return alert("Enter book name");
             
-            // Note: Saving exampustak and apnabookstore inside the object.
-            await apiCall({action:"saveBook", book:{name:n, price:p, delivery:d, exampustak:exam, apnabookstore:apna, stock:s}});
+            await apiCall({action:"saveBook", book:{name:n, examPrice:ep, examDelivery:ed, exampustak:exam, apnaPrice:ap, apnaDelivery:ad, apnabookstore:apna, stock:s}});
             
-            document.getElementById("bk-name").value=""; document.getElementById("bk-price").value=""; document.getElementById("bk-delivery").value=""; 
-            document.getElementById("bk-exampustak").value=""; document.getElementById("bk-apnabookstore").value="";
+            document.querySelectorAll('#tab-books input[type="text"], #tab-books input[type="number"]').forEach(i => i.value='');
+            loadData();
+        }
+
+        async function saveBulkBooks() {
+            const data = document.getElementById("bulk-books-data").value;
+            if(!data) return alert("Please paste book data first!");
+            const rows = data.split('\n');
+            let count = 0;
+            document.getElementById("bulk-books-data").value = "Processing and Saving... Please wait.";
+            for(let row of rows) {
+                let c = row.split(/[\t,]+/);
+                if(c.length >= 2) {
+                    await apiCall({action:"saveBook", book:{
+                        name: c[0]?c[0].trim():"", examPrice: c[1]?c[1].trim():"0", examDelivery: c[2]?c[2].trim():"0", 
+                        exampustak: c[3]?c[3].trim():"", apnaPrice: c[4]?c[4].trim():"0", apnaDelivery: c[5]?c[5].trim():"0", 
+                        apnabookstore: c[6]?c[6].trim():"", stock: c[7]?c[7].trim():"In Stock"
+                    }});
+                    count++;
+                }
+            }
+            alert(`✅ ${count} Books Added Successfully!`);
+            document.getElementById("bulk-books-data").value = "";
             loadData();
         }
 
         function renderBooks(books) {
-            document.querySelector("#books-table tbody").innerHTML = books.map(b=>`<tr>
-                <td><b>${b.name}</b></td>
-                <td>₹${b.price} <small>(+₹${b.delivery} Del)</small></td>
-                <td>
-                    <button class="btn-success" style="padding:4px 8px; font-size:12px; margin-bottom:5px;" onclick="sendBookLink('${b.name}', '${b.exampustak}')">Exampustak 📤</button><br>
-                    <button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick="sendBookLink('${b.name}', '${b.apnabookstore}')">ApnaBookStore 📤</button>
-                </td>
-                <td style="color:${b.stock=='In Stock'?'green':'red'}"><b>${b.stock}</b></td>
-                <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`).join('');
-        }
-
-        function sendBookLink(bookName, link) {
-            if(!link || link === "undefined") return alert("Is book ka ye link add nahi kiya gaya hai!");
-            let num = prompt(`"${bookName}" ka link bhejne ke liye 10-digit number dalein:`);
-            if(num && num.trim() !== "") {
-                let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
-                window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
-            }
+            document.querySelector("#books-table tbody").innerHTML = books.map(b=>{
+                let ePrice = b.examPrice || b.price || '0'; let eDel = b.examDelivery || b.delivery || '0';
+                let aPrice = b.apnaPrice || b.price || '0'; let aDel = b.apnaDelivery || b.delivery || '0';
+                let stockColor = (b.stock === 'In Stock') ? 'green' : (b.stock === 'Upcoming' ? 'orange' : 'red');
+                return `<tr>
+                    <td><b>${b.name}</b></td>
+                    <td>₹${ePrice} <small>(+₹${eDel} Del)</small><br><a href="${b.exampustak||'#'}" target="_blank">Link</a></td>
+                    <td>₹${aPrice} <small>(+₹${aDel} Del)</small><br><a href="${b.apnabookstore||'#'}" target="_blank">Link</a></td>
+                    <td style="color:${stockColor}; font-weight:bold;">${b.stock}</td>
+                    <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`;
+            }).join('');
         }
         async function deleteBk(id) { if(confirm("Delete Book?")){ await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
 
-        // ASSIGN CALLS LOGIC
+        // ================= ASSIGN CALLS LOGIC =================
         async function assignCall() {
             const e=document.getElementById("assign-emp").value, n=document.getElementById("assign-name").value, m=document.getElementById("assign-number").value, t=document.getElementById("assign-title").value;
             if(!e||!n||!m) return alert("Select Emp, Name, Number!");
@@ -259,6 +311,42 @@
             document.getElementById("assign-name").value=""; document.getElementById("assign-number").value=""; document.getElementById("assign-title").value="";
             loadData();
         }
+
+        async function fetchBulkCalls() {
+            const url = document.getElementById("bulk-sheet-url").value;
+            const textarea = document.getElementById("bulk-calls-data");
+            textarea.value = "Fetching data... please wait.";
+            try {
+                let res = await fetch(url);
+                let data = await res.json();
+                let dataArray = Array.isArray(data) ? data : (data.data || []);
+                let text = "";
+                dataArray.forEach(row => {
+                    let vals = Object.values(row);
+                    if(vals.join("").trim() !== "") text += vals.join(", ") + "\n";
+                });
+                textarea.value = text;
+            } catch (err) { textarea.value = ""; alert("Fetch Error!"); }
+        }
+
+        async function saveBulkCalls() {
+            const emp = document.getElementById("bulk-assign-emp").value;
+            const data = document.getElementById("bulk-calls-data").value;
+            if(!emp || !data) return alert("Please select Employee and provide Data!");
+            
+            const rows = data.split('\n'); let count = 0;
+            document.getElementById("bulk-calls-data").value = "Assigning to Telecaller... Please wait.";
+            for(let row of rows) {
+                let cols = row.split(/[\t,]+/);
+                if(cols.length >= 2 && cols[0].trim() !== "" && cols[1].trim() !== "") {
+                    await apiCall({action:"assignCall", callData:{employeeId: emp, name: cols[0].trim(), number: cols[1].trim(), title: cols[2] ? cols[2].trim() : "Bulk Lead"}});
+                    count++;
+                }
+            }
+            alert(`✅ ${count} Calls Assigned Successfully!`);
+            document.getElementById("bulk-calls-data").value = ""; loadData();
+        }
+
         function renderAssignedCalls(calls) {
             document.querySelector("#calls-table tbody").innerHTML = calls.slice().reverse().map(c=>`<tr>
                 <td><small>${new Date(c.date).toLocaleDateString()}</small></td>
@@ -269,51 +357,31 @@
         }
         async function deleteACall(id) { if(confirm("Delete Assigned Call?")){ await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
 
-        // TEAM
+        // TEAM & MSGS
         function renderEmployees(emps) { document.querySelector("#employees-table tbody").innerHTML = emps.filter(e=>e.username!=='admin').map(e=>`<tr><td><b>${e.name}</b></td><td>${e.username}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); }
         async function addNewEmployee() { const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; if(!n||!u||!p)return; await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); loadData(); }
         async function updatePass(id) { await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); alert("Updated"); }
         async function deleteEmp(id) { if(confirm("Remove?")){ await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
         
-        // ================= UPDATED MESSAGES LOGIC =================
         function openTemplateModal() {
-            document.getElementById("msg-id").value = "";
-            document.getElementById("msg-title").value = "";
-            document.getElementById("msg-content").value = "";
-            document.getElementById("modal-heading").innerText = "📝 Create New Template";
-            document.getElementById("templateModal").style.display = "flex";
+            document.getElementById("msg-id").value = ""; document.getElementById("msg-title").value = ""; document.getElementById("msg-content").value = "";
+            document.getElementById("modal-heading").innerText = "📝 Create New Template"; document.getElementById("templateModal").style.display = "flex";
         }
-        
         function editTemplateModal(id, title, content) {
-            document.getElementById("msg-id").value = id;
-            document.getElementById("msg-title").value = decodeURIComponent(title);
-            document.getElementById("msg-content").value = decodeURIComponent(content);
-            document.getElementById("modal-heading").innerText = "✏️ Edit Template";
-            document.getElementById("templateModal").style.display = "flex";
+            document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(title); document.getElementById("msg-content").value = decodeURIComponent(content);
+            document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex";
         }
-
-        function closeTemplateModal() {
-            document.getElementById("templateModal").style.display = "none";
-        }
-
+        function closeTemplateModal() { document.getElementById("templateModal").style.display = "none"; }
         async function saveMessage() { 
             const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value, id=document.getElementById("msg-id").value; 
             if(!t||!c) return alert("Title and Content required"); 
-            
             let payload = {action:"saveMessage", message:{title:t, content:c}};
-            if(id) payload.message.msgId = id; // Update logic if ID exists
-            
-            await apiCall(payload); 
-            closeTemplateModal();
-            loadData(); 
+            if(id) payload.message.msgId = id; 
+            await apiCall(payload); closeTemplateModal(); loadData(); 
         }
-
         function sendWA(encodedMsg) {
-            let msg = decodeURIComponent(encodedMsg);
             let num = prompt("Message bhejne ke liye 10-digit WhatsApp number dalein:");
-            if(num && num.trim() !== "") {
-                window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
-            }
+            if(num && num.trim() !== "") window.open(`https://wa.me/91${num}?text=${encodedMsg}`, '_blank');
         }
         async function deleteMsg(id) { if(confirm("Delete Template?")){ await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
     </script>
