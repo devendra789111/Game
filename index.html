@@ -36,6 +36,10 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row input, .filter-row select { margin:0; flex:1; min-width: 150px;}
+        
+        /* Modal Overlay CSS for Template Editor */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { width: 100%; max-width: 450px; }
     </style>
 </head>
 <body>
@@ -110,14 +114,15 @@
                         <input type="text" id="bk-name" placeholder="Book Name">
                         <input type="number" id="bk-price" placeholder="Price (₹)">
                         <input type="number" id="bk-delivery" placeholder="Delivery Charge (₹)">
-                        <input type="text" id="bk-website" placeholder="Website / Purchase Link">
+                        <input type="text" id="bk-exampustak" placeholder="Exampustak Link">
+                        <input type="text" id="bk-apnabookstore" placeholder="ApnaBookStore Link">
                         <select id="bk-stock"><option value="In Stock">✅ In Stock</option><option value="Out of Stock">❌ Out of Stock</option></select>
                         <button class="btn-primary" style="width:100%" onclick="saveBook()">Save Book</button>
                     </div>
                     <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
                         <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
                         <table id="books-table">
-                            <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Website</th><th>Stock</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Send Links (WhatsApp)</th><th>Stock</th><th>Action</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -132,10 +137,29 @@
             </div>
 
             <div id="tab-messages" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">📝 Create Template</h3><input type="hidden" id="msg-id"><input type="text" id="msg-title" placeholder="Title"><textarea id="msg-content" rows="4" placeholder="Message content..."></textarea><button class="btn-primary" style="width:100%" onclick="saveMessage()">Save Template</button></div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">💬 Saved Templates</h3><table id="messages-table"><thead><tr><th>Title</th><th>Preview</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                <div class="glass-panel card table-wrapper" style="width:100%;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">💬 Saved Templates</h3>
+                        <button class="btn-primary" onclick="openTemplateModal()" style="border-radius:20px; padding:8px 15px;">➕ Add New Template</button>
+                    </div>
+                    <table id="messages-table">
+                        <thead><tr><th>Title</th><th>Preview</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="templateModal" class="modal-overlay">
+        <div class="glass-panel card modal-content">
+            <h3 id="modal-heading" style="color:#1e3c72; margin-top:0;">📝 Create/Edit Template</h3>
+            <input type="hidden" id="msg-id">
+            <input type="text" id="msg-title" placeholder="Title">
+            <textarea id="msg-content" rows="5" placeholder="Message content..."></textarea>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-success" style="flex:1" onclick="saveMessage()">Save</button>
+                <button class="btn-danger" style="flex:1" onclick="closeTemplateModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -158,13 +182,22 @@
                 employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
                 applyFilters(); renderEmployees(res.employees); renderBooks(res.books); renderAssignedCalls(res.assignedCalls);
                 
-                // Load Employees in Select Dropdown
                 const empSelect = document.getElementById("assign-emp");
                 empSelect.innerHTML = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
                 
                 // Load Messages Tab
                 const msgRes = await apiCall({ action: "getMessages" });
-                if(msgRes.success) document.querySelector("#messages-table tbody").innerHTML = msgRes.messages.map(m=>`<tr><td>${m.title}</td><td>${m.content.substring(0,30)}...</td><td><button class="btn-danger" onclick="deleteMsg('${m.msgId}')">🗑️</button></td></tr>`).join('');
+                if(msgRes.success) {
+                    document.querySelector("#messages-table tbody").innerHTML = msgRes.messages.map(m=>`<tr>
+                        <td><b>${m.title}</b></td>
+                        <td>${m.content.substring(0,35)}...</td>
+                        <td>
+                            <button class="btn-success" style="padding:5px 10px;" onclick="sendWA('${encodeURIComponent(m.content)}')">📤 Send</button>
+                            <button class="btn-primary" style="padding:5px 10px;" onclick="editTemplateModal('${m.msgId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.content)}')">✏️ Edit</button>
+                            <button class="btn-danger" style="padding:5px 10px;" onclick="deleteMsg('${m.msgId}')">🗑️</button>
+                        </td>
+                    </tr>`).join('');
+                }
             }
         }
 
@@ -182,19 +215,39 @@
         async function markSolved(id) { await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
         async function deleteComplaint(id) { if(confirm("Delete?")){ await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
 
-        // BOOKS LOGIC
+        // ================= UPDATED BOOKS LOGIC =================
         async function saveBook() {
-            const n=document.getElementById("bk-name").value, p=document.getElementById("bk-price").value, d=document.getElementById("bk-delivery").value, w=document.getElementById("bk-website").value, s=document.getElementById("bk-stock").value;
+            const n=document.getElementById("bk-name").value, p=document.getElementById("bk-price").value, d=document.getElementById("bk-delivery").value, 
+                  exam=document.getElementById("bk-exampustak").value, apna=document.getElementById("bk-apnabookstore").value, s=document.getElementById("bk-stock").value;
             if(!n) return alert("Enter book name");
-            await apiCall({action:"saveBook", book:{name:n, price:p, delivery:d, website:w, stock:s}});
-            document.getElementById("bk-name").value=""; document.getElementById("bk-price").value=""; document.getElementById("bk-delivery").value=""; document.getElementById("bk-website").value="";
+            
+            // Note: Saving exampustak and apnabookstore inside the object.
+            await apiCall({action:"saveBook", book:{name:n, price:p, delivery:d, exampustak:exam, apnabookstore:apna, stock:s}});
+            
+            document.getElementById("bk-name").value=""; document.getElementById("bk-price").value=""; document.getElementById("bk-delivery").value=""; 
+            document.getElementById("bk-exampustak").value=""; document.getElementById("bk-apnabookstore").value="";
             loadData();
         }
+
         function renderBooks(books) {
             document.querySelector("#books-table tbody").innerHTML = books.map(b=>`<tr>
-                <td><b>${b.name}</b></td><td>₹${b.price} <small>(+₹${b.delivery} Del)</small></td>
-                <td><a href="${b.website}" target="_blank">Link</a></td><td style="color:${b.stock=='In Stock'?'green':'red'}"><b>${b.stock}</b></td>
+                <td><b>${b.name}</b></td>
+                <td>₹${b.price} <small>(+₹${b.delivery} Del)</small></td>
+                <td>
+                    <button class="btn-success" style="padding:4px 8px; font-size:12px; margin-bottom:5px;" onclick="sendBookLink('${b.name}', '${b.exampustak}')">Exampustak 📤</button><br>
+                    <button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick="sendBookLink('${b.name}', '${b.apnabookstore}')">ApnaBookStore 📤</button>
+                </td>
+                <td style="color:${b.stock=='In Stock'?'green':'red'}"><b>${b.stock}</b></td>
                 <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`).join('');
+        }
+
+        function sendBookLink(bookName, link) {
+            if(!link || link === "undefined") return alert("Is book ka ye link add nahi kiya gaya hai!");
+            let num = prompt(`"${bookName}" ka link bhejne ke liye 10-digit number dalein:`);
+            if(num && num.trim() !== "") {
+                let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
+                window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
+            }
         }
         async function deleteBk(id) { if(confirm("Delete Book?")){ await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
 
@@ -216,12 +269,52 @@
         }
         async function deleteACall(id) { if(confirm("Delete Assigned Call?")){ await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
 
-        // TEAM & MSGS
+        // TEAM
         function renderEmployees(emps) { document.querySelector("#employees-table tbody").innerHTML = emps.filter(e=>e.username!=='admin').map(e=>`<tr><td><b>${e.name}</b></td><td>${e.username}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); }
         async function addNewEmployee() { const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; if(!n||!u||!p)return; await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); loadData(); }
         async function updatePass(id) { await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); alert("Updated"); }
         async function deleteEmp(id) { if(confirm("Remove?")){ await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
-        async function saveMessage() { const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value; if(!t||!c)return; await apiCall({action:"saveMessage", message:{title:t, content:c}}); loadData(); }
+        
+        // ================= UPDATED MESSAGES LOGIC =================
+        function openTemplateModal() {
+            document.getElementById("msg-id").value = "";
+            document.getElementById("msg-title").value = "";
+            document.getElementById("msg-content").value = "";
+            document.getElementById("modal-heading").innerText = "📝 Create New Template";
+            document.getElementById("templateModal").style.display = "flex";
+        }
+        
+        function editTemplateModal(id, title, content) {
+            document.getElementById("msg-id").value = id;
+            document.getElementById("msg-title").value = decodeURIComponent(title);
+            document.getElementById("msg-content").value = decodeURIComponent(content);
+            document.getElementById("modal-heading").innerText = "✏️ Edit Template";
+            document.getElementById("templateModal").style.display = "flex";
+        }
+
+        function closeTemplateModal() {
+            document.getElementById("templateModal").style.display = "none";
+        }
+
+        async function saveMessage() { 
+            const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value, id=document.getElementById("msg-id").value; 
+            if(!t||!c) return alert("Title and Content required"); 
+            
+            let payload = {action:"saveMessage", message:{title:t, content:c}};
+            if(id) payload.message.msgId = id; // Update logic if ID exists
+            
+            await apiCall(payload); 
+            closeTemplateModal();
+            loadData(); 
+        }
+
+        function sendWA(encodedMsg) {
+            let msg = decodeURIComponent(encodedMsg);
+            let num = prompt("Message bhejne ke liye 10-digit WhatsApp number dalein:");
+            if(num && num.trim() !== "") {
+                window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
+            }
+        }
         async function deleteMsg(id) { if(confirm("Delete Template?")){ await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
     </script>
 </body>
