@@ -24,6 +24,7 @@
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
+        .btn-edit { background: #f39c12; color: white; }
         .table-wrapper { overflow-x: auto; border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.3); }
@@ -103,7 +104,8 @@
             <div id="tab-books" class="tab-content">
                 <div style="display: flex; gap:20px; flex-wrap:wrap;">
                     <div class="glass-panel" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📚 Add New Book</h3>
+                        <h3 id="book-form-title" style="color:#1e3c72; margin-top:0;">📚 Add New Book</h3>
+                        <input type="hidden" id="bk-id">
                         <input type="text" id="bk-name" placeholder="Book Name (e.g. Maths Magic)">
                         
                         <div style="background:rgba(255,255,255,0.6); padding:15px; border-radius:8px; margin-bottom:15px;">
@@ -131,7 +133,7 @@
                     <div class="glass-panel table-wrapper" style="flex:2; min-width:500px;">
                         <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory & Stock Management</h3>
                         <table id="books-table">
-                            <thead><tr><th>Book Name</th><th>Exampustak Info</th><th>ApnaBookStore Info</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Book Name</th><th>Exampustak Info</th><th>ApnaBookStore Info</th><th>Actions</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -145,10 +147,7 @@
                         <input type="text" id="new-emp-name" placeholder="Name">
                         <input type="text" id="new-emp-user" placeholder="Username">
                         <input type="text" id="new-emp-pass" placeholder="Password">
-                        <select id="new-emp-role">
-                            <option value="employee">Standard Telecaller</option>
-                            <option value="senior">Senior (Can Receive Transfers)</option>
-                        </select>
+                        <select id="new-emp-role"><option value="employee">Standard Telecaller</option><option value="senior">Senior (Can Receive Transfers)</option></select>
                         <button class="btn-primary" style="width:100%" onclick="addNewEmployee()">Create Profile</button>
                     </div>
                     <div class="glass-panel table-wrapper" style="flex:2; min-width:300px;">
@@ -221,8 +220,6 @@
                     const empOptions = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>(e.username||'').toLowerCase() !== 'admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
                     document.getElementById("assign-emp").innerHTML = empOptions;
                     renderEmployees(res.employees);
-                } else {
-                    document.querySelector("#employees-table tbody").innerHTML = "<tr><td colspan='4'>No employees found. Add one above.</td></tr>";
                 }
                 
                 document.querySelector("#complaints-table tbody").innerHTML = allComplaints.map(x=>`<tr>
@@ -239,10 +236,8 @@
                 if(res.messages && res.messages.length > 0) {
                     document.querySelector("#messages-table tbody").innerHTML = res.messages.map(m=>`<tr>
                         <td><b>${m.title || 'Untitled'}</b></td><td>${(m.content || '').substring(0,35)}...</td>
-                        <td><button class="btn-primary" onclick="editTemplateModal('${m.msgId}', '${encodeURIComponent(m.title||'')}', '${encodeURIComponent(m.content||'')}')">✏️</button>
+                        <td><button class="btn-edit" onclick="editTemplateModal('${m.msgId}', '${encodeURIComponent(m.title||'')}', '${encodeURIComponent(m.content||'')}')">✏️</button>
                         <button class="btn-danger" onclick="deleteMsg('${m.msgId}')">🗑️</button></td></tr>`).join('');
-                } else {
-                    document.querySelector("#messages-table tbody").innerHTML = "<tr><td colspan='3'>No templates found. Add one above.</td></tr>";
                 }
             }
         }
@@ -250,15 +245,36 @@
         async function markSolved(id) { showLoader(); await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
         async function deleteComplaint(id) { if(confirm("Delete this complaint permanently?")){ showLoader(); await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
 
+        // --- NEW: EDIT BOOK SYSTEM ---
         async function saveBook() {
-            const n=document.getElementById("bk-name").value;
+            const n = document.getElementById("bk-name").value;
+            const id = document.getElementById("bk-id").value;
             if(!n) return alert("Enter book name");
             let payload = {
+                bookId: id || undefined,
                 name: n, examPrice: document.getElementById("bk-exam-price").value || '0', examDelivery: document.getElementById("bk-exam-del").value || '0', examLink: document.getElementById("bk-exam-link").value || '', examStock: document.getElementById("bk-exam-stock").value || 'Available',
                 apnaPrice: document.getElementById("bk-apna-price").value || '0', apnaDelivery: document.getElementById("bk-apna-del").value || '0', apnaLink: document.getElementById("bk-apna-link").value || '', apnaStock: document.getElementById("bk-apna-stock").value || 'Available'
             };
             showLoader(); await apiCall({action:"saveBook", book: payload});
-            document.querySelectorAll('#tab-books input[type="text"], #tab-books input[type="number"]').forEach(i => i.value=''); loadData();
+            document.querySelectorAll('#tab-books input').forEach(i => i.value='');
+            document.getElementById("book-form-title").innerText = "📚 Add New Book";
+            loadData();
+        }
+
+        function editBookMode(id, encName, ep, ed, encEl, es, ap, ad, encAl, as) {
+            document.getElementById("bk-id").value = id;
+            document.getElementById("bk-name").value = decodeURIComponent(encName);
+            document.getElementById("bk-exam-price").value = ep;
+            document.getElementById("bk-exam-del").value = ed;
+            document.getElementById("bk-exam-link").value = decodeURIComponent(encEl);
+            document.getElementById("bk-exam-stock").value = es;
+            document.getElementById("bk-apna-price").value = ap;
+            document.getElementById("bk-apna-del").value = ad;
+            document.getElementById("bk-apna-link").value = decodeURIComponent(encAl);
+            document.getElementById("bk-apna-stock").value = as;
+            
+            document.getElementById("book-form-title").innerText = "✏️ Edit Book Details";
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function renderBooks(books) {
@@ -266,11 +282,18 @@
             document.querySelector("#books-table tbody").innerHTML = books.map(b=>{
                 let eStockSel = `<select onchange="updateStock('${b.bookId}', this.value, '${b.apnaStock||'Available'}')" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.examStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.examStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.examStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
                 let aStockSel = `<select onchange="updateStock('${b.bookId}', '${b.examStock||'Available'}', this.value)" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.apnaStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.apnaStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.apnaStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
+                
+                let encName = encodeURIComponent(b.name || ''); let encEl = encodeURIComponent(b.examLink || ''); let encAl = encodeURIComponent(b.apnaLink || '');
+                let ep = b.examPrice||'0'; let ed = b.examDelivery||'0'; let ap = b.apnaPrice||'0'; let ad = b.apnaDelivery||'0';
+
                 return `<tr>
                     <td><b style="color:#1e3c72;">${b.name || 'Unnamed'}</b></td>
-                    <td>₹${b.examPrice || '0'} <small>(+₹${b.examDelivery || '0'} Del)</small><br>${eStockSel}</td>
-                    <td>₹${b.apnaPrice || '0'} <small>(+₹${b.apnaDelivery || '0'} Del)</small><br>${aStockSel}</td>
-                    <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`;
+                    <td>₹${ep} <small>(+₹${ed} Del)</small><br>${eStockSel}</td>
+                    <td>₹${ap} <small>(+₹${ad} Del)</small><br>${aStockSel}</td>
+                    <td>
+                        <button class="btn-edit" style="padding:5px; margin-bottom:5px;" onclick="editBookMode('${b.bookId}', '${encName}', '${ep}', '${ed}', '${encEl}', '${b.examStock}', '${ap}', '${ad}', '${encAl}', '${b.apnaStock}')">✏️ Edit</button>
+                        <button class="btn-danger" style="padding:5px;" onclick="deleteBk('${b.bookId}')">🗑️</button>
+                    </td></tr>`;
             }).join('');
         }
 
@@ -309,7 +332,7 @@
         async function deleteEmp(id) { if(confirm("Remove this Telecaller?")){ showLoader(); await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
         
         function openTemplateModal() { document.getElementById("msg-id").value = ""; document.getElementById("msg-title").value = ""; document.getElementById("msg-content").value = ""; document.getElementById("modal-heading").innerText = "📝 Create Template"; document.getElementById("templateModal").style.display = "flex"; }
-        function editTemplateModal(id, title, content) { document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(title); document.getElementById("msg-content").value = decodeURIComponent(content); document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex"; }
+        function editTemplateModal(id, encTitle, encContent) { document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(encTitle); document.getElementById("msg-content").value = decodeURIComponent(encContent); document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex"; }
         function closeTemplateModal() { document.getElementById("templateModal").style.display = "none"; }
         
         async function saveMessage() { 
