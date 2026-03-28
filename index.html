@@ -19,12 +19,11 @@
         .container { width: 100%; max-width: 1200px; margin-top: 10px; }
         .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
         input, select, textarea { padding: 10px 15px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; width: 100%; margin-bottom: 15px; outline: none; background: rgba(255, 255, 255, 0.7); transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; }
         button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
-        .btn-wa { background: #25D366; color: white; }
         .table-wrapper { overflow-x: auto; border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.3); }
@@ -112,11 +111,7 @@
                             <div class="flex-row">
                                 <input type="number" id="bk-exam-price" placeholder="Price (₹)">
                                 <input type="number" id="bk-exam-del" placeholder="Delivery (₹)">
-                                <select id="bk-exam-stock">
-                                    <option value="Available">🟢 Available</option>
-                                    <option value="Out of Stock">🔴 Out of Stock</option>
-                                    <option value="Upcoming">🟠 Upcoming</option>
-                                </select>
+                                <select id="bk-exam-stock"><option value="Available">🟢 Available</option><option value="Out of Stock">🔴 Out of Stock</option><option value="Upcoming">🟠 Upcoming</option></select>
                             </div>
                             <input type="text" id="bk-exam-link" placeholder="Exampustak URL Link" style="margin-bottom:0;">
                         </div>
@@ -126,15 +121,10 @@
                             <div class="flex-row">
                                 <input type="number" id="bk-apna-price" placeholder="Price (₹)">
                                 <input type="number" id="bk-apna-del" placeholder="Delivery (₹)">
-                                <select id="bk-apna-stock">
-                                    <option value="Available">🟢 Available</option>
-                                    <option value="Out of Stock">🔴 Out of Stock</option>
-                                    <option value="Upcoming">🟠 Upcoming</option>
-                                </select>
+                                <select id="bk-apna-stock"><option value="Available">🟢 Available</option><option value="Out of Stock">🔴 Out of Stock</option><option value="Upcoming">🟠 Upcoming</option></select>
                             </div>
                             <input type="text" id="bk-apna-link" placeholder="ApnaBookStore URL Link" style="margin-bottom:0;">
                         </div>
-
                         <button class="btn-primary" style="width:100%;" onclick="saveBook()">💾 Save Book</button>
                     </div>
 
@@ -150,8 +140,21 @@
 
             <div id="tab-employees" class="tab-content">
                 <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel" style="flex:1; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">➕ Add Telecaller</h3><input type="text" id="new-emp-name" placeholder="Name"><input type="text" id="new-emp-user" placeholder="Username"><input type="text" id="new-emp-pass" placeholder="Password"><button class="btn-primary" style="width:100%" onclick="addNewEmployee()">Create</button></div>
-                    <div class="glass-panel table-wrapper" style="flex:2; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">👥 Team</h3><table id="employees-table"><thead><tr><th>Name</th><th>Username</th><th>Password</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                    <div class="glass-panel" style="flex:1; min-width:300px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">➕ Add Staff Member</h3>
+                        <input type="text" id="new-emp-name" placeholder="Name">
+                        <input type="text" id="new-emp-user" placeholder="Username">
+                        <input type="text" id="new-emp-pass" placeholder="Password">
+                        <select id="new-emp-role">
+                            <option value="employee">Standard Telecaller</option>
+                            <option value="senior">Senior (Can Receive Transfers)</option>
+                        </select>
+                        <button class="btn-primary" style="width:100%" onclick="addNewEmployee()">Create Profile</button>
+                    </div>
+                    <div class="glass-panel table-wrapper" style="flex:2; min-width:300px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">👥 Team</h3>
+                        <table id="employees-table"><thead><tr><th>Name & Role</th><th>Username</th><th>Password</th><th>Actions</th></tr></thead><tbody></tbody></table>
+                    </div>
                 </div>
             </div>
 
@@ -189,31 +192,19 @@
 
         function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
         function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
-
-        function safeDate(dStr) {
-            if (!dStr) return "N/A";
-            let d = new Date(dStr);
-            return isNaN(d.getTime()) ? dStr : d.toLocaleDateString();
-        }
+        function safeDate(dStr) { if (!dStr) return "N/A"; let d = new Date(dStr); return isNaN(d.getTime()) ? dStr : d.toLocaleDateString(); }
 
         window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); } };
         
-        async function apiCall(p) { 
-            try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } 
-            catch { return {success:false, message:"Network Error"}; } 
-        }
-
+        async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false, message:"Network Error"}; } }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
         
         async function login() { 
             const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; 
-            showLoader();
-            const r = await apiCall({action:"login", username:u, password:p}); 
-            hideLoader();
+            showLoader(); const r = await apiCall({action:"login", username:u, password:p}); hideLoader();
             if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid Login Credentials!"); } 
         }
-        
         function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
 
         async function loadData() {
@@ -259,53 +250,26 @@
         async function markSolved(id) { showLoader(); await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
         async function deleteComplaint(id) { if(confirm("Delete this complaint permanently?")){ showLoader(); await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
 
-        // BOOKS LOGIC
         async function saveBook() {
             const n=document.getElementById("bk-name").value;
             if(!n) return alert("Enter book name");
-            
             let payload = {
-                name: n,
-                examPrice: document.getElementById("bk-exam-price").value || '0',
-                examDelivery: document.getElementById("bk-exam-del").value || '0',
-                examLink: document.getElementById("bk-exam-link").value || '',
-                examStock: document.getElementById("bk-exam-stock").value || 'Available',
-                apnaPrice: document.getElementById("bk-apna-price").value || '0',
-                apnaDelivery: document.getElementById("bk-apna-del").value || '0',
-                apnaLink: document.getElementById("bk-apna-link").value || '',
-                apnaStock: document.getElementById("bk-apna-stock").value || 'Available'
+                name: n, examPrice: document.getElementById("bk-exam-price").value || '0', examDelivery: document.getElementById("bk-exam-del").value || '0', examLink: document.getElementById("bk-exam-link").value || '', examStock: document.getElementById("bk-exam-stock").value || 'Available',
+                apnaPrice: document.getElementById("bk-apna-price").value || '0', apnaDelivery: document.getElementById("bk-apna-del").value || '0', apnaLink: document.getElementById("bk-apna-link").value || '', apnaStock: document.getElementById("bk-apna-stock").value || 'Available'
             };
-            
-            showLoader();
-            await apiCall({action:"saveBook", book: payload});
-            document.querySelectorAll('#tab-books input[type="text"], #tab-books input[type="number"]').forEach(i => i.value='');
-            loadData();
+            showLoader(); await apiCall({action:"saveBook", book: payload});
+            document.querySelectorAll('#tab-books input[type="text"], #tab-books input[type="number"]').forEach(i => i.value=''); loadData();
         }
 
         function renderBooks(books) {
-            if(!books || books.length === 0) {
-                document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='4'>No books available. Add your first book!</td></tr>"; return;
-            }
+            if(!books || books.length === 0) { document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='4'>No books available.</td></tr>"; return; }
             document.querySelector("#books-table tbody").innerHTML = books.map(b=>{
                 let eStockSel = `<select onchange="updateStock('${b.bookId}', this.value, '${b.apnaStock||'Available'}')" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.examStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.examStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.examStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
                 let aStockSel = `<select onchange="updateStock('${b.bookId}', '${b.examStock||'Available'}', this.value)" style="padding:2px; font-size:12px; margin:0;"><option value="Available" ${b.apnaStock=='Available'?'selected':''}>Available</option><option value="Out of Stock" ${b.apnaStock=='Out of Stock'?'selected':''}>Out of Stock</option><option value="Upcoming" ${b.apnaStock=='Upcoming'?'selected':''}>Upcoming</option></select>`;
-                
-                let encName = encodeURIComponent(b.name || '');
-                let encExamLink = encodeURIComponent(b.examLink || '');
-                let encApnaLink = encodeURIComponent(b.apnaLink || '');
-
                 return `<tr>
                     <td><b style="color:#1e3c72;">${b.name || 'Unnamed'}</b></td>
-                    <td>
-                        ₹${b.examPrice || '0'} <small>(+₹${b.examDelivery || '0'} Del)</small><br>
-                        ${eStockSel}<br>
-                        <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send WA</button>
-                    </td>
-                    <td>
-                        ₹${b.apnaPrice || '0'} <small>(+₹${b.apnaDelivery || '0'} Del)</small><br>
-                        ${aStockSel}<br>
-                        <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send WA</button>
-                    </td>
+                    <td>₹${b.examPrice || '0'} <small>(+₹${b.examDelivery || '0'} Del)</small><br>${eStockSel}</td>
+                    <td>₹${b.apnaPrice || '0'} <small>(+₹${b.apnaDelivery || '0'} Del)</small><br>${aStockSel}</td>
                     <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`;
             }).join('');
         }
@@ -313,7 +277,6 @@
         async function updateStock(id, eStock, aStock) { showLoader(); await apiCall({action: "updateBookStock", bookId: id, examStock: eStock, apnaStock: aStock}); hideLoader(); }
         async function deleteBk(id) { if(confirm("Delete Book?")){ showLoader(); await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
 
-        // CALLS & TEAM
         async function assignCall() {
             const e=document.getElementById("assign-emp").value, n=document.getElementById("assign-name").value, m=document.getElementById("assign-number").value, t=document.getElementById("assign-title").value;
             if(!e||!n||!m) return alert("Select Emp, Name, Number!");
@@ -333,19 +296,18 @@
         function renderEmployees(emps) { 
             let validEmps = emps.filter(e=>(e.username||'').toLowerCase() !== 'admin');
             if(validEmps.length === 0) return;
-            document.querySelector("#employees-table tbody").innerHTML = validEmps.map(e=>`<tr><td><b>${e.name||'Unnamed'}</b></td><td>${e.username||'No Username'}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password||''}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); 
+            document.querySelector("#employees-table tbody").innerHTML = validEmps.map(e=>`<tr><td><b>${e.name||'Unnamed'}</b><br><small style="color:gray;">Role: ${e.role||'Employee'}</small></td><td>${e.username||'No Username'}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password||''}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); 
         }
 
         async function addNewEmployee() { 
-            const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; 
+            const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value, r=document.getElementById("new-emp-role").value; 
             if(!n||!u||!p) return alert("All fields required!");
-            showLoader(); await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); 
+            showLoader(); await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p, role:r}}); 
             document.getElementById("new-emp-name").value = ""; document.getElementById("new-emp-user").value = ""; document.getElementById("new-emp-pass").value = ""; loadData(); 
         }
         async function updatePass(id) { showLoader(); await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); hideLoader(); alert("Password Updated!"); }
         async function deleteEmp(id) { if(confirm("Remove this Telecaller?")){ showLoader(); await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
         
-        // TEMPLATES
         function openTemplateModal() { document.getElementById("msg-id").value = ""; document.getElementById("msg-title").value = ""; document.getElementById("msg-content").value = ""; document.getElementById("modal-heading").innerText = "📝 Create Template"; document.getElementById("templateModal").style.display = "flex"; }
         function editTemplateModal(id, title, content) { document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(title); document.getElementById("msg-content").value = decodeURIComponent(content); document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex"; }
         function closeTemplateModal() { document.getElementById("templateModal").style.display = "none"; }
@@ -353,20 +315,9 @@
         async function saveMessage() { 
             const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value, id=document.getElementById("msg-id").value; 
             if(!t||!c) return alert("Title and Content required"); 
-            let payload = {action:"saveMessage", message:{title:t, content:c}}; 
-            if(id) payload.message.msgId = id; 
+            let payload = {action:"saveMessage", message:{title:t, content:c}}; if(id) payload.message.msgId = id; 
             showLoader(); await apiCall(payload); closeTemplateModal(); loadData(); 
         }
-        
-        function sendBookLink(encName, encLink) {
-            let bookName = decodeURIComponent(encName);
-            let link = decodeURIComponent(encLink);
-            if(!link || link.trim() === '' || link === '#' || link === 'undefined') { alert(`Is book ka link available nahi hai!`); return; }
-            let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
-            let num = prompt("Student ka 10-digit WhatsApp number dalein:");
-            if(num && num.trim() !== "") window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
-        }
-        
         async function deleteMsg(id) { if(confirm("Delete Template?")){ showLoader(); await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
     </script>
 </body>
