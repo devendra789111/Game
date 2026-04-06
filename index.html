@@ -75,9 +75,22 @@
                     
                     <div class="flex-row" style="margin-bottom:15px; align-items:center;">
                         <input type="text" id="search-box" placeholder="🔍 Search Name or Mobile..." oninput="applyFilters()" style="margin-bottom:0; flex:1;">
+                        
                         <select id="filter-category" onchange="applyFilters()" style="margin-bottom:0; flex:1;">
                             <option value="">All Categories</option>
+                            <option value="Online Course Related">Online Course Related</option>
+                            <option value="Online Test Series Related">Online Test Series Related</option>
+                            <option value="Offline Test Series Related">Offline Test Series Related</option>
+                            <option value="Notes Related">Notes Related</option>
+                            <option value="Youtube Related">Youtube Related</option>
+                            <option value="Books Related">Books Related</option>
+                            <option value="Teacher Feedback">Teacher Feedback</option>
+                            <option value="Complaints/Feedback">Complaints/Feedback</option>
+                            <option value="Refund Related">Refund Related</option>
+                            <option value="App Issue/Feedback">App Issue/Feedback</option>
+                            <option value="Others">Others</option>
                         </select>
+
                         <select id="filter-status" onchange="applyFilters()" style="margin-bottom:0; flex:1;">
                             <option value="">All Status</option>
                             <option value="Pending">Pending</option>
@@ -236,12 +249,6 @@
                     renderEmployees(res.employees);
                 }
                 
-                // POPULATE FILTER CATEGORIES
-                const categories = [...new Set(allComplaints.map(c => c.problemType).filter(Boolean))];
-                let filterCatHTML = '<option value="">All Categories</option>';
-                categories.forEach(cat => { filterCatHTML += `<option value="${cat}">${cat}</option>`; });
-                document.getElementById("filter-category").innerHTML = filterCatHTML;
-
                 applyFilters(); // Renders the table
                 renderBooks(res.books || []);
                 renderAssignedCalls(res.assignedCalls || []);
@@ -255,7 +262,7 @@
             }
         }
 
-        // NEW: FILTER LOGIC
+        // FILTER LOGIC
         function applyFilters() {
             const s = document.getElementById("search-box").value.toLowerCase();
             const c = document.getElementById("filter-category").value;
@@ -269,7 +276,7 @@
             renderComplaints(filtered);
         }
 
-        // NEW: SPLIT COLUMNS RENDER
+        // RENDER COMPLAINTS
         function renderComplaints(data) {
             document.querySelector("#complaints-table tbody").innerHTML = data.map(x=>`<tr>
                 <td><small>${safeDate(x.date)}</small><br><b style="color:#0984e3;">ID: ${x.complaintId}</b></td>
@@ -332,13 +339,13 @@
         async function updateStock(id, eStock, aStock) { showLoader(); await apiCall({action: "updateBookStock", bookId: id, examStock: eStock, apnaStock: aStock}); hideLoader(); }
         async function deleteBk(id) { if(confirm("Delete Book?")){ showLoader(); await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
 
-        // NEW: RETAIN REASON BOX VALUE
+        // ASSIGN CALLS LOGIC
         async function assignCall() {
             const e=document.getElementById("assign-emp").value, n=document.getElementById("assign-name").value, m=document.getElementById("assign-number").value, t=document.getElementById("assign-title").value;
             if(!e||!n||!m) return alert("Select Emp, Name, Number!");
             showLoader(); await apiCall({action:"assignCall", callData:{employeeId:e, name:n, number:m, title:t}});
             
-            // Only clear Name and Number. Reason stays for next quick entry.
+            // Only clear Name and Number. Reason stays for next entry.
             document.getElementById("assign-name").value=""; 
             document.getElementById("assign-number").value=""; 
             loadData();
@@ -353,6 +360,7 @@
         }
         async function deleteACall(id) { if(confirm("Delete Call?")){ showLoader(); await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
 
+        // TEAM LOGIC
         function renderEmployees(emps) { 
             let validEmps = emps.filter(e=>(e.username||'').toLowerCase() !== 'admin');
             if(validEmps.length === 0) return;
@@ -368,8 +376,9 @@
         async function updatePass(id) { showLoader(); await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); hideLoader(); alert("Password Updated!"); }
         async function deleteEmp(id) { if(confirm("Remove this Telecaller?")){ showLoader(); await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
         
+        // TEMPLATES LOGIC
         function openTemplateModal() { document.getElementById("msg-id").value = ""; document.getElementById("msg-title").value = ""; document.getElementById("msg-content").value = ""; document.getElementById("modal-heading").innerText = "📝 Create Template"; document.getElementById("templateModal").style.display = "flex"; }
-        function editTemplateModal(id, title, content) { document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(title); document.getElementById("msg-content").value = decodeURIComponent(content); document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex"; }
+        function editTemplateModal(id, encTitle, encContent) { document.getElementById("msg-id").value = id; document.getElementById("msg-title").value = decodeURIComponent(encTitle); document.getElementById("msg-content").value = decodeURIComponent(encContent); document.getElementById("modal-heading").innerText = "✏️ Edit Template"; document.getElementById("templateModal").style.display = "flex"; }
         function closeTemplateModal() { document.getElementById("templateModal").style.display = "none"; }
         
         async function saveMessage() { 
